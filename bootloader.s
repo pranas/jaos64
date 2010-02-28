@@ -32,10 +32,10 @@ FReset:
 	call Print
 
 ; prepare segment regs for reading
-	mov ax, 0x1000
+	mov ax, 0x0500
 	mov es, ax
 	xor bx, bx
-	; write into memory address es:bx (0x1000:0)
+	; write into memory address es:bx (0x0500:0)
 
 ; start reading more sectors
 FRead:
@@ -54,7 +54,7 @@ FRead:
 	mov si, LoadS2Str
 	call Print
 
-	jmp 0x1000:0x0 ; jump to stage 2
+	jmp 0x0500:0x0 ; jump to stage 2
 		
 	cli
 	hlt
