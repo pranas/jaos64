@@ -6,6 +6,7 @@ start:
 	jmp s2
 
 %include "print.inc"
+%include "gdt.inc"
 
 s2:
 ; ds must be same as cs
@@ -15,7 +16,9 @@ s2:
 
 ; print warm welcome :)
 	mov si, S2WelcomeStr
-	call Print
+	call Print;
+
+	call loadGDT
 
 ; halt processor
 	cli
