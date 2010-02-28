@@ -4,7 +4,10 @@ ProjectOS
 Development branch created
 
 Compilation:
-./bootstrap.sh
+make
+
+Cleanup:
+make clean
 
 Run using this:
 bochs -q -rc dbgrc
