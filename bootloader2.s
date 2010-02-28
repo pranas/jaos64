@@ -1,6 +1,6 @@
 bits 16
 
-org 0x0 ; we are actually at 0x0500
+org 0x5000 ; we are actually at 0x5000
 
 start:
 	jmp Stage2
@@ -12,10 +12,9 @@ Stage2:
 
 ; clear segments
 	cli
-	mov ax, cs
+	xor ax, ax
 	mov ds, ax
 	mov es, ax
-	mov ax, 0x9000 ; dont know why :D
 	mov ss, ax
 	mov sp, 0xFFFF
 	sti
@@ -24,12 +23,11 @@ Stage2:
 	mov si, S2WelcomeStr
 	call Print
 
-
 ; A20
-;	pusha
-;	mov ax, 0x2401
-;	int 0x15
-;	popa
+	pusha
+	mov ax, 0x2401
+	int 0x15
+	popa
 
 	call loadGDT
 
@@ -40,7 +38,7 @@ Stage2:
 	mov cr0, eax
 
 ; jump to code descriptor because CS is wrong now
-	jmp 0x8:Stage3 ; 0x8 is the code descriptor offset
+	jmp 0x08:Stage3 ; 0x8 is the code descriptor offset
 
 ; welcome to the kingdom of 32 bits
 bits 32

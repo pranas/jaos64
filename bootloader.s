@@ -8,7 +8,7 @@ start:
 %include "print.inc"
 	
 loader:
-; clear segments to 0
+; set segments
 	xor ax, ax
 	mov ds, ax
 	mov es, ax
@@ -35,7 +35,7 @@ FReset:
 	mov ax, 0x0500
 	mov es, ax
 	xor bx, bx
-	; write into memory address es:bx (0x0500:0)
+	; write into memory address es:bx (0x0:0x5000)
 
 ; start reading more sectors
 FRead:
