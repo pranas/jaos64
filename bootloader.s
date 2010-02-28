@@ -31,36 +31,47 @@ FReset:
 	mov si, ReadFStr
 	call Print
 
+	jmp FRead
+DAPACK:
+	db 0x20
+	db 0
+	dw 16
+	dw 0x1000
+	dw 0
+	dd 0x2
+	dd 0
+FRead:
+	mov si, DAPACK
+	mov ah, 0x42
+	mov dl, 0x80
+	int 0x13
+
 ; prepare segment regs for reading
-	mov ax, 0x1000 ; read into memory address 0x10000
-	mov es, ax
-	xor bx, bx
+	;mov ax, 0x1000 ; read into memory address 0x10000
+	;mov es, ax
+	;xor bx, bx
 
 ; start reading more sectors
-FRead:
-	mov ah, 0x02
-	mov al, 1 ; read how many sectors
-	mov ch, 1 ; on which track (still 1st one)
-	mov cl, 2 ; starting from which sector (1st was already loaded by BIOS)
-	mov dh, 0 ; head number
-	mov dl, 0 ; drive number ( 0 - floppy )
-	int 0x13
-	jc FRead ; in case of error try again
+;FRead:
+	;mov ah, 0x02
+	;mov al, 1 ; read how many sectors
+	;mov ch, 1 ; on which track (still 1st one)
+	;mov cl, 2 ; starting from which sector (1st was already loaded by BIOS)
+	;mov dh, 0 ; head number
+	;mov dl, 0 ; drive number ( 0 - floppy )
+	;int 0x13
+	;jc FRead ; in case of error try again
 ; end reading sectors
 	
 	mov si, LoadS2Str
 	call Print
+
 	mov ax, 0x1000
 	mov ds, ax
 	mov si, 0
 	call Print
 ;	jmp 0x1000:0x0 ; jump to stage 2
 		
-;enable A20 :D
-;not needed here
-;	mov al, 2
-;	out 0x92, al
-
 	cli
 	hlt
 
