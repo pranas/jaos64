@@ -40,7 +40,7 @@ FReset:
 ; start reading more sectors
 FRead:
 	mov ah, 0x02
-	mov al, 1 ; read how many sectors
+	mov al, 4 ; read how many sectors
 	mov ch, 0 ; which (cylinder or track ?)
 	; still 1st one, and indexation starts from 0 not 1,
 	; NO THANKS TO BLACKTHORN

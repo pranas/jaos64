@@ -1,6 +1,6 @@
 bits 16
 
-org 0x0500 ; we are actually at 0x0500
+org 0x0 ; we are actually at 0x0500
 
 start:
 	jmp Stage2
@@ -12,10 +12,10 @@ Stage2:
 
 ; clear segments
 	cli
-	xor ax, ax
+	mov ax, cs
 	mov ds, ax
 	mov es, ax
-	mov ax, 0x9000
+	mov ax, 0x9000 ; dont know why :D
 	mov ss, ax
 	mov sp, 0xFFFF
 	sti
@@ -40,10 +40,10 @@ Stage2:
 	mov cr0, eax
 
 ; jump to code descriptor because CS is wrong now
-bits 32
-	jmp 0x8:Stage3
+	jmp 0x8:Stage3 ; 0x8 is the code descriptor offset
 
 ; welcome to the kingdom of 32 bits
+bits 32
 
 Stage3:
 
@@ -59,4 +59,4 @@ Stage3:
 	hlt
 
 S2WelcomeStr db "Welcome to Stage2 :)", 13, 10, 0
-times 512 - ($-$$) db 0 ; pad to 512 bytes
+times (4*512) - ($-$$) db 0 ; pad to 512 bytes
