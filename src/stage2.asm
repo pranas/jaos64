@@ -7,6 +7,7 @@ start:
 
 %include "print.inc.asm"
 %include "gdt.inc.asm"
+%include "memory.inc.asm"
 
 S2WelcomeStr db "Welcome to Stage2 :)", 13, 10, 0
 
@@ -25,6 +26,12 @@ Stage2:
 	mov si, S2WelcomeStr
 	call Print
 
+; Get Memory Map
+	mov ax, 0x600
+	mov es, ax
+	mov di, 0
+	call BiosGetMemoryMap
+	
 ; A20
 	pusha
 	mov ax, 0x2401
