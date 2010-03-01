@@ -18,6 +18,10 @@ dbgrc:
 0x1000  -   4 kbytes
 0x10000 -  64 kbytes
 
+-0x100000 - low memory
+0x100000 - 1MB
+0x100000- - extended memory
+
 Memory regions occupied:
 
 0x7c00-0x7e00 - 512 bytes for stage1
