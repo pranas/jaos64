@@ -73,11 +73,10 @@ Stage3:
 
 	mov di, 0x1000
 	mov WORD [di], 0x2003
-	add di, 0x1000
+	mov di, 0x2000
 	mov WORD [di], 0x3003
-	add di, 0x1000
+	mov di, 0x3000
 	mov WORD [di], 0x4003
-	add di, 0x1000
 
 ; 3 is used to set first two bits
 ; (i guess it's Present and RW flags)
