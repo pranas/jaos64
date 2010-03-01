@@ -1,1 +1,0 @@
-bochs -q -rc dbgrc

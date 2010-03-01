@@ -7,3 +7,6 @@ all:
 
 clean:
 	$(MAKE) clean -C src/
+
+run:
+	bochs -q -rc dbgrc -f bochsrc
