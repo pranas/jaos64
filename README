@@ -1,16 +1,15 @@
 ProjectOS
 2010-02-19
 
-Development branch created
-
 Compilation:
 make
 
 Cleanup:
 make clean
 
-Run using this:
-bochs -q -rc dbgrc
+Run:
+make run
 
-sets an initial breakpoint to 0x7c00
-continues until it hits it and stops
+dbgrc:
+	sets an initial breakpoint to 0x7c00
+	continues until it hits it and stops
