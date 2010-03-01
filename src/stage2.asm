@@ -31,6 +31,7 @@ Stage2:
 	mov es, ax
 	mov di, 0
 	call BiosGetMemoryMap
+	; BP = count of entries in map
 	
 ; A20
 	pusha
