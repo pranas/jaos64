@@ -1,7 +1,9 @@
 /*
 
-	stdint.h
-	
+	string.c
+
+	Standard C String routines
+
 	Copyright (C) 2010
 
 	This is free software; you can redistribute it and/or modify
@@ -11,20 +13,10 @@
 
 */
 
+#include <string.h>
 
-/*
-
-LP64 data model (used by Linux and all other great 64-bit OSes)
-
-char 8
-short 16
-_int 32
-int 32
-long 64
-long long --
-pointer 64
-
-*/
-
-
-
+size_t strlen (const char* str) {
+	size_t len = 0;
+	while (str[len++]);
+	return len;
+}

@@ -1,7 +1,9 @@
 /*
 
-	stdint.h
+	memman.c
 	
+	Memory manager
+
 	Copyright (C) 2010
 
 	This is free software; you can redistribute it and/or modify
@@ -11,20 +13,11 @@
 
 */
 
+#include "memman.h"
 
 /*
 
-LP64 data model (used by Linux and all other great 64-bit OSes)
-
-char 8
-short 16
-_int 32
-int 32
-long 64
-long long --
-pointer 64
+	To initialize mem manager we need to get pointer to BIOS memory map	
+	and mark all available memory as free in our bitmap
 
 */
-
-
-

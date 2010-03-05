@@ -1,23 +1,19 @@
 /*
 
+	stdlib.h
+
 	Standard library for ProjectOS
 	
 	Copyright (C) 2010
 
-	It is free software; you can redistribute it and/or modify
+	This is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation; either version 2, or (at your option)
 	any later version.
 
 */
 
-#ifndef NULL
-#if defined (__cplusplus)
-#define NULL 0
-#else
 #define NULL ((void *)0)
-#endif
-#endif
 
 /*
 	`size_t' is a type suitable for representing the amount
