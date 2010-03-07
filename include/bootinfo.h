@@ -13,6 +13,8 @@
 
 */
 
+#include <stdint.h>
+
 /*
 	multiboot info structure passed from boot loader
 */
@@ -43,3 +45,5 @@ struct multiboot_info {
 	uint32_t	m_vbe_interface_addr;
 	uint16_t	m_vbe_interface_len;
 };
+
+typedef struct multiboot_info multiboot_info;
