@@ -56,11 +56,13 @@ bits 32
 Stage3:
 
 ; set other segments to data descriptors
-	mov ax, 0x10 ;0x0000506a
+	mov ax, 0x10
 	mov ds, ax
 	mov ss, ax
 	mov es, ax
 	mov esp, 0x90000 ; why 0x90000 ? I dont know :D
+	
+;	[0x00005100] 0008:0000000000005100 (unk. ctxt): mov esp, 0x00090000       ; bc00000900
 	
 ; Stage3 will prepare 64-bit stuff
 
@@ -77,12 +79,29 @@ Stage3:
 	mov cx, 0x4000
 	rep stosb
 
-; Lets make PML4T[0] point to the PDPT and so on
+; We will use paging to set-up higher half kernel addressing
+;
+; We will put our kernel at 3GB in our virtual address space
+;
+; 0x00000000 c0000000
+;
+; Bits 63-48 are sign extension as required for canonical-address forms
+; Bits 47-39 index into PML4T -> in this case it's PML4T[0]
+; Bits 38-30 index into PDPT -> ... PDPT[3]
+; Bits 29-21 ... PDT
+; Bits 20-12 ... PT
+; Bits 11-0 offset in page
+;
 
 	mov di, 0x1000
 	mov WORD [di], 0x2003
+	
 	mov di, 0x2000
 	mov WORD [di], 0x3003
+	
+	add di, 0x18
+	mov WORD [di], 0x3003
+	
 	mov di, 0x3000
 	mov WORD [di], 0x4003
 
@@ -100,7 +119,7 @@ Stage3:
 	add ebx, 0x1000
 	add di, 8					; Move to next page entry
 	loop .SetPageEntry
-
+	
 ; Now we should enable PAE-paging by setting the PAE-bit in the CR4
 
 	mov eax, cr4
@@ -127,7 +146,11 @@ Stage3:
 	mov cr0, eax
 
 ; Now we're in compatibility mode.
+; 5158
+	jmp 0x08:0xc0000000 + Virtual
 
+	Virtual:
+	
 	lgdt [GDT64.Pointer]		; Load the 64-bit global descriptor table
 	jmp GDT64.Code:Stage4		; Set the code segment and enter 64-bit long mode
 
