@@ -1,0 +1,1 @@
+dd if=../bin/mbr of=../bin/hdd.img bs=446 count=1 conv=notrunc
