@@ -157,7 +157,16 @@ Stage4:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
+	mov rsp, 0x9000         ; stack starts at 36kb
+	
+	mov rbx, qword 0x5400   ; 0x5000 + stage2 offset, start of kernel ELF
+	call loadelf
+
+	mov r12, rbx
+	xchg bx, bx             ; debugger trap
+	mov rdi, 0x0004BEEF     ; integer/pointer for first arg of kernel
+	call r12                ; call kernel
 
 	hlt
 
-times (4*512) - ($-$$) db 0 ; pad to 512 bytes
+times (2*512) - ($-$$) db 0 ; pad to 1024 bytes

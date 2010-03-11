@@ -15,6 +15,10 @@
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
+	if (bootinfo == null)
+		bootinfo = 0xDEADBABA;
+	else
+		bootinfo = 0x0BADBABA;
 	
 	// Hardware abstraction layer?
 	
