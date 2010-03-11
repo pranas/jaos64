@@ -1,17 +1,13 @@
 BIN = ../bin
 ASM = nasm -f bin
 
-floppy.img: stage1 stage2 pad
-	cat $(BIN)/stage1 $(BIN)/stage2 $(BIN)/pad > $(BIN)/floppy.img
+all: stage1 stage2
 
 stage1: stage1.asm
-	$(ASM) $< -o $(BIN)/$@
+	$(ASM) $^ -o $(BIN)/$@
    
 stage2: stage2.asm
-	$(ASM) $< -o $(BIN)/$@
-
-pad: stage1 stage2
-	./pad.sh
+	$(ASM) $^ -o $(BIN)/$@
 
 clean:
-	rm $(BIN)/stage1 $(BIN)/stage2 $(BIN)/pad $(BIN)/floppy.img
+	rm $(BIN)/stage1 $(BIN)/stage2

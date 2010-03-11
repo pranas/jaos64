@@ -1,14 +1,19 @@
 BIN = ../bin
 INCLUDE_PATH = ../include
 LIBRARY_PATH = ../lib
-GCC = gcc -ffreestanding -mcmodel=large -nostdlib -m64 -I $(INCLUDE_PATH) -L $(LIBRARY_PATH) -c -o
-LD = ld -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld -o
+CC = gcc
+CFLAGS = -ffreestanding -mcmodel=large -nostdlib -m64 -I $(INCLUDE_PATH) -L $(LIBRARY_PATH)
+LD = ld
+LDFLAGS = -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld
+
+all: kernel
 
 kernel: kernel.o
-	$(LD) $(BIN)/kernel $(BIN)/kernel.o
+	$(LD) $(LDFLAGS) $^ -o $(BIN)/$@
+	rm kernel.o
 
-kernel.o:
-	$(GCC) $(BIN)/kernel.o main.c
+kernel.o: main.c
+	$(CC) -c $(CFLAGS) $^ -o $@
 
 clean:
-	rm $(BIN)/kernel.o $(BIN)/kernel
+	-rm $(BIN)/kernel
