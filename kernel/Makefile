@@ -13,11 +13,18 @@ OBJS = *.o
 
 all: $(KERNEL)
 
-$(KERNEL): kernel.o link.ld
-	$(LD) $(LDFLAGS) $< -o $@
+$(KERNEL): kernel.o monitor.o io.o link.ld
+	$(LD) $(LDFLAGS) $^ -o $@
 
 kernel.o: main.c
-	$(CC) -c $(CFLAGS) $^ -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
+
+monitor.o: monitor.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+io.o: io.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
 
 clean:
 	-rm $(KERNEL) $(OBJS)

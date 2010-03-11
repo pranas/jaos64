@@ -27,6 +27,9 @@
 
 */
 
+#ifndef _STDINT_H
+#define _STDINT_H
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef short int16_t;
@@ -163,3 +166,5 @@ typedef unsigned long long   uintmax_t;
 /* 7.18.4.2  Macros for greatest-width integer constants */
 #define INTMAX_C(val)  INT64_C(val)
 #define UINTMAX_C(val) UINT64_C(val)
+
+#endif

@@ -12,14 +12,12 @@
 */
 
 #include <bootinfo.h>
+#include <monitor.h>
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
-	if (bootinfo == 0x0004BEEF)
-		bootinfo = 0xDEADBABA;
-	else
-		bootinfo = 0x0BADBABA;
-	
+	clear_screen();
+	puts("Hello world!\n");
 	// Hardware abstraction layer?
 	
 	// init interrupt handlers
