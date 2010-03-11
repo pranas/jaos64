@@ -5,7 +5,7 @@ start:
 	jmp loader
 
 ; simple print procedure using bios interrupts
-%include "print.inc.asm"
+%include "print.asm"
 	
 loader:
 ; set segments

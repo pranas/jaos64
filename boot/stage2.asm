@@ -5,9 +5,9 @@ org 0x5000 ; we are actually at 0x5000
 start:
 	jmp Stage2
 
-%include "print.inc.asm"
-%include "gdt.inc.asm"
-%include "memory.inc.asm"
+%include "print.asm"
+%include "gdt.asm"
+%include "memory.asm"
 
 S2WelcomeStr db "Welcome to Stage2 :)", 13, 10, 0
 
@@ -145,6 +145,8 @@ Stage3:
 
 ; World of 64 bits starts here
 bits 64
+
+%include "loadelf.asm"
 
 Stage4: 
 	cli 
