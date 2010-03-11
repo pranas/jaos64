@@ -1,13 +1,13 @@
 BIN = ../bin
 ASM = nasm -f bin
 
-all: stage1 stage2
+SRCS = stage1.asm stage2.asm
+OUTPUT = $(addprefix $(BIN)/, $(SRCS:%.asm=%.bin))
 
-stage1: stage1.asm
-	$(ASM) $^ -o $(BIN)/$@
-   
-stage2: stage2.asm
-	$(ASM) $^ -o $(BIN)/$@
+all: $(OUTPUT)
+
+$(BIN)/%.bin: %.asm
+	$(ASM) $< -o $@
 
 clean:
-	rm $(BIN)/stage1 $(BIN)/stage2
+	-rm $(OUTPUT)
