@@ -3,7 +3,8 @@ INCLUDE_PATH = ../include
 LIBRARY_PATH = ../lib
 CC = gcc
 LD = ld
-CFLAGS = -ffreestanding -mcmodel=large -nostdlib -m64 -I $(INCLUDE_PATH) -L $(LIBRARY_PATH)
+CFLAGS = -ffreestanding -mcmodel=large -nostdlib -m64 \
+		 -I $(INCLUDE_PATH) -L $(LIBRARY_PATH)
 LDFLAGS = -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld
 
 KERNELNAME = kernel
@@ -12,8 +13,8 @@ OBJS = *.o
 
 all: $(KERNEL)
 
-$(KERNEL): kernel.o
-	$(LD) $(LDFLAGS) $^ -o $@
+$(KERNEL): kernel.o link.ld
+	$(LD) $(LDFLAGS) $< -o $@
 
 kernel.o: main.c
 	$(CC) -c $(CFLAGS) $^ -o $@

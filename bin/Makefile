@@ -15,4 +15,4 @@ pad:
 
 # minus sign means to ignore errors
 clean:
-	-rm floppy.img pad
+	-rm pad

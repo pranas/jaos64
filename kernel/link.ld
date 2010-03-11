@@ -2,9 +2,9 @@ OUTPUT_FORMAT(elf64-x86-64)
 ENTRY(kernel_entry)
 SECTIONS
 {
-    . = 0xc000000000000000;
+    . = 0x6000;
 
-    .text : AT(ADDR(.text) - 0xc000000000000000)
+    .text :
     {
         _code = .;
         *(.text)
@@ -12,22 +12,21 @@ SECTIONS
         . = ALIGN(4096);
     }
 
-   .data : AT(ADDR(.data) - 0xc000000000000000)
+   .data :
    {
         _data = .;
         *(.data)
         . = ALIGN(4096);
    }
 
-   .ehframe : AT(ADDR(.ehframe) - 0xc000000000000000)
+   .ehframe :
    {
        _ehframe = .;
        *(.ehframe)
         . = ALIGN(4096);
    }
 
-   .bss : AT(ADDR(.bss) - 0xc000000000000000)
-   {
+   .bss :   {
        _bss = .;
        *(.bss)
        . = ALIGN(4096);

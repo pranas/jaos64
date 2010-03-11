@@ -15,7 +15,7 @@
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
-	if (bootinfo == null)
+	if (bootinfo == 0x0004BEEF)
 		bootinfo = 0xDEADBABA;
 	else
 		bootinfo = 0x0BADBABA;
