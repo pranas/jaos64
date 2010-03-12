@@ -4,7 +4,7 @@
 
 void load_idt(struct idt_ptr_struct* idt_ptr)
 {
-	asm volatile ("lidt %0" : : (idt_ptr));
+	asm volatile ("lidt %0" : : "m" (idt_ptr));
 }
 
 void set_idt(int offset, struct idt_descriptor *entry)
