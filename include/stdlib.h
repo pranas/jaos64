@@ -13,6 +13,9 @@
 
 */
 
+#ifndef _STDLIB_H
+#define _STDLIB_H
+
 #define NULL ((void *)0)
 
 /*
@@ -34,4 +37,10 @@
 #ifndef _SIZE_T
 #define _SIZE_T
 typedef long size_t;
-#endif
+#endif // size_t
+
+
+void* memcpy(void *dest, const void *src, size_t n);
+void* memmove(void *dest, const void *src, size_t n);
+
+#endif // stdlib.h
