@@ -4,7 +4,7 @@ ASM = nasm -f bin
 
 all:
 	$(MAKE) -C boot/
-	$(MAKE) -C kernel/
+#	$(MAKE) -C kernel/
 
 clean:
 	$(MAKE) clean -C boot/
