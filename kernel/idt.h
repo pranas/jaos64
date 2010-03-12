@@ -1,3 +1,6 @@
+#ifndef _IDT_H
+#define _IDT_H
+
 #include <stdint.h>
 
 struct idt_descriptor
@@ -12,13 +15,16 @@ struct idt_descriptor
 	int8_t zero3;     // bits 0..4 should be zeroed out
 	int16_t zero4;    // zero out
 } __attribute__((packed));
+typedef struct idt_descriptor idt_descriptor;
 
 struct idt_ptr_struct
 {
 	int16_t size;
-	void* addr;
+	int64_t addr;
 } __attribute__((packed));
+typedef struct idt_ptr_struct idt_ptr_struct;
 
 void load_idtr(struct idt_ptr_struct* idt_ptr);
 void set_idt(int offset, struct idt_descriptor entry);
 
+#endif
