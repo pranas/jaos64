@@ -10,6 +10,7 @@ void load_idt(struct idt_ptr_struct* idt_ptr)
 void set_idt(int offset, struct idt_descriptor *entry)
 {
 	struct idt_ptr_struct *idt_addr;
-	asm volatile ("sidt %0" : "a" (idt_addr));
+	asm volatile ("sidt %0" : "=m" (idt_addr)); 
+	// "=" means its write-only, "m" memory operand
 	memcpy(idt_addr + offset, entry);
 }
