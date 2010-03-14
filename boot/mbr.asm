@@ -37,10 +37,7 @@ start:
 	mov [AddressPacket.lba], eax
 	
 	mov si, AddressPacket
-	mov ah, 0x42			; to read?
-	mov dl, 0x80			; it's typically C drive, TODO: implement checking
-	int 0x13
-	jc start				; error
+	call readDisk
 
 ; Now we have first sector of first partition at 0x7e00
 
@@ -70,25 +67,13 @@ start:
 	mov eax, [FAT32.sectors_per_fat2]
 	mov cl, BYTE [FAT32.number_of_fats]
 	mul ecx
-	
 	add ebx, eax
-
-	push ebx	; cluster_begin_lba
-
-;lba_addr = cluster_begin_lba + (cluster_number - 2) * sectors_per_cluster;
-
+	push ebx						; cluster_begin_lba
 	mov eax, [FAT32.root_cluster]
-	push eax
-	sub eax, 0x02
-	mov cl, BYTE [FAT32.number_of_fats]
-	mul ecx
-	;mul BYTE [FAT32.sectors_per_cluster]
-	add eax, ebx
-	; eax = lba_addr
+	push eax 						; current_cluster
+	call clusterLBA
 	mov [AddressPacket.lba], eax
-	mov ah, 0x42
-	mov dl, 0x80
-	int 0x13
+	call readDisk
 	
 	; we have saved some interresting stuff
 	; let's label it
@@ -97,23 +82,19 @@ start:
 	%define	bytes_per_cluster 	bp-6
 	%define	fat_begin_lba		bp-10
 	%define	cluster_begin_lba	bp-14
-	%define current_root		bp-18
+	%define current_cluster		bp-18
 	; FATEoFMask = FATClusterMask & 0xFFFFFFF8
 	; FATClusterMask = 0x0FFFFFFF
 	
 ; lets travel through root directory and look for our stage2
 searchFile:
-	xchg bx, bx
 	mov ax, 0x9000-32
 	mov bx, [bytes_per_cluster]
 	add bx, 0x9000
 
-; bx = end of cluster in memory
-
 nextEntry:
 	add ax, 32
-	
-	cmp ax, bx
+	cmp ax, bx		; bx = end of cluster in memory
 	je notFound
 
 	mov di, fileName
@@ -142,74 +123,137 @@ nextEntry:
 	push ax					; push high word
 	pop eax 				; eax = 1st cluster of file
 	
-	; read cluster
-	;lba_addr = cluster_begin_lba + (cluster_number - 2) * sectors_per_cluster;
-	sub eax, 0x02
-	xor ecx, ecx
-	mov cl, BYTE [FAT32.sectors_per_cluster]
-	mul ecx
-	add eax, [cluster_begin_lba]
-	mov WORD [AddressPacket.buffer], 0x5000
+	mov [current_cluster], eax
+	call clusterLBA
+	
+	%define stage2 0x5000
+	
+	mov WORD [AddressPacket.buffer], stage2
 	mov [AddressPacket.lba], eax
 	mov si, AddressPacket
-	mov ah, 0x42
-	mov dl, 0x80
-	int 0x13
-	jmp 0x5000
+	call readDisk
+	
+oneMoreCluster:	
+	xor eax, eax
+	mov ax, [FAT32.bytes_per_sector]
+	xor ebx, ebx
+	mov bl, [FAT32.sectors_per_cluster]
+	mul ebx
+	
+	mov ebx, [AddressPacket.buffer]
+	add eax, ebx
+	
+	mov [AddressPacket.buffer], eax
+	call getNextCluster
+	jnc oneMoreCluster
+	jmp stage2
 
 notFound:
-	mov eax, [current_root]
 	; call a procedure to get next cluster no
 	call getNextCluster
 	; if returned something
-	cmp eax, 0
-	jne searchFile
-
+	jnc searchFile
+	
 ;
 ; Procedure to find next cluster's number
 ;
-;	IN: 
-;		eax - current cluster
 ;	OUT:
-;		eax - next cluster, 0 if there isn't one
+;		Carry if EOF
 
 getNextCluster:
-	; we need to get FAT entry of this cluster
 
-	add eax, 1
+	; check if we're already at EOF
+	mov eax, [current_cluster]
+	and eax, 0x0fffffff			; cluster mask
+	cmp eax, 0x0ffffff8
+	jge .eof ; ! greater or equal
 	
 	; do the math to find out wich FAT sector to read
+	xor edx, edx 	; div 32bit reg divides edx:eax
+	xor ebx, ebx
+	mov bx, [FAT32.bytes_per_sector]
+	shr bx, 2 ; bx = bx / 4 (each entry is 32bits (4 B) long)
+	div ebx
 	
-	
-	
-
-	;push eax
-	;xor eax, eax
-	;mov ax, [FAT32.bytes_per_sector]
-	;div 32
-	;div ebx
-	; edx remainder
-	;push edx
-	
+	push edx  ; div remainder
+		
 	; now read that sector
+	; si points to Address packet
 	
 	add eax, [fat_begin_lba]
 	mov [AddressPacket.lba], eax
 	mov eax, 1
-	mov [AddressPacket.sectors], eax
+	mov [AddressPacket.sectors], ax
 	mov si, AddressPacket
-	mov ah, 0x42
-	mov dl, 0x80
-	int 0x13
-	
+	call readDisk
+
 	; now let's do the math again to find out wich entry of FAT do we need
 	; (use remainder)
 	
-	; check entry and prepare output
+	pop eax		; remainder	
+	sal eax, 2	; eax = eax * 4
 	
+	mov esi, [AddressPacket.buffer] ;0x9000
+	add esi, eax
+	
+	mov eax, [esi]	; next cluster
+	mov [current_cluster], eax
+	and eax, 0x0fffffff
+	cmp eax, 0x0ffffff8
+	jge .eof ; ! greater or equal
+	
+	
+	call clusterLBA
+	mov [AddressPacket.lba], eax
+	
+	mov bl, [FAT32.sectors_per_cluster]
+	mov [AddressPacket.sectors], bx
+	
+	mov si, AddressPacket
+	call readDisk
+	
+	clc
+	ret
+.eof:
+	stc	
 	ret
 	
-fileName:		db "STAGE2     "
+;
+;
+;
+
+readDisk:
+	pusha
+	mov ah, 0x42			; to read?
+	mov dl, 0x80			; it's typically C drive, TODO: implement checking
+	int 0x13
+	popa
+	ret
+	
+;
+;	Procedure to get LBA from cluster number
+;		IN:
+;			eax - cluster number
+;		OUT:
+;			eax - LBA
+;
+;	LBA = cluster_begin_lba + (cluster_number - 2) * sectors_per_cluster;
+;
+
+clusterLBA:
+	push ecx
+	
+	xor ecx, ecx
+	dec eax
+	dec eax
+	mov cl, BYTE [FAT32.sectors_per_cluster]
+	mul ecx
+	add eax, [cluster_begin_lba]
+	
+	pop ecx
+	ret
+	
+fileName:		db "STAGE3     "
 notSupported:	db "Your system is not supported!", 0
 unexpectedE:	db "Unexpected error occurred...", 0
 
