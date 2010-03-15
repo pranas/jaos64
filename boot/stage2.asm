@@ -1,17 +1,7 @@
+%include "config.asm"
+
 bits 16
-
-org 0x5000 ; we are actually at 0x5000
-
-start:
-	jmp Stage2
-
-%include "print.asm"
-%include "gdt.asm"
-%include "memory.asm"
-
-S2WelcomeStr db "Welcome to Stage2 :)", 13, 10, 0
-
-Stage2:
+org stage2
 
 ; clear segments
 	cli
@@ -19,12 +9,24 @@ Stage2:
 	mov ds, ax
 	mov es, ax
 	mov ss, ax
-	mov sp, 0xFFFF
+	mov sp, stack-22
 	sti
 
 ; print warm welcome :)
-	mov si, S2WelcomeStr
+	mov si, preparing
 	call Print
+
+;
+; Let's look for kernel file and load it
+;
+
+	
+
+;
+; While we're still in Real mode we should collect
+; some information for our kernel
+; 
+
 
 ; Get Memory Map
 	mov ax, 0x600
@@ -33,11 +35,18 @@ Stage2:
 	call BiosGetMemoryMap
 	; BP = count of entries in map
 	
+;
+; Now we can bootstrap to long mode
+; for our kernel
+;
+	
 ; A20
 	pusha
 	mov ax, 0x2401
 	int 0x15
 	popa
+	
+; setup global descriptor table
 
 	call loadGDT
 
@@ -49,6 +58,10 @@ Stage2:
 	
 ; jump to code descriptor because CS is wrong now
 	jmp 0x08:Stage3 ; 0x8 is the code descriptor offset
+	
+	%include "print.asm"
+	%include "gdt.asm"
+	%include "memory.asm"
 
 ; welcome to the kingdom of 32 bits
 bits 32
@@ -87,7 +100,7 @@ Stage3:
 	mov WORD [di], 0x4003
 
 ; 3 is used to set first two bits
-; (i guess it's Present and RW flags)
+; (it's Present and RW flags)
 
 ; This will map first 2MB to first 2MB on physical memory
 
@@ -169,4 +182,8 @@ Stage4:
 
 	hlt
 
-times (2*512) - ($-$$) db 0 ; pad to 1024 bytes
+
+preparing db "Preparing to load kernel...", 13, 10, 0
+kernelLoading db "Loading kernel...", 13, 10, 0
+
+;times (2*512) - ($-$$) db 0 ; pad to 1024 bytes
