@@ -35,6 +35,8 @@ else
 	@umount $(LODEV)
 	@rm -r -f tmp/
 	@losetup -d $(LODEV)
+	@chown :users $(IMAGE)
+	@chmod 775 $(IMAGE)
 endif
 
 mbr: stage1
