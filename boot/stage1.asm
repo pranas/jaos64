@@ -25,12 +25,21 @@ org 0x7c00
 ;
 ;	check for bootable partition (for now we're working only on partition 1)
 
-
 ; Setup stack
 	mov sp, 0x9000
 	mov bp, sp
 	
 	push dx ; dl should be boot drive (don't know why, maybe it's in specifications)
+
+; check if BIOS extension for LBA addressing is supported
+	mov ah, 0x41
+	mov bx, 0x55aa
+	mov dl, 0x80
+	int 0x13
+	mov si, notSupported
+	jnc Supported
+	jmp Print
+	Supported:
 
 ; Prepare to read 1st partition's VolumeID sector
 	
@@ -265,9 +274,27 @@ clusterLBA:
 	pop ecx
 	ret
 	
+;
+;	Procedure prints buffer to monitor
+;		IN:
+;			ds:si - pointer to buffer
+;		
+
+Print:
+	.loop:
+	lodsb
+	or al, al
+	jz done
+	xor	bx, bx
+	mov	ah, 0x0e
+	int	0x10
+	jmp .loop
+	done:
+	hlt
+	
 fileName:		db "STAGE2     "
 notSupported:	db "Your system is not supported!", 0
-unexpectedE:	db "Unexpected error occurred...", 0
+;unexpectedE:	db "Unexpected error occurred...", 0
 
 AddressPacket:
 .size			db 16
