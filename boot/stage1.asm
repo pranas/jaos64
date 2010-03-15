@@ -10,6 +10,10 @@
 ;	http://www.ugrad.physics.mcgill.ca/wiki/index.php/Preparing_a_Debian_disk_image_for_Bochs
 ;	http://www.andremiller.net/content/mounting-hard-disk-image-including-partitions-using-linux
 
+%define stage2 0x5000			; where to load and execute stage2
+%define FAT_Cluster_Mask = 0x0fffffff
+%define FAT_EOF = 0x0ffffff8
+
 bits 16
 org 0x7c00
 
@@ -35,9 +39,10 @@ org 0x7c00
 	mov dl, 0x80
 	int 0x13
 	mov si, notSupported
-	jnc Supported
-	jmp Print
-	Supported:
+	jnc supported
+	jmp print
+	
+supported:
 
 ; Prepare to read 1st partition's VolumeID sector
 	
@@ -92,8 +97,7 @@ org 0x7c00
 	%define	fat_begin_lba		bp-10
 	%define	cluster_begin_lba	bp-14
 	%define current_cluster		bp-18
-	; TODO:
-	;	define FATClusterMask = 0x0FFFFFFF and EOFMask
+
 	
 ; lets travel through root directory and look for our file to load
 searchFile:
@@ -135,8 +139,6 @@ nextEntry:
 	mov [current_cluster], eax
 	call clusterLBA
 	
-	%define stage2 0x5000
-	
 	mov WORD [AddressPacket.buffer], stage2
 	mov [AddressPacket.lba], eax
 	mov si, AddressPacket
@@ -145,16 +147,12 @@ nextEntry:
 ; load more if there is
 
 oneMoreCluster:	
-	xor eax, eax
-	mov ax, [FAT32.bytes_per_sector]
 	xor ebx, ebx
-	mov bl, [FAT32.sectors_per_cluster]
-	mul ebx
-	
-	mov ebx, [AddressPacket.buffer]
+	mov eax, [AddressPacket.buffer]
+	mov bx, [bytes_per_cluster]
 	add eax, ebx
-	
 	mov [AddressPacket.buffer], eax
+
 	call getNextCluster
 	jnc oneMoreCluster		; not EOF
 	
@@ -168,10 +166,8 @@ notFound:
 	jnc searchFile
 	
 	; File not found!
-	;
-	; TODO:
-	;	print error
-	jmp $
+	mov si, fileNotFound
+	jmp print
 	
 ;
 ; Procedure to load next cluster
@@ -278,7 +274,7 @@ clusterLBA:
 ;			ds:si - pointer to buffer
 ;		
 
-Print:
+print:
 	.loop:
 	lodsb
 	or al, al
@@ -291,6 +287,7 @@ Print:
 	hlt
 	
 fileName:		db "STAGE2     "
+fileNotFound:	db "Loader not found!", 0
 notSupported:	db "Your system is not supported!", 0
 ;unexpectedE:	db "Unexpected error occurred...", 0
 
