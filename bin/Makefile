@@ -15,7 +15,7 @@ ifneq ($(shell id -u), 0)
 else
 	@bximage -hd -mode=flat -size=50 -q $(IMAGE) > /dev/zero
 #fdisk requires root
-	-@fdisk $(IMAGE) < fdisk.script > /dev/zero
+	-@fdisk $(IMAGE) < fdisk.script &> /dev/zero
 endif
 
 format:
