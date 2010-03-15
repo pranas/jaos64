@@ -10,6 +10,10 @@
 ;	http://www.ugrad.physics.mcgill.ca/wiki/index.php/Preparing_a_Debian_disk_image_for_Bochs
 ;	http://www.andremiller.net/content/mounting-hard-disk-image-including-partitions-using-linux
 
+%define stage2 0x5000			; where to load and execute stage2
+%define FAT_Cluster_Mask 0x0fffffff
+%define FAT_EOF 0x0ffffff8
+
 bits 16
 org 0x7c00
 
@@ -18,19 +22,24 @@ org 0x7c00
 ; We will depend on that
 ;
 ; TODO:
-;	Implement CHS (it's better for compatibility, you could also
-;	use the same code for floppy loaders and floppy-emulated USB thumb drives)
-;
-;	check BIOS for extension and print error if it's not supported
-;
 ;	check for bootable partition (for now we're working only on partition 1)
-
 
 ; Setup stack
 	mov sp, 0x9000
 	mov bp, sp
 	
-	push dx ; dl should be boot drive (don't know why, maybe it's in specifications)
+	push dx ; dl should be boot drive
+
+; check if BIOS extension for LBA addressing is supported
+	mov ah, 0x41
+	mov bx, 0x55aa
+	mov dl, 0x80
+	int 0x13
+	mov si, notSupported
+	jnc supported
+	jmp print
+	
+supported:
 
 ; Prepare to read 1st partition's VolumeID sector
 	
@@ -56,7 +65,7 @@ org 0x7c00
 	push eax
 	
 ; read cluster to 0x9000
-	mov WORD [AddressPacket.buffer], 0x9000
+	mov WORD [AddressPacket.buffer], bp	; = 0x9000
 
 ; cluster_begin_lba = PartitionTable.lba + FAT32.reserved_sectors + 
 ;					+ (FAT32.number_of_fats * FAT32.sectors_per_fat2);
@@ -85,14 +94,13 @@ org 0x7c00
 	%define	fat_begin_lba		bp-10
 	%define	cluster_begin_lba	bp-14
 	%define current_cluster		bp-18
-	; TODO:
-	;	define FATClusterMask = 0x0FFFFFFF and EOFMask
+
 	
 ; lets travel through root directory and look for our file to load
 searchFile:
 	mov ax, 0x9000-32
 	mov bx, [bytes_per_cluster]
-	add bx, 0x9000
+	add bx, bp ;0x9000
 
 nextEntry:
 	add ax, 32
@@ -128,8 +136,6 @@ nextEntry:
 	mov [current_cluster], eax
 	call clusterLBA
 	
-	%define stage2 0x5000
-	
 	mov WORD [AddressPacket.buffer], stage2
 	mov [AddressPacket.lba], eax
 	mov si, AddressPacket
@@ -138,16 +144,12 @@ nextEntry:
 ; load more if there is
 
 oneMoreCluster:	
-	xor eax, eax
-	mov ax, [FAT32.bytes_per_sector]
 	xor ebx, ebx
-	mov bl, [FAT32.sectors_per_cluster]
-	mul ebx
-	
-	mov ebx, [AddressPacket.buffer]
+	mov eax, [AddressPacket.buffer]
+	mov bx, [bytes_per_cluster]
 	add eax, ebx
-	
 	mov [AddressPacket.buffer], eax
+
 	call getNextCluster
 	jnc oneMoreCluster		; not EOF
 	
@@ -161,10 +163,8 @@ notFound:
 	jnc searchFile
 	
 	; File not found!
-	;
-	; TODO:
-	;	print error
-	jmp $
+	mov si, fileNotFound
+	jmp print
 	
 ;
 ; Procedure to load next cluster
@@ -176,8 +176,8 @@ getNextCluster:
 
 	; check if we're already at EOF
 	mov eax, [current_cluster]
-	and eax, 0x0fffffff			; cluster mask
-	cmp eax, 0x0ffffff8
+	and eax, FAT_Cluster_Mask	; cluster mask
+	cmp eax, FAT_EOF
 	jge .eof 					; greater or equal
 	
 	; do the math to find out wich FAT sector to read
@@ -194,8 +194,7 @@ getNextCluster:
 	
 	add eax, [fat_begin_lba]
 	mov [AddressPacket.lba], eax
-	mov eax, 1
-	mov [AddressPacket.sectors], ax
+	mov WORD [AddressPacket.sectors], 0x0001
 	mov si, AddressPacket
 	call readDisk
 
@@ -210,8 +209,8 @@ getNextCluster:
 	
 	mov eax, [esi]				; next cluster
 	mov [current_cluster], eax
-	and eax, 0x0fffffff
-	cmp eax, 0x0ffffff8
+	and eax, FAT_Cluster_Mask
+	cmp eax, FAT_EOF
 	jge .eof 					; greater or equal
 	
 	call clusterLBA
@@ -237,7 +236,7 @@ getNextCluster:
 readDisk:
 	pusha
 	mov ah, 0x42			; to read
-	mov dl, 0x80			; it's typically C drive, TODO: implement checking
+	mov dl, [boot_drive]
 	int 0x13
 	popa
 	ret
@@ -265,9 +264,27 @@ clusterLBA:
 	pop ecx
 	ret
 	
+;
+;	Procedure prints buffer to monitor
+;		IN:
+;			ds:si - pointer to buffer
+;		
+
+print:
+	.loop:
+	lodsb
+	or al, al
+	jz done
+	xor	bx, bx
+	mov	ah, 0x0e
+	int	0x10
+	jmp .loop
+	done:
+	hlt
+	
 fileName:		db "STAGE2     "
+fileNotFound:	db "Loader not found!", 0
 notSupported:	db "Your system is not supported!", 0
-unexpectedE:	db "Unexpected error occurred...", 0
 
 AddressPacket:
 .size			db 16
