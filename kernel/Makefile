@@ -16,6 +16,7 @@ all: $(KERNEL)
 
 $(KERNEL): kernel.o monitor.o io.o link.ld
 	$(LD) $(LDFLAGS) $^ -o $@
+	-rm $(OBJS)
 
 kernel.o: main.c
 	$(CC) -c $(CFLAGS) $< -o $@
