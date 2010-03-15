@@ -12,7 +12,7 @@
 */
 
 #include <bootinfo.h>
-#include <monitor.h>
+#include "monitor.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {

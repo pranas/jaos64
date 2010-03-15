@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include <idt.h>
+#include "idt.h"
 
 void load_idt(struct idt_ptr_struct* idt_ptr)
 {

@@ -1,7 +1,3 @@
-BOOT = boot
-BIN = bin
-ASM = nasm -f bin
-
 all:
 	$(MAKE) -C boot/
 	$(MAKE) -C kernel/

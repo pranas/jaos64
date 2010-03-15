@@ -1,11 +1,11 @@
 BIN = ../bin
 VPATH = .
-INCLUDE_PATH = -I../include -I.
-LIBRARY_PATH = -L../lib
+INCLUDE_PATH = ../include
+LIBRARY_PATH = ../lib
 CC = gcc
 LD = ld
 CFLAGS = -ffreestanding -mcmodel=large -nostdlib -m64 \
-		 $(INCLUDE_PATH) $(LIBRARY_PATH)
+		 -I $(INCLUDE_PATH) -L $(LIBRARY_PATH)
 LDFLAGS = -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld
 
 KERNELNAME = kernel
@@ -25,7 +25,6 @@ monitor.o: monitor.c
 
 io.o: io.c
 	$(CC) -c $(CFLAGS) $< -o $@
-
 
 clean:
 	-rm $(KERNEL) $(OBJS)
