@@ -11,8 +11,8 @@
 ;	http://www.andremiller.net/content/mounting-hard-disk-image-including-partitions-using-linux
 
 %define stage2 0x5000			; where to load and execute stage2
-%define FAT_Cluster_Mask = 0x0fffffff
-%define FAT_EOF = 0x0ffffff8
+%define FAT_Cluster_Mask 0x0fffffff
+%define FAT_EOF 0x0ffffff8
 
 bits 16
 org 0x7c00
@@ -22,9 +22,6 @@ org 0x7c00
 ; We will depend on that
 ;
 ; TODO:
-;	Implement CHS (it's better for compatibility, you could also
-;	use the same code for floppy loaders and floppy-emulated USB thumb drives)
-;
 ;	check for bootable partition (for now we're working only on partition 1)
 
 ; Setup stack
@@ -68,7 +65,7 @@ supported:
 	push eax
 	
 ; read cluster to 0x9000
-	mov WORD [AddressPacket.buffer], 0x9000
+	mov WORD [AddressPacket.buffer], bp	; = 0x9000
 
 ; cluster_begin_lba = PartitionTable.lba + FAT32.reserved_sectors + 
 ;					+ (FAT32.number_of_fats * FAT32.sectors_per_fat2);
@@ -103,7 +100,7 @@ supported:
 searchFile:
 	mov ax, 0x9000-32
 	mov bx, [bytes_per_cluster]
-	add bx, 0x9000
+	add bx, bp ;0x9000
 
 nextEntry:
 	add ax, 32
@@ -179,8 +176,8 @@ getNextCluster:
 
 	; check if we're already at EOF
 	mov eax, [current_cluster]
-	and eax, 0x0fffffff			; cluster mask
-	cmp eax, 0x0ffffff8
+	and eax, FAT_Cluster_Mask	; cluster mask
+	cmp eax, FAT_EOF
 	jge .eof 					; greater or equal
 	
 	; do the math to find out wich FAT sector to read
@@ -197,8 +194,7 @@ getNextCluster:
 	
 	add eax, [fat_begin_lba]
 	mov [AddressPacket.lba], eax
-	mov eax, 1
-	mov [AddressPacket.sectors], ax
+	mov WORD [AddressPacket.sectors], 0x0001
 	mov si, AddressPacket
 	call readDisk
 
@@ -213,8 +209,8 @@ getNextCluster:
 	
 	mov eax, [esi]				; next cluster
 	mov [current_cluster], eax
-	and eax, 0x0fffffff
-	cmp eax, 0x0ffffff8
+	and eax, FAT_Cluster_Mask
+	cmp eax, FAT_EOF
 	jge .eof 					; greater or equal
 	
 	call clusterLBA
@@ -289,7 +285,6 @@ print:
 fileName:		db "STAGE2     "
 fileNotFound:	db "Loader not found!", 0
 notSupported:	db "Your system is not supported!", 0
-;unexpectedE:	db "Unexpected error occurred...", 0
 
 AddressPacket:
 .size			db 16
