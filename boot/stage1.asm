@@ -10,12 +10,10 @@
 ;	http://www.ugrad.physics.mcgill.ca/wiki/index.php/Preparing_a_Debian_disk_image_for_Bochs
 ;	http://www.andremiller.net/content/mounting-hard-disk-image-including-partitions-using-linux
 
-%define stage2 0x5000			; where to load and execute stage2
-%define FAT_Cluster_Mask 0x0fffffff
-%define FAT_EOF 0x0ffffff8
+%include "config.asm"
 
 bits 16
-org 0x7c00
+org stage1
 
 ; I'm tired of all that backward-compatibility issues made by stupid engineers
 ; BIOSes since mid-90's have extensions to use LBA addressing
