@@ -13,7 +13,7 @@ org stage2
 	sti
 
 ; print warm welcome :)
-	mov si, preparing
+	mov si, loading
 	call Print
 
 ;
@@ -183,7 +183,10 @@ Stage4:
 	hlt
 
 
-preparing db "Preparing to load kernel...", 13, 10, 0
-kernelLoading db "Loading kernel...", 13, 10, 0
 
-;times (2*512) - ($-$$) db 0 ; pad to 1024 bytes
+loading db "Loading kernel...", 13, 10, 0
+preparing db "Preparing to launch kernel...", 13, 10, 0
+
+absolute stage1+512
+
+%include "fat32_volumeid.asm"
