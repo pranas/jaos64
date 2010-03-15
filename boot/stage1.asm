@@ -298,24 +298,22 @@ AddressPacket:
 
 times 446 - ($-$$) db 0
 
-; Everything from here actually won't be used
-; it's just to have labels for easier referencing
+; Everything from here is actually
+; just labels for easier referencing
+
+absolute stage1+446
 
 PartitionTable:
-.boot_flag		db 0x80 ;means active, TODO: check for bootable partition
-.begin_chs		db 0xff
-				db 0xff
-				db 0xff
-.type			db 0xff
-.end_chs 		db 0xff
-				db 0xff
-				db 0xff
-.lba			dd 0xffffffff
-.sectors 		dd 0xffffffff
-.part2			times 16 db 0xff
-.part3			times 16 db 0xff
-.part4			times 16 db 0xff
-.sig			dw 0xAA55
+.boot_flag		resb 1; 0x80 means active, TODO: check for bootable partition
+.begin_chs		resb 3
+.type			resb 1
+.end_chs 		resb 3
+.lba			resd 1
+.sectors 		resd 1
+.part2			resb 16
+.part3			resb 16
+.part4			resb 16
+;.sig			dw 0xAA55
 
 ; VolumeID sector will be loaded at 0x7e00 (stage1 + 512)
 
