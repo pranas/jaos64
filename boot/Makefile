@@ -1,21 +1,13 @@
 BIN = ../bin
 ASM = nasm -f bin
 
-#floppy.img: stage1 stage2 pad mbr
-#	cat $(BIN)/stage1 $(BIN)/stage2 $(BIN)/pad > $(BIN)/floppy.img
+all: stage1 stage2
 
-#stage1: stage1.asm
-#	$(ASM) $< -o $(BIN)/$@
-   
-#stage2: stage2.asm
-#	$(ASM) $< -o $(BIN)/$@
-
-mbr: mbr.asm
+stage1: stage1.asm
 	$(ASM) $< -o $(BIN)/$@
-	./install_mbr.sh
-
-#pad: stage1 stage2
-#	./pad.sh
+   
+stage2: stage2.asm
+	$(ASM) $< -o $(BIN)/$@
 
 clean:
-	rm $(BIN)/stage1 $(BIN)/stage2 $(BIN)/pad $(BIN)/floppy.img $(BIN)/mbr
+	rm $(BIN)/stage1 $(BIN)/stage2

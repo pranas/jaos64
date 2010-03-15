@@ -6,9 +6,10 @@ LD = ld -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld -o
 
 kernel: kernel.o
 	$(LD) $(BIN)/kernel $(BIN)/kernel.o
+	rm $(BIN)/kernel.o
 
 kernel.o:
 	$(GCC) $(BIN)/kernel.o main.c
 
 clean:
-	rm $(BIN)/kernel.o $(BIN)/kernel
+	rm $(BIN)/kernel

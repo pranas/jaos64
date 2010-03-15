@@ -164,6 +164,7 @@ notFound:
 	;
 	; TODO:
 	;	print error
+	jmp $
 	
 ;
 ; Procedure to load next cluster
