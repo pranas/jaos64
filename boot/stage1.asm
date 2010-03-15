@@ -21,15 +21,13 @@ org 0x7c00
 ;	Implement CHS (it's better for compatibility, you could also
 ;	use the same code for floppy loaders and floppy-emulated USB thumb drives)
 ;
-;	check BIOS for extension and print error if it's not supported
-;
 ;	check for bootable partition (for now we're working only on partition 1)
 
 ; Setup stack
 	mov sp, 0x9000
 	mov bp, sp
 	
-	push dx ; dl should be boot drive (don't know why, maybe it's in specifications)
+	push dx ; dl should be boot drive
 
 ; check if BIOS extension for LBA addressing is supported
 	mov ah, 0x41
@@ -246,7 +244,7 @@ getNextCluster:
 readDisk:
 	pusha
 	mov ah, 0x42			; to read
-	mov dl, 0x80			; it's typically C drive, TODO: implement checking
+	mov dl, [boot_drive]
 	int 0x13
 	popa
 	ret
