@@ -12,7 +12,7 @@ org stage2
 	mov sp, stack-22
 	sti
 
-; print warm welcome :)
+; print loading message
 	mov si, loading
 	call Print
 
@@ -20,13 +20,129 @@ org stage2
 ; Let's look for kernel file and load it
 ;
 
+	%define	boot_drive 			stack-2
+	%define	bytes_per_cluster 	stack-6
+	%define	fat_begin_lba		stack-10
+	%define	cluster_begin_lba	stack-14
+	%define current_cluster		stack-18
+
+	xor eax, eax
+	mov al, [FAT32.sectors_per_cluster]
+	mov [AddressPacket.sectors], ax
 	
+	mov eax, [FAT32.root_cluster]
+	and eax, FAT_Cluster_Mask
+	mov [current_cluster], eax
+	call clusterLBA
+	mov [AddressPacket.lba], eax
+	mov WORD [AddressPacket.buffer], 0x0000
+	mov si, AddressPacket
+	call readDisk
+	jc $
+	
+searchFile:
+	xor bx, bx
+	mov ax, 0x0000-32
+	mov bx, [bytes_per_cluster]
+	add ebx, 0
+	mov dx, 0x1000
+	mov ds, dx
+nextEntry:
+	add ax, 32
+	cmp ax, bx		; bx = end of cluster in memory
+	je notFound
+
+
+
+	mov di, fileName
+	mov si, ax
+	mov cx, 11
+	; compare names
+	repe cmpsb
+	; if not the same, try next entry
+	jnz nextEntry
+
+	; file found
+
+	mov ax, [si+9]			; si is already +11 in entry
+	push ax					; push low word
+	mov ax, [si+15]			
+	push ax					; push high word
+	pop eax 				; eax = 1st cluster of file
+	jmp Found
+
+notFound:
+	; call a procedure to get next cluster
+	call getNextCluster
+	; if returned something
+	jnc searchFile
+
+	; File not found!
+	mov si, kernelNotFound
+	call Print
+	hlt
+	
+;
+;
+;
+
+	mov [current_cluster], eax
+	call clusterLBA
+
+	mov WORD [AddressPacket.buffer], 0x0000
+	mov [AddressPacket.lba], eax
+	mov ax, 0x1000
+	mov ds, ax
+	mov si, AddressPacket
+	call readDisk
+	
+; load more if there is
+
+oneMoreCluster:	
+	xor ebx, ebx
+	xor eax, eax
+	mov ax, [AddressPacket.buffer]
+	mov bx, [bytes_per_cluster]
+	add eax, ebx
+	jno .good2go
+	mov [AddressPacket.buffer+2], bx
+	add bx, 0x1000
+	mov [AddressPacket.buffer+2], bx
+	.good2go:
+	mov [AddressPacket.buffer], eax
+
+	call getNextCluster
+	jnc oneMoreCluster		; not EOF
+
+	; we loaded our file completely
+	
+	jmp Loaded
+
+
+;
+; clusterLBA, readDisk
+;
+
+	%include "diskio.asm"
+
+	AddressPacket:
+	.size			db 16
+					db 0 			; always zero
+	.sectors		dw 0x0001
+	.buffer			dw 0x0000
+					dw 0x1000
+	.lba			dd 0
+	.lba48			dd 0 			; used by 48 bit LBAs
+
+Loaded:
+
+	mov si, preparing
+	call Print
 
 ;
 ; While we're still in Real mode we should collect
 ; some information for our kernel
 ; 
-
 
 ; Get Memory Map
 	mov ax, 0x600
@@ -40,23 +156,23 @@ org stage2
 ; for our kernel
 ;
 	
-; A20
+; Enable A20
 	pusha
 	mov ax, 0x2401
 	int 0x15
 	popa
 	
-; setup global descriptor table
+; Setup global descriptor table
 
 	call loadGDT
-
-; try to enter protected mode
+	
+; Try to enter protected mode
 	cli ; interrupts are deadly to us from now on
 	mov eax, cr0
 	or  eax, 1
 	mov cr0, eax
 	
-; jump to code descriptor because CS is wrong now
+; Jump to code descriptor because CS is wrong now
 	jmp 0x08:Stage3 ; 0x8 is the code descriptor offset
 	
 	%include "print.asm"
@@ -172,7 +288,7 @@ Stage4:
 	mov gs, ax
 	mov rsp, 0x9000         ; stack starts at 36kb
 	
-	mov rbx, qword 0x5400   ; 0x5000 + stage2 offset, start of kernel ELF
+	mov rbx, qword kernel   ; 0x5000 + stage2 offset, start of kernel ELF
 	call loadelf
 
 	mov r12, rbx
@@ -183,9 +299,10 @@ Stage4:
 	hlt
 
 
-
-loading db "Loading kernel...", 13, 10, 0
-preparing db "Preparing to launch kernel...", 13, 10, 0
+fileName			db "KERNEL     "
+loading 			db "Loading kernel...", 13, 10, 0
+preparing 			db "Preparing to launch kernel...", 13, 10, 0
+kernelNotFound		db "Can't find kernel!", 13, 10, 0
 
 absolute stage1+512
 
