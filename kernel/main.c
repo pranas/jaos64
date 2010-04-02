@@ -13,11 +13,17 @@
 
 #include <bootinfo.h>
 #include "monitor.h"
+#include "gdt.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
 	clear_screen();
 	puts("Hello world!\n");
+
+	//reload gdt's
+	gdt_install();
+	puts("GDT flushed :)\n");
+
 	// Hardware abstraction layer?
 	
 	// init interrupt handlers
