@@ -15,11 +15,6 @@ SECTIONS
         *(.data)
    }
 
-   .ehframe :
-   {
-       *(.ehframe)
-   }
-
    .bss :   {
        *(.bss)
    }

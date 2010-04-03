@@ -23,7 +23,7 @@ int8_t cursor_x = 0;
 int8_t cursor_y = 0;
 
 /* video memory mapped here */
-int16_t* video_memory = 0xB8000;
+int16_t* video_memory = (int16_t*) 0xB8000;
 
 // update cursor position
 static void move_cursor()

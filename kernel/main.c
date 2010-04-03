@@ -14,6 +14,7 @@
 #include <bootinfo.h>
 #include "monitor.h"
 #include "gdt.h"
+#include "idt.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -22,12 +23,16 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	//reload gdt's
 	gdt_install();
-	puts("GDT flushed :)\n");
+	puts("GDT initialised.\n");
 
 	// Hardware abstraction layer?
 	
 	// init interrupt handlers
 	
+	idt_install();
+	puts("IDT initialised.\n");
+
+	asm volatile ("int $0x01");
 	// parse bootinfo
 	
 		// get video mem address
