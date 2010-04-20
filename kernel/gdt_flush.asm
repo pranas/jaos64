@@ -4,6 +4,7 @@ global gdt_flush
 extern gdt_ptr
 
 gdt_flush:
+	xchg bx, bx
 	lgdt [gdt_ptr]
 	mov eax, 0x10
 	mov ds, eax
