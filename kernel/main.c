@@ -22,26 +22,13 @@ void kernel_entry (multiboot_info* bootinfo)
 	clear_screen();
 	puts("Hello world!\n");
 
-	gdt_install();
+	//gdt_install();
 	puts("GDT initialised.\n");
 
 	idt_install();
 	puts("IDT initialised.\n");
-
-    //asm volatile ("int $0x01");
-	
-    memman_init(bootinfo);
-
-	asm volatile ("xchg %bx, %bx");
-	sti();
-
     // parse bootinfo
-
-    // get video mem address
-
-    // init output
-
-    // get mem size and address of BIOS memory map
-
-    // initialize mem manager
+    memman_init(bootinfo);
+	asm ("xchg %bx, %bx");
+	asm ("int $0x3");
 }

@@ -11,7 +11,4 @@ gdt_flush:
 	mov es, eax
 	mov fs, eax
 	mov gs, eax
-	mov ss, eax
-	jmp flush
-flush:
 	ret

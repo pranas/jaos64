@@ -48,5 +48,5 @@ void memman_init(multiboot_info* bootinfo)
     puts("\n");
     puts("Total memory found: ");
     putint(total);
-    putchar("B");    
+    puts("B\n");    
 }

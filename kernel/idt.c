@@ -29,7 +29,6 @@ void idt_install()
 
 	memset(&idt, 0, sizeof(idt_descriptor) * IDT_ENTRIES);
 
-	asm volatile ("xchg %bx, %bx");
 	idt_set_gate(0, (int64_t) isr0, 0x08, 0x8E, 0);
 	idt_set_gate(1, (int64_t) isr1, 0x08, 0x8E, 0);
 	idt_set_gate(2, (int64_t) isr2, 0x08, 0x8E, 0);
@@ -64,9 +63,4 @@ void idt_install()
 	idt_set_gate(31, (int64_t)isr31, 0x08, 0x8E, 0);
 
 	idt_flush(&idt_ptr);
-}
-
-void sti()
-{
-	asm volatile ("sti");
 }

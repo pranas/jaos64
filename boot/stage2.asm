@@ -192,7 +192,7 @@ protectedMode:
     .code equ $ - GDT64
     dq 0x0020980000000000   
     .data equ $ - GDT64
-    dq 0x0000900000000000   
+    dq 0x0000920000000000   
 	.pointer:
 	dw $ - GDT64 - 1 			; 16-bit Size (Limit)
 	dq GDT64 					; 64-bit Base Address
