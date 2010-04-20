@@ -1,3 +1,5 @@
+%define buffer 0x10000
+
 ;
 ; Procedure to load complete file from fat32
 ;   IN:
@@ -5,34 +7,38 @@
 ;       rdi - where to load
 ;
 loadFile:
+    push rax
+    push rdx
+    
+    push rax
     call cluster2lba
     mov dl, [FAT32.sectors_per_cluster]
-    mov rdi, 0x100000
+    ;mov rdi, 0x100000
     call read
 
 ; load more if there is
 
 oneMoreCluster:   
-    ;add di, [bytes_per_cluster] 
-    mov eax, [current_cluster]
+    pop rax
     call getNextCluster
     jc loaded           ; if eof
-    mov [current_cluster], eax
-    call cluster2lba    ; destroys dx, wtf?
+    push rax
+    call cluster2lba
     call read
     jmp oneMoreCluster
- 
 
 loaded:
     ; we loaded our file completely
-    jmp parse_elf
+    pop rdx
+    pop rax
+    clc
     ret
 
 
 ;
-; Procedure to travel through FAT32 root directoro and look for file specified
+; Procedure to travel through FAT32 root directory and look for specified file
 ;   IN:
-;       rdi - filename to look for
+;       fileName - address to filename to look for
 ;   OUT:
 ;       rax - first cluster of file
 ;       
@@ -41,31 +47,23 @@ loaded:
 searchFile:
     xor rax, rax
     mov eax, [FAT32.root_cluster]
-    mov [current_cluster], eax
+readCluster:
+    push rax ; save current cluster
     call cluster2lba
-    ; rax lba
-    ; dl  sector count
-    ; rdi destination
+
     mov dl, [FAT32.sectors_per_cluster]
-    mov rdi, 0x10000
+    mov rdi, buffer
     call read
     
-    xchg bx, bx
-    
-; Root dir from 0x10000
-; lets travel through root directory and look for our file to load
-searchFile:
-	mov rax, 0x10000-32
+searchCluster:
+	mov rax, buffer-32
 	movzx rbx, WORD [bytes_per_cluster]
-	add rbx, 0x10000
+	add rbx, buffer
 
 nextEntry:
 	add rax, 32
 	cmp rax, rbx		; bx = end of cluster in memory
-	;je notFound
-	jne testingJump
-	jmp notFound
-	testingJump:
+	je notFound
 
 	mov rdi, fileName
 	mov rsi, rax
@@ -88,27 +86,25 @@ nextEntry:
 	; Size 			dd
     ; si is already +11 in entry
     movzx rax, WORD [rsi+9]
+    ; TODO: fix this weird stuff with multiplication
     mov rbx, 0x100
     mul rbx
     mul rbx
     mov ax, [rsi+15]
     
-    mov [current_cluster], eax
+    pop rdx ; islyginam stacka
+    jmp finish
+
+nextRoot:
+    pop rax ; current cluster
+    ; call a procedure to get next cluster
+    call getNextCluster
+    jnc readCluster ; if not end of root dir
 
 notFound:
-    ; call a procedure to get next cluster
-    mov eax, [current_cluster]
-    call getNextCluster
-    ; if returned something
-    jnc searchFile
-
-    ; File not found!
-
-    xchg bx, bx
-    hlt
-    
+    stc
+finish:
     ret
-
 
 ;
 ; Procedure to find next cluster

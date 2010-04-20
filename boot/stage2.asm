@@ -165,13 +165,14 @@ protectedMode:
 
 bits 64
 
-%include "loadelf.asm"
-
 ;%define	boot_drive 			bp-2
 %define	bytes_per_cluster 	0x9000-6
 %define	fat_begin_lba		0x9000-10
 %define	cluster_begin_lba	0x9000-14
 %define current_cluster		0x9000-18
+
+%include "diskio64.asm"
+%include "loadelf.asm"
 
 longMode: 
     ;cli
@@ -184,22 +185,29 @@ longMode:
 	mov rsp, 0x90000         ; stack starts at 36kb
 	xchg bx, bx
 ;
-; Load kernel file
+; Let's look for kernel file in disk
 ;
+    xchg bx, bx
     mov rdi, fileName
     call searchFile
-    jnc fileFound
+    jnc kernelFound
+    
+    ;
+    ; Kernel not found!
+    ;
+    
     hlt
-fileFound:
-
-    mov rdi, 0x100000
+;
+; Load kernel to memory
+;
+kernelFound:
+    mov rdi, kernel
     call loadFile
         
 ;
 ; Parse ELF file
 ;
-parse_elf:
-	mov rbx, 0x100000 ;qword kernel   ; 0x5000 + stage2 offset, start of kernel ELF
+	mov rbx, kernel ;qword kernel   ; 0x5000 + stage2 offset, start of kernel ELF
 	call loadelf
 
 	mov r12, rbx
