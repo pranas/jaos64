@@ -2,7 +2,7 @@ OUTPUT_FORMAT(elf64-x86-64)
 ENTRY(kernel_entry)
 SECTIONS
 {
-    . = 0xc0000000;
+    . = 0x00000000c0000000;
 
     .text :
     {
