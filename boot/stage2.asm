@@ -22,12 +22,15 @@ org stage2
 ; 
 
 ; Get Memory Map
-	mov ax, 0x600
-	mov es, ax
-	mov di, 0
-	call BiosGetMemoryMap
-	; BP = count of entries in map
-
+    mov ax, 0x0
+    mov es, ax
+    mov di, 512
+    mov [bootinfo.mmap_addr], di
+    pushad
+    call BiosGetMemoryMap
+    mov [bootinfo.mmap_length], ebp ; count of entries in map
+	popad
+	
     mov si, loading
     call Print
 	
@@ -80,7 +83,7 @@ protectedMode:
 	mov ds, ax
 	mov ss, ax
 	mov es, ax
-	mov esp, 0x90000 ; why 0x90000 ? I dont know :D
+	mov esp, stack-22 ;0x90000 ; why 0x90000 ? I dont know :D
 	
 ; Prepare 64-bit stuff
 
@@ -213,7 +216,7 @@ longMode:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
-	mov rsp, 0x90000         ; stack starts at 36kb
+	mov rsp, stack-22; 0x90000         ; stack starts at 36kb
 ;
 ; Let's look for kernel file in disk
 ;
@@ -238,11 +241,15 @@ kernelFound:
 ;
 	mov rbx, kernel ;qword kernel   ; 0x5000 + stage2 offset, start of kernel ELF
 	call loadelf
+	
+;
+; Call kernel
+;
 
+	xchg bx, bx                 ; debugger trap
 	mov r12, rbx
-	xchg bx, bx             ; debugger trap
-	mov rdi, 0x0004BEEF     ; integer/pointer for first arg of kernel
-	call r12                ; call kernel
+	mov rdi, bootinfo           ; integer/pointer for first arg of kernel
+	call r12                    ; call kernel
 
 	hlt
 
@@ -250,6 +257,31 @@ kernelFound:
 fileName			db "KERNEL     "
 loading 			db "Loading kernel...", 13, 10, 0
 preparing 			db "Preparing to load kernel...", 13, 10, 0
+
+bootinfo:
+.flags				dd	0	; required
+.memoryLo			dd	0	; memory size. Present if flags[0] is set
+.memoryHi			dd	0
+.bootDevice			dd	0	; boot device. Present if flags[1] is set
+.cmdLine			dd	0	; kernel command line. Present if flags[2] is set
+.mods_count			dd	0	; number of modules loaded along with kernel. present if flags[3] is set
+.mods_addr			dd	0
+.syms0				dd	0	; symbol table info. present if flags[4] or flags[5] is set
+.syms1				dd	0
+.syms2				dd	0
+.mmap_length		dd	0	; memory map. Present if flags[6] is set
+.mmap_addr			dd	0
+.drives_length		dd	0	; phys address of first drive structure. present if flags[7] is set
+.drives_addr		dd	0
+.config_table		dd	0	; ROM configuation table. present if flags[8] is set
+.bootloader_name 	dd	0	; Bootloader name. present if flags[9] is set
+.apm_table			dd	0	; advanced power management (apm) table. present if flags[10] is set
+.vbe_control_info 	dd	0	; video bios extension (vbe). present if flags[11] is set
+.vbe_mode_info		dd	0
+.vbe_mode			dw	0
+.vbe_interface_seg 	dw	0
+.vbe_interface_off 	dw	0
+.vbe_interface_len 	dw	0
 
 absolute stage1+512
 
