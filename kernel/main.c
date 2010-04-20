@@ -22,20 +22,18 @@ void kernel_entry (multiboot_info* bootinfo)
 	clear_screen();
 	puts("Hello world!\n");
 
-	//reload gdt's
-	//gdt_install();
+	gdt_install();
 	puts("GDT initialised.\n");
 
-	// Hardware abstraction layer?
-	
-	// init interrupt handlers
-	
-	//idt_install();
+	idt_install();
 	puts("IDT initialised.\n");
 
     //asm volatile ("int $0x01");
 	
     memman_init(bootinfo);
+
+	sti();
+
     // parse bootinfo
 
     // get video mem address

@@ -7,7 +7,9 @@ idt_descriptor idt[IDT_ENTRIES];
 
 void idt_flush(idt_ptr_struct* idt_p)
 {
-	asm volatile ("lidt %0" :: "m" (idt_p));
+	asm volatile ("lidt %0"
+				  : "=m" (*idt_p)
+				  : "m" (*idt_p));
 }
 
 void idt_set_gate(int num, int64_t base, int16_t selector, int8_t type, int8_t ist)
@@ -64,4 +66,9 @@ void idt_install()
 	idt_set_gate(0, (int64_t)isr31, 0x08, 0x8E, 0);
 
 	idt_flush(&idt_ptr);
+}
+
+void sti()
+{
+	asm volatile ("sti");
 }
