@@ -62,5 +62,6 @@ void idt_install()
 	idt_set_gate(0, (int64_t)isr29, 0x08, 0x8E, 0);
 	idt_set_gate(0, (int64_t)isr30, 0x08, 0x8E, 0);
 	idt_set_gate(0, (int64_t)isr31, 0x08, 0x8E, 0);
+
 	idt_flush(&idt_ptr);
 }
