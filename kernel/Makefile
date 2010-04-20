@@ -16,7 +16,7 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-$(KERNEL): kernel.o monitor.o io.o link.ld
+$(KERNEL): kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o interrupt.o link.ld
 	$(LD) $^ $(LDFLAGS) -o $@
 	strip $@
 	-rm $(OBJS)
