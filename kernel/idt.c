@@ -2,9 +2,6 @@
 
 #include "idt.h"
 
-idt_ptr_struct idt_ptr;
-idt_descriptor idt[IDT_ENTRIES];
-
 void idt_flush(idt_ptr_struct* idt_p)
 {
 	asm volatile ("lidt %0"
@@ -32,6 +29,7 @@ void idt_install()
 
 	memset(&idt, 0, sizeof(idt_descriptor) * IDT_ENTRIES);
 
+	asm volatile ("xchg %bx, %bx");
 	idt_set_gate(0, (int64_t) isr0, 0x08, 0x8E, 0);
 	idt_set_gate(1, (int64_t) isr1, 0x08, 0x8E, 0);
 	idt_set_gate(2, (int64_t) isr2, 0x08, 0x8E, 0);

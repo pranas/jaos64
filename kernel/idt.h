@@ -13,7 +13,7 @@ struct idt_descriptor
 	 int8_t type_attr; // type and attributes, see below
 	int16_t base_middle;  // offset bits 16..31
 	int32_t base_high;  // offset bits 32..63
-	int64_t zero;      // reserved, set to 0
+	int32_t zero;      // reserved, set to 0
 } __attribute__((packed));
 typedef struct idt_descriptor idt_descriptor;
 
@@ -23,6 +23,9 @@ struct idt_ptr_struct
 	int64_t base;
 } __attribute__((packed));
 typedef struct idt_ptr_struct idt_ptr_struct;
+
+idt_ptr_struct idt_ptr;
+idt_descriptor idt[IDT_ENTRIES];
 
 void idt_install();
 void idt_flush(idt_ptr_struct* idt_ptr);
