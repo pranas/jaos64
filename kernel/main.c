@@ -15,6 +15,7 @@
 #include "monitor.h"
 #include "gdt.h"
 #include "idt.h"
+#include "memman.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -32,14 +33,16 @@ void kernel_entry (multiboot_info* bootinfo)
 	idt_install();
 	puts("IDT initialised.\n");
 
-//asm volatile ("int $0x01");
-	// parse bootinfo
+    //asm volatile ("int $0x01");
 	
-		// get video mem address
-		
-			// init output
-	
-		// get mem size and address of BIOS memory map
-	
-			// initialize mem manager
+    memman_init(bootinfo);
+    // parse bootinfo
+
+    // get video mem address
+
+    // init output
+
+    // get mem size and address of BIOS memory map
+
+    // initialize mem manager
 }
