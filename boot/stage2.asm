@@ -214,11 +214,9 @@ longMode:
 	mov fs, ax
 	mov gs, ax
 	mov rsp, 0x90000         ; stack starts at 36kb
-	xchg bx, bx
 ;
 ; Let's look for kernel file in disk
 ;
-    xchg bx, bx
     mov rdi, fileName
     call searchFile
     jnc kernelFound
