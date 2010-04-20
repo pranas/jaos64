@@ -28,9 +28,6 @@ else
 #-s sectors-per-cluster
 	@mkdir tmp
 	@mount -t vfat $(LODEV) tmp/
-#temporary cat kernel to stage2
-	-mv stage2 stage2_
-	-cat stage2_ kernel > stage2
 	-cp $(CONTENT) tmp/
 	@umount $(LODEV)
 	@rm -r -f tmp/
@@ -43,4 +40,4 @@ mbr: stage1
 	dd if=stage1 of=$(IMAGE) bs=446 count=1 conv=notrunc
 
 clean:
-	@rm $(IMAGE) stage2_
+	@rm $(IMAGE)
