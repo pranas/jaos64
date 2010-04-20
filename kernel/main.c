@@ -32,6 +32,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	
     memman_init(bootinfo);
 
+	asm volatile ("xchg %bx, %bx");
 	sti();
 
     // parse bootinfo
