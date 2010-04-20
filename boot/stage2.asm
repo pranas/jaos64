@@ -97,14 +97,33 @@ protectedMode:
 	mov cx, 0x4000
 	rep stosb
 
-; Lets make PML4T[0] point to the PDPT and so on
-
+; We will use paging to set-up higher half kernel addressing
+;
+; We will put our kernel at 3GB in our virtual address space
+;
+; 0x00000000 c0000000
+;
+; Bits 63-48 are sign extension as required for canonical-address forms
+; Bits 47-39 index into PML4T -> in this case it's PML4T[0]
+; Bits 38-30 index into PDPT -> ... PDPT[3]
+; Bits 29-21 ... PDT
+; Bits 20-12 ... PT
+; Bits 11-0 offset in page
+;
 	mov di, 0x1000
 	mov WORD [di], 0x2003
+	
 	mov di, 0x2000
 	mov WORD [di], 0x3003
+	
+	add di, 0x18            ;3gb
+	mov WORD [di], 0x5003
+	
 	mov di, 0x3000
 	mov WORD [di], 0x4003
+	
+	mov di, 0x5000
+	mov WORD [di], 0x6003
 
 ; 3 is used to set first two bits
 ; (it's Present and RW flags)
@@ -120,6 +139,18 @@ protectedMode:
 	add ebx, 0x1000
 	add di, 8					; Move to next page entry
 	loop .setPageEntry
+	
+; This will map our 3GB mem to second MB on physical memory (0xc0000000 -> 0x1FFFFF)
+
+    mov di, 0x6000				; Our PT starts there
+    mov ebx, 0x00200003			; 3 again to set first two bits
+    mov cx, 512					; Loop
+
+    .setPageEntry2:
+    mov DWORD [di], ebx
+    add ebx, 0x1000
+    add di, 8					; Move to next page entry
+    loop .setPageEntry2
 
 ; Now we should enable PAE-paging by setting the PAE-bit in the CR4
 
@@ -175,7 +206,7 @@ bits 64
 %include "loadelf.asm"
 
 longMode: 
-    ;cli
+
 ; Set segment registers to the data descriptor.
 	mov ax, GDT64.data			
 	mov ds, ax
