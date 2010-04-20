@@ -28,7 +28,6 @@ else
 #-s sectors-per-cluster
 	@mkdir tmp
 	@mount -t vfat $(LODEV) tmp/
-#temporary cat kernel to stage2
 	-cp $(CONTENT) tmp/
 	@umount $(LODEV)
 	@rm -r -f tmp/
