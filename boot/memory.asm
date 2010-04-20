@@ -1,13 +1,3 @@
-struc MemoryMapEntry
-	.baseAddress	resq	1	; base address of address range
-	.length			resq	1	; length of address range in bytes
-	.type			resd	1	; type of address range
-	.acpi_null		resd	1	; reserved
-	; TODO:
-	; 	Make sure to set that last dword to 1 before each call,
-	; 	to make your map compatible with ACPI
-endstruc
-
 ;---------------------------------------------
 ;	Get memory map from bios
 ;	/in es:di->destination buffer for entries
@@ -15,41 +5,47 @@ endstruc
 ;---------------------------------------------
 
 BiosGetMemoryMap:
-	pushad
-	xor	ebx, ebx
-	xor	bp, bp					; number of entries stored here
-	mov	edx, "PAMS"				; 'SMAP'
-	mov	eax, 0xe820
-	mov	ecx, 24					; memory map entry struct is 24 bytes
-	int	0x15					; get first entry
-	jc	.error	
-	cmp	eax, "PAMS"				; bios returns SMAP in eax
-	jne	.error
-	test ebx, ebx				; if ebx=0 then list is one entry long; bail out
-	je	.error
-	jmp	.start
-.next_entry:
-	mov	edx, "PAMS"				; some bios's trash this register
-	mov	ecx, 24					; entry is 24 bytes
-	mov	eax, 0xe820
-	int	0x15					; get next entry
-.start:
-	jcxz	.skip_entry			; if actual returned bytes is 0, skip entry
+do_e820:
+	xor ebx, ebx		; ebx must be 0 to start
+	xor bp, bp		; keep an entry count in bp
+	mov edx, 0x0534D4150	; Place "SMAP" into edx
+	mov eax, 0xe820
+	mov [es:di + 20], dword 1	; force a valid ACPI 3.X entry
+	mov ecx, 24		; ask for 24 bytes
+	int 0x15
+	jc short .failed	; carry set on first call means "unsupported function"
+	mov edx, 0x0534D4150	; Some BIOSes apparently trash this register?
+	cmp eax, edx		; on success, eax must have been reset to "SMAP"
+	jne short .failed
+	test ebx, ebx		; ebx = 0 implies list is only 1 entry long (worthless)
+	je short .failed
+	jmp short .jmpin
+.e820lp:
+	mov eax, 0xe820		; eax, ecx get trashed on every int 0x15 call
+	mov [es:di + 20], dword 1	; force a valid ACPI 3.X entry
+	mov ecx, 24		; ask for 24 bytes again
+	int 0x15
+	jc short .e820f		; carry set means "end of list already reached"
+	mov edx, 0x0534D4150	; repair potentially trashed register
+.jmpin:
+	jcxz .skipent		; skip any 0 length entries
+	cmp cl, 20		; got a 24 byte ACPI 3.X response?
+	jbe short .notext
+	test byte [es:di + 20], 1	; if so: is the "ignore this data" bit clear?
+	je short .skipent
 .notext:
-	mov	ecx, [es:di + MemoryMapEntry.length]	; get length (low dword)
-	test ecx, ecx				; if length is 0 skip it
-	jne	short .good_entry
-	mov	ecx, [es:di + MemoryMapEntry.length + 4]; get length (upper dword)
-	jecxz .skip_entry			; if length is 0 skip it
-.good_entry:
-	inc	bp						; increment entry count
-	add	di, 24					; point di to next entry in buffer
-.skip_entry:
-	cmp	ebx, 0					; if ebx return is 0, list is done
-	jne	.next_entry				; get next entry
-	jmp	.done
-.error:
-	stc
-.done:
-	popad
+	mov ecx, [es:di + 8]	; get lower dword of memory region length
+	or ecx, [es:di + 12]	; "or" it with upper dword to test for zero
+	jz .skipent		; if length qword is 0, skip entry
+	inc bp			; got a good entry: ++count, move to next storage spot
+	add di, 24
+.skipent:
+	test ebx, ebx		; if ebx resets to 0, list is complete
+	jne short .e820lp
+.e820f:
+	;mov [mmap_ent], bp	; store the entry count
+	clc			; there is "jc" on end of list to this point, so the carry must be cleared
+	ret
+.failed:
+	stc			; "function unsupported" error exit
 	ret
