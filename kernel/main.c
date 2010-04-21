@@ -22,7 +22,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	clear_screen();
 	puts("Hello world!\n");
 
-	//gdt_install();
+	gdt_install();
 	puts("GDT initialised.\n");
 
 	idt_install();
