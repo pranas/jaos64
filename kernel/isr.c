@@ -3,5 +3,7 @@
 
 void isr_handler(registers_t regs)
 {
-	puts("Handled some interrupt.\n");
+	puts("Handled interrupt ");
+	puthex(regs.int_no);
+	puts(".\n");
 }

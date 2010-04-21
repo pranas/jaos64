@@ -90,4 +90,4 @@ isr_common:
 	pop rax
 	add esp, 16 ; clean up pushed error and int numbers (2 * 8bytes)
 	sti         ; reenable interrupts
-	iret
+	iretq

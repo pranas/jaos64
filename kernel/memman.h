@@ -1,3 +1,6 @@
+#ifndef _MEMMAN_H
+#define _MEMMAN_H
+
 /*
 
 	memman.h
@@ -13,6 +16,9 @@
 
 */
 
+#include <stdint.h>
+#include <bootinfo.h>
+
 #define MEM_BLOCKS_PER_BYTE 8
 #define MEM_BLOCK_SIZE	4096
 #define MEM_BLOCK_ALIGN	MEM_BLOCK_SIZE
@@ -27,24 +33,17 @@ static	uint64_t*	_mem_memory_map= 0;
 	Format of entry in BIOS memory map
 */
 struct memory_region {
-
 	//uint32_t	startLo;
 	//uint32_t	startHi;
-	uint64_t	start
+    uint64_t	start;
 	//uint32_t	sizeLo;
 	//uint32_t	sizeHi;
-	uint64_t	size
+    uint64_t	size;
 	uint32_t	type;
 	uint32_t	acpi3;
-};
+} __attribute__((packed));
+typedef struct memory_region memory_region;
 
-/*
-	Types of memory regions
-*/
-char* strMemoryTypes[] = {
+void memman_init (multiboot_info*);
 
-	{"Available"},			//memory_region.type==0
-	{"Reserved"},			//memory_region.type==1
-	{"ACPI Reclaim"},		//memory_region.type==2
-	{"ACPI NVS Memory"}		//memory_region.type==3
-};
+#endif

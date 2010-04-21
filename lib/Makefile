@@ -1,8 +1,8 @@
-INCLUDE_DIR = ../include
+INCLUDE_PATH = ../include
 
 CC = gcc
 CFLAGS = -ffreestanding -mcmodel=large -nodefaultlibs -nostartfiles -nostdlib -m64 \
-		 -I$(INCLUDE_PATH) 
+        -I$(INCLUDE_PATH) 
 AR = ar
 ARFLAGS = rcsv
 

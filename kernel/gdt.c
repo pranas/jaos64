@@ -24,9 +24,11 @@ void gdt_install()
 	// NULL gate
 	gdt_set_gate(0, 0, 0, 0, 0);
 	//code
-	gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
+	//gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
+	gdt_set_gate(1, 0, 0, 0x98, 0x20);
 	//data
-	gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
+	//gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
+	gdt_set_gate(2, 0, 0, 0x92, 0x00);
 
 	//apply changes
 	gdt_flush();

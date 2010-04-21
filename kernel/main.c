@@ -15,31 +15,20 @@
 #include "monitor.h"
 #include "gdt.h"
 #include "idt.h"
+#include "memman.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
 	clear_screen();
 	puts("Hello world!\n");
 
-	//reload gdt's
 	gdt_install();
 	puts("GDT initialised.\n");
 
-	// Hardware abstraction layer?
-	
-	// init interrupt handlers
-	
 	idt_install();
 	puts("IDT initialised.\n");
-
-	asm volatile ("int $0x01");
-	// parse bootinfo
-	
-		// get video mem address
-		
-			// init output
-	
-		// get mem size and address of BIOS memory map
-	
-			// initialize mem manager
+    // parse bootinfo
+    memman_init(bootinfo);
+	asm ("xchg %bx, %bx");
+	asm ("int $0x3");
 }

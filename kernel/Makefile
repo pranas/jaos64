@@ -4,7 +4,7 @@ INCLUDE_PATH = ../include
 LIBRARY_PATH = ../lib
 CC = gcc
 LD = ld
-CFLAGS = -ffreestanding -mcmodel=large -nostdlib -m64 \
+CFLAGS = -ffreestanding -mno-red-zone -mcmodel=large -nostdlib -m64 \
 		 -I$(INCLUDE_PATH) 
 LDFLAGS = -L$(LIBRARY_PATH) -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld -lcorelib --traditional-format
 
@@ -16,7 +16,7 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-$(KERNEL): kernel.o monitor.o io.o idt.o interrupt.o isr.o gdt.o gdt_flush.o link.ld
+$(KERNEL): kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o interrupt.o link.ld
 	$(LD) $^ $(LDFLAGS) -o $@
 	strip $@
 	-rm $(OBJS)
@@ -37,6 +37,9 @@ isr.o: isr.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 idt.o: idt.c
+	$(CC) -c $(CFLAGS) $< -o $@
+	
+memman.o: memman.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 gdt_flush.o: gdt_flush.asm
