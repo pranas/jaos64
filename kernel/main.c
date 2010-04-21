@@ -15,6 +15,7 @@
 #include "monitor.h"
 #include "gdt.h"
 #include "idt.h"
+#include "msr.h"
 #include "memman.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
@@ -29,6 +30,12 @@ void kernel_entry (multiboot_info* bootinfo)
 	puts("IDT initialised.\n");
     // parse bootinfo
     memman_init(bootinfo);
-	asm ("xchg %bx, %bx");
 	asm ("int $0x3");
+
+	asm ("xchg %bx, %bx");
+
+	int low, high;
+	rdmsr(0x1B, &low, &high);
+	if (low & 0x0800)
+		puts("Local APIC enabled.\n");
 }

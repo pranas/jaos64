@@ -16,12 +16,17 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-$(KERNEL): kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o interrupt.o link.ld
+OBJECTS = kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o msr.o interrupt.o
+
+$(KERNEL): $(OBJECTS) link.ld
 	$(LD) $^ $(LDFLAGS) -o $@
 	strip $@
 	-rm $(OBJS)
 
 kernel.o: main.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+msr.o: msr.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 gdt.o: gdt.c
