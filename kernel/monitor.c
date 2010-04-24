@@ -145,7 +145,7 @@ void itoa(unsigned i, unsigned base, char* buf) {
    buf[opos] = 0;
 }
 
-void itoa_s(int i,unsigned base,char* buf) {
+void itoa_s(int64_t i, unsigned base, char* buf) {
    if (base > 16) return;
    if (i < 0) {
       *buf++ = '-';
@@ -154,16 +154,18 @@ void itoa_s(int i,unsigned base,char* buf) {
    itoa(i,base,buf);
 }
 
-void putint(int i)
+void putint(int64_t i)
 {
 	char str[32]={0};
 	itoa_s (i, 10, str);
 	puts (str);
 }
 
-void puthex(int i)
+void puthex(int64_t i)
 {
     char str[32]={0};
-	itoa_s (i, 16, str);
+    str[0] = '0';
+    str[1] = 'x';
+	itoa_s (i, 16, str+2);
 	puts (str);
 }
