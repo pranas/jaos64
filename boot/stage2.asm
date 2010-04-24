@@ -146,7 +146,7 @@ protectedMode:
 ; This will map our 3GB mem to second MB on physical memory (0xc0000000 -> 0x1FFFFF)
 
     mov di, 0x6000				; Our PT starts there
-    mov ebx, 0x00200003			; 3 again to set first two bits
+    mov ebx, 0x00100003			; 3 again to set first two bits
     mov cx, 512					; Loop
 
     .setPageEntry2:
