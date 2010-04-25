@@ -18,19 +18,19 @@
 #include <ctype.h>
 
 
-inline void mmap_set (uint32_t bit)
+inline void mmap_set (uint64_t bit)
 {
-    _mem_memory_map[bit / 32] |= (1 << (bit % 32));
+    _mem_memory_map[bit / 64] |= (1 << (bit % 64));
 }
 
-inline void mmap_unset (uint32_t bit)
+inline void mmap_unset (uint64_t bit)
 {
-    _mem_memory_map[bit / 32] &= ~ (1 << (bit % 32));
+    _mem_memory_map[bit / 64] &= ~ (1 << (bit % 64));
 }
 
-inline int mmap_test (uint32_t bit)
+inline int mmap_test (uint64_t bit)
 {
-    return _mem_memory_map[bit / 32] & (1 << (bit % 32));
+    return _mem_memory_map[bit / 64] & (1 << (bit % 64));
 }
 
 void memman_init(multiboot_info* bootinfo)
@@ -41,7 +41,8 @@ void memman_init(multiboot_info* bootinfo)
     uint64_t i;
     uint64_t total = 0, limit = 0;
     
-    puts("Here is our memory map:\n");
+    puts("Initialising memory manager...\n");
+    puts("Analyzing memoy map:\n");
     for (i = 0; i < bootinfo->m_mmap_length; i++)
     {
         if (memory_map[i].type == 1)
@@ -66,14 +67,15 @@ void memman_init(multiboot_info* bootinfo)
     puts("\n");
     
     //_mem_memory_size = total;
+    
     _mem_max_blocks = limit / MEM_BLOCK_SIZE;
     _mem_used_blocks = _mem_max_blocks;
     
-    _mem_memory_map = 0x10000;
+    _mem_memory_map = 0x20000;
     
-    for (i = 0; i <= (_mem_max_blocks / MEM_BLOCKS_PER_BYTE)/4; i++)
+    for (i = 0; i <= (_mem_max_blocks / MEM_BLOCKS_PER_BYTE)/8; i++)
     {
-         _mem_memory_map[i] = 0xffffffff; //ffffffff;
+        _mem_memory_map[i] = 0-1; //0xffffffffffffffff;
     }
     
     puts("Memory map put at ");
@@ -89,7 +91,7 @@ void memman_init(multiboot_info* bootinfo)
             mem_init_region(memory_map[i].start, memory_map[i].size);
         }
     }
-    
+        
     // our boot loader mapped 3mb of physical mem
     // 0x -> 0x (2MB)
     // 0x3gb -> 0x1mb (2MB)
@@ -97,9 +99,10 @@ void memman_init(multiboot_info* bootinfo)
     // 3MB = 767 blocks
     for (i = 0; i < 767; i++)
     {
-        if (!mmap_test(i)) _mem_used_blocks++;
-        mmap_set(i);
+        // if (!mmap_test(i)) _mem_used_blocks++; // some mem can already be reserved
+        // mmap_set(i);
     }
+    
     
     puts("Initialised ");
     putint(_mem_max_blocks);

@@ -28,11 +28,11 @@ static	uint64_t	_mem_used_blocks=0;
 static	uint64_t	_mem_max_blocks=0;
 // memory map bit array. Each bit represents a memory block
 // static   uint64_t*   _mem_memory_map= 0;
-static uint32_t*  _mem_memory_map = 0;
+static uint64_t*  _mem_memory_map = 0;
 
-inline void mmap_set (uint32_t bit);
-inline void mmap_unset (uint32_t bit);
-inline int mmap_test (uint32_t bit);
+inline void mmap_set (uint64_t bit);
+inline void mmap_unset (uint64_t bit);
+inline int mmap_test (uint64_t bit);
 
 //extern uint64_t end;
 
