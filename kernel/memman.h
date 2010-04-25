@@ -27,12 +27,20 @@ static	uint64_t	_mem_memory_size=0;
 static	uint64_t	_mem_used_blocks=0;
 static	uint64_t	_mem_max_blocks=0;
 // memory map bit array. Each bit represents a memory block
-static	uint64_t*	_mem_memory_map= 0;
+// static   uint64_t*   _mem_memory_map= 0;
+static uint32_t*  _mem_memory_map = 0;
+
+inline void mmap_set (uint32_t bit);
+inline void mmap_unset (uint32_t bit);
+inline int mmap_test (uint32_t bit);
+
+//extern uint64_t end;
 
 /*
 	Format of entry in BIOS memory map
 */
-struct memory_region {
+struct memory_region
+{
 	//uint32_t	startLo;
 	//uint32_t	startHi;
     uint64_t	start;
@@ -44,6 +52,125 @@ struct memory_region {
 } __attribute__((packed));
 typedef struct memory_region memory_region;
 
-void memman_init (multiboot_info*);
+struct virtual_addr
+{
+    uint64_t physical_offset: 12;
+    uint64_t page_table: 9;
+    uint64_t page_directory: 9;
+    uint64_t directory_pointer: 9;
+    uint64_t pml4: 9;
+    uint64_t sign: 16;
+} __attribute__((packed));
 
+typedef struct virtual_addr virtual_addr;
+
+struct physical_addr
+{
+    uint64_t offset: 12;
+    uint64_t page_grame: 52;
+    // uint64_t page_frame: 36;
+    // uint64_t sign: 16;
+} __attribute__((packed));
+
+typedef struct physical_addr physical_addr;
+
+struct pml4_entry
+{
+    uint64_t present : 1;   // Page present in memory
+    uint64_t rw : 1;   // Read-only if clear, readwrite if set
+    uint64_t user : 1;   // Supervisor level only if clear
+    uint64_t pwt : 1;
+    uint64_t pcd : 1;
+    uint64_t accessed : 1;   // Has the page been accessed since last refresh?
+    uint64_t ignored : 1;
+    uint64_t mbz : 2;
+    uint64_t avl : 3;
+    uint64_t directory_pointer : 20;
+    uint64_t reserved : 11;
+    uint64_t nx : 1;
+} __attribute__((packed));
+
+typedef struct pml4_entry pml4_entry;
+
+struct pdp_entry
+{
+    uint64_t present : 1;   // Page present in memory
+    uint64_t rw : 1;   // Read-only if clear, readwrite if set
+    uint64_t user : 1;   // Supervisor level only if clear
+    uint64_t pwt : 1;
+    uint64_t pcd : 1;
+    uint64_t accessed : 1;   // Has the page been accessed since last refresh?
+    uint64_t ignored : 1;
+    uint64_t zero : 1;
+    uint64_t mbz : 1;
+    uint64_t avl : 3;
+    uint64_t directory : 20;
+    uint64_t reserved : 11;
+    uint64_t nx : 1;
+} __attribute__((packed));
+
+typedef struct pdp_entry pdp_entry;
+
+struct pd_entry
+{
+    uint64_t present : 1;   // Page present in memory
+    uint64_t rw : 1;   // Read-only if clear, readwrite if set
+    uint64_t user : 1;   // Supervisor level only if clear
+    uint64_t pwt : 1;
+    uint64_t pcd : 1;
+    uint64_t accessed : 1;   // Has the page been accessed since last refresh?
+    uint64_t ignored : 1;
+    uint64_t zero : 1;
+    uint64_t ignored2 : 1;
+    uint64_t avl : 3;
+    uint64_t table : 20;
+    uint64_t reserved : 11;
+    uint64_t nx : 1;
+} __attribute__((packed));
+
+typedef struct pd_entry pd_entry;
+
+struct page_entry
+{
+    uint64_t present : 1;   // Page present in memory
+    uint64_t rw : 1;   // Read-only if clear, readwrite if set
+    uint64_t user : 1;   // Supervisor level only if clear
+    uint64_t pwt : 1;
+    uint64_t pcd : 1;
+    uint64_t accessed : 1;   // Has the page been accessed since last refresh?
+    uint64_t dirty : 1;   // Has the page been written to since last refresh?
+    uint64_t size : 1;
+    uint64_t global : 1;
+    uint64_t avl : 3;
+    uint64_t frame : 40;  // Frame address (shifted right 12 bits)
+    uint64_t reserved : 11;
+    uint64_t nx : 1;
+} __attribute__((packed));
+
+typedef struct page_entry page_entry;
+
+typedef struct
+{
+    pml4_entry entry[512];
+} pml_table;
+
+typedef struct
+{
+    pdp_entry entry[512];
+} pdp_table;
+
+typedef struct
+{   
+    pd_entry entry[512];
+} pd_table;
+
+typedef struct
+{
+    page_entry entry[512];
+} page_table;
+
+void memman_init (multiboot_info*);
+void mem_init_region(uint64_t base, uint64_t size);
+
+void debug_memmap(uint64_t blocks);
 #endif

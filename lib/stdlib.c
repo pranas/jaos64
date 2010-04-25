@@ -1,8 +1,8 @@
 #include <stdlib.h>
-
+#include <stdint.h>
 void* memset(void *destaddr, int c, size_t n)
 {
-	char * dest = destaddr;
+	char *dest = destaddr;
 	int i;
 	for (i = 0; i < n; i++)
 	{
