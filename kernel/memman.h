@@ -20,10 +20,11 @@
 #include <bootinfo.h>
 
 #define MEM_BLOCKS_PER_BYTE 8
+#define MEM_BYTES_PER_WORD 8
 #define MEM_BLOCK_SIZE	4096
 #define MEM_BLOCK_ALIGN	MEM_BLOCK_SIZE
 #define MEM_BITMAP 0x20000
-#define MEM_BYTES_PER_WORD 8
+#define MEM_DEBUG 1
 
 static uint64_t	_mem_memory_size=0;
 static uint64_t	_mem_used_blocks=0;
@@ -34,10 +35,17 @@ static uint64_t* _mem_memory_map = 0;
 inline void mmap_set (uint64_t bit);
 inline void mmap_unset (uint64_t bit);
 inline uint64_t mmap_test (uint64_t bit);
+uint64_t mmap_first_free();
+uint64_t mmap_first_free_zone(uint64_t size);
 
 // public api of memory manager
 void memman_init (multiboot_info*);
 void mem_init_region(uint64_t base, uint64_t size);
+void* mem_alloc_block();
+void mem_free_block(void* physical_address);
+void* mem_alloc_blocks(uint64_t size);
+void mem_free_blocks(void* physical_address, uint64_t size);
+uint64_t mem_free_block_count();
 
 // debug procedures
 void debug_memmap(uint64_t blocks);

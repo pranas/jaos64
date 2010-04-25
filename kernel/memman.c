@@ -17,6 +17,11 @@
 #include <bootinfo.h>
 #include <ctype.h>
 
+/*
+
+    Private functions used by memory manager
+
+*/
 
 inline void mmap_set (uint64_t bit)
 {
@@ -32,6 +37,80 @@ inline uint64_t mmap_test (uint64_t bit)
 {
     return _mem_memory_map[bit / 64] & ((uint64_t) 1 << (bit % 64));
 }
+
+uint64_t mmap_first_free()
+{
+    uint64_t i, j;
+    for (i = 0; i < _mem_max_blocks / 64; i++)
+    {
+        if (_mem_memory_map[i] != 0-1)
+        {
+            for (j = 0; j < 64; j++)
+            {
+                if(!(_mem_memory_map[i] & ((uint64_t) 1 << j)))
+                {
+                    return i*64+j;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+uint64_t mmap_first_free_zone(uint64_t size)
+{
+    if (size == 0)
+		return 0;
+
+	if (size == 1)
+		return mmap_first_free();
+		
+    uint64_t i, j, l;
+    
+    for (i = 0; i < _mem_max_blocks / 64; i++)
+    {
+        if (_mem_memory_map[i] != 0-1)
+        {
+            for (j = 0; j < 64; j++)
+            {
+                if(!(_mem_memory_map[i] & ((uint64_t) 1 << j)))
+                {
+					uint64_t count;
+					for (count=0; count <= size; count++) {
+						if (count == size)
+							return i*64+j;
+
+						if ( mmap_test (i*64+j+count) )
+                            break;
+					}
+					// if we would stop here next loop whould check the same space only 1 block
+					// smaller
+					// we need to jump over this block cause we know that it's too small				
+					
+                    // puts("Started our search from ");
+                    // putint(i*64+j);
+                    // puts(" block, but at ");
+                    // putint(i*64+j+count);
+                    // puts(" found used block..\n");
+                    // puts("Jumping i=");
+					i = (i*64+j+count) / 64;
+                    // putint(i);
+                    // puts("j = ");
+                    j = (i*64+j+count) % 64;
+                    // putint(j);
+                    // puts("\n");
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+/*
+
+    Public interface for memory manager
+
+*/
 
 void memman_init(multiboot_info* bootinfo)
 {
@@ -120,6 +199,19 @@ void memman_init(multiboot_info* bootinfo)
     
     debug_memmap(_mem_max_blocks);
     
+    // mmap_unset(3);
+    // mmap_unset(124);
+    // mmap_unset(125);
+    // mmap_unset(126);
+    // 
+    // for (i = 200; i < 300; i++) mmap_unset(i);
+    // 
+    // puts("First zone for 3 blocks: \n");
+    // putint(mmap_first_free_zone(10));
+    // puts("\n");
+    
+    
+    
     asm volatile ("xchg %bx, %bx");
 }
 
@@ -139,6 +231,71 @@ void mem_init_region(uint64_t base, uint64_t size)
         }
     }
 }
+
+
+void* mem_alloc_block()
+{
+    if (mem_free_block_count() == 0)
+        return 0;
+        
+    uint64_t frame = mmap_first_free();
+    
+    if (frame == 0)
+        return 0;
+        
+    mmap_set(frame);
+    _mem_used_blocks++;
+    
+    return (void*) ((uint64_t) frame * MEM_BLOCK_SIZE);
+}
+
+void mem_free_block(void* addr)
+{
+    mmap_unset((uint64_t) addr / MEM_BLOCK_SIZE);
+    _mem_used_blocks--;
+}
+
+void* mem_alloc_blocks(uint64_t size)
+{
+    if (mem_free_block_count() < size)
+        return 0;
+        
+    uint64_t frame = mmap_first_free_zone(size);
+    
+    if (frame == 0)
+        return 0;
+    
+    uint64_t i;    
+    
+    for (i = 0; i < size; i++)
+		mmap_set(frame+i);
+	
+	_mem_used_blocks += size;
+	
+	return (void*) ((uint64_t) frame * MEM_BLOCK_SIZE);
+}
+
+void mem_free_blocks(void* addr, uint64_t size)
+{
+    uint64_t i;
+    uint64_t frame = (uint64_t) addr / MEM_BLOCK_SIZE;
+    for (i = frame; i < frame+size; i++)
+        mmap_unset(i);
+        
+    _mem_used_blocks -= size;
+}
+
+uint64_t mem_free_block_count()
+{
+    return _mem_max_blocks - _mem_used_blocks;
+}
+
+
+/*
+
+    Debug
+
+*/
 
 void debug_memmap(uint64_t blocks)
 {
