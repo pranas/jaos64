@@ -20,17 +20,17 @@
 
 inline void mmap_set (uint64_t bit)
 {
-    _mem_memory_map[bit / 64] |= (1 << (bit % 64));
+    _mem_memory_map[bit / 64] |= ((uint64_t) 1 << (bit % 64));
 }
 
 inline void mmap_unset (uint64_t bit)
 {
-    _mem_memory_map[bit / 64] &= ~ (1 << (bit % 64));
+    _mem_memory_map[bit / 64] &= ~ ((uint64_t) 1 << (bit % 64));
 }
 
-inline int mmap_test (uint64_t bit)
+inline uint64_t mmap_test (uint64_t bit)
 {
-    return _mem_memory_map[bit / 64] & (1 << (bit % 64));
+    return _mem_memory_map[bit / 64] & ((uint64_t) 1 << (bit % 64));
 }
 
 void memman_init(multiboot_info* bootinfo)
@@ -42,7 +42,8 @@ void memman_init(multiboot_info* bootinfo)
     uint64_t total = 0, limit = 0;
     
     puts("Initialising memory manager...\n");
-    puts("Analyzing memoy map:\n");
+    puts("Analyzing memory map:\n");
+    
     for (i = 0; i < bootinfo->m_mmap_length; i++)
     {
         if (memory_map[i].type == 1)
@@ -57,7 +58,8 @@ void memman_init(multiboot_info* bootinfo)
         puts("    Type: ");
         puts(strMemoryType[memory_map[i].type]);
         puts("\n");
-    }    
+    }
+    
     puts("\nFound ");
     putint(total);
     puts(" bytes of usable memory...\n");
@@ -66,16 +68,16 @@ void memman_init(multiboot_info* bootinfo)
     putint(limit);
     puts("\n");
     
-    //_mem_memory_size = total;
-    
+    _mem_memory_size = total;
     _mem_max_blocks = limit / MEM_BLOCK_SIZE;
     _mem_used_blocks = _mem_max_blocks;
     
-    _mem_memory_map = 0x20000;
+    _mem_memory_map = MEM_BITMAP;
     
-    for (i = 0; i <= (_mem_max_blocks / MEM_BLOCKS_PER_BYTE)/8; i++)
+    // this loop marks all blocks as used (0xf means all bits = 1)
+    for (i = 0; i <= (_mem_max_blocks / MEM_BLOCKS_PER_BYTE) / MEM_BYTES_PER_WORD; i++)
     {
-        _mem_memory_map[i] = 0-1; //0xffffffffffffffff;
+        _mem_memory_map[i] = 0-1; // 0-1 = 0xf..f;
     }
     
     puts("Memory map put at ");
@@ -84,6 +86,7 @@ void memman_init(multiboot_info* bootinfo)
     putint(_mem_max_blocks / MEM_BLOCKS_PER_BYTE);
     puts(" bytes...\n");
     
+    // finds entries of usable memory in memory map and initialises
     for (i = 0; i < bootinfo->m_mmap_length; i++)
     {
         if (memory_map[i].type == 1)
@@ -97,12 +100,15 @@ void memman_init(multiboot_info* bootinfo)
     // 0x3gb -> 0x1mb (2MB)
     // total 3MB (cause those ranges overlap)
     // 3MB = 767 blocks
+    // this loop will mark them as used
     for (i = 0; i < 767; i++)
     {
-        // if (!mmap_test(i)) _mem_used_blocks++; // some mem can already be reserved
-        // mmap_set(i);
+        if (!mmap_test(i)) // some mem can already be reserved
+        {
+            _mem_used_blocks++;
+            mmap_set(i);
+        }
     }
-    
     
     puts("Initialised ");
     putint(_mem_max_blocks);
@@ -119,12 +125,18 @@ void memman_init(multiboot_info* bootinfo)
 
 void mem_init_region(uint64_t base, uint64_t size)
 {
+    // TODO: for faster init make use of uint64_t (mark all 64 blocks at once)
+    
     uint64_t align = base / MEM_BLOCK_SIZE ;
 	uint64_t blocks = size / MEM_BLOCK_SIZE;
     
     for (; blocks>0; blocks--) {
-        mmap_unset(align++);
-        _mem_used_blocks--;
+        if (mmap_test(align))
+        {
+            // conditional helps when trying to initiate same region (or overlapping region)
+            mmap_unset(align++);
+            _mem_used_blocks--;
+        }
     }
 }
 

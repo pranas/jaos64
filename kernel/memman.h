@@ -22,23 +22,27 @@
 #define MEM_BLOCKS_PER_BYTE 8
 #define MEM_BLOCK_SIZE	4096
 #define MEM_BLOCK_ALIGN	MEM_BLOCK_SIZE
+#define MEM_BITMAP 0x20000
+#define MEM_BYTES_PER_WORD 8
 
-static	uint64_t	_mem_memory_size=0;
-static	uint64_t	_mem_used_blocks=0;
-static	uint64_t	_mem_max_blocks=0;
-// memory map bit array. Each bit represents a memory block
-// static   uint64_t*   _mem_memory_map= 0;
-static uint64_t*  _mem_memory_map = 0;
+static uint64_t	_mem_memory_size=0;
+static uint64_t	_mem_used_blocks=0;
+static uint64_t _mem_max_blocks=0;
+static uint64_t* _mem_memory_map = 0;
 
+// private functions to work with memory bitmap
 inline void mmap_set (uint64_t bit);
 inline void mmap_unset (uint64_t bit);
-inline int mmap_test (uint64_t bit);
+inline uint64_t mmap_test (uint64_t bit);
 
-//extern uint64_t end;
+// public api of memory manager
+void memman_init (multiboot_info*);
+void mem_init_region(uint64_t base, uint64_t size);
 
-/*
-	Format of entry in BIOS memory map
-*/
+// debug procedures
+void debug_memmap(uint64_t blocks);
+
+// format of entry in BIOS memory map
 struct memory_region
 {
 	//uint32_t	startLo;
@@ -50,8 +54,10 @@ struct memory_region
 	uint32_t	type;
 	uint32_t	acpi3;
 } __attribute__((packed));
+
 typedef struct memory_region memory_region;
 
+// format of virtual memory address
 struct virtual_addr
 {
     uint64_t physical_offset: 12;
@@ -64,12 +70,13 @@ struct virtual_addr
 
 typedef struct virtual_addr virtual_addr;
 
+// format of physical memory address
 struct physical_addr
 {
     uint64_t offset: 12;
-    uint64_t page_grame: 52;
-    // uint64_t page_frame: 36;
-    // uint64_t sign: 16;
+    // uint64_t page_frame: 52;
+    uint64_t page_frame: 36;
+    uint64_t sign: 16;
 } __attribute__((packed));
 
 typedef struct physical_addr physical_addr;
@@ -169,8 +176,4 @@ typedef struct
     page_entry entry[512];
 } page_table;
 
-void memman_init (multiboot_info*);
-void mem_init_region(uint64_t base, uint64_t size);
-
-void debug_memmap(uint64_t blocks);
 #endif
