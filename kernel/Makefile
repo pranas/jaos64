@@ -16,7 +16,7 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-OBJECTS = kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o msr.o interrupt.o
+OBJECTS = kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o msr.o interrupt.o diskio.o readdisk.o
 
 $(KERNEL): $(OBJECTS) link.ld
 	$(LD) $^ $(LDFLAGS) -o $@
@@ -43,12 +43,19 @@ isr.o: isr.c
 
 idt.o: idt.c
 	$(CC) -c $(CFLAGS) $< -o $@
-	
+
+diskio.o: diskio.c
+	$(CC) -c $(CFLAGS) $< -o $@
+    
+readdisk.o: diskio.asm
+	$(AS) $(ASFLAGS) -o $@ $< 
+    
 memman.o: memman.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 gdt_flush.o: gdt_flush.asm
 	$(AS) $(ASFLAGS) -o $@ $< 
+
 interrupt.o: interrupt.asm
 	$(AS) $(ASFLAGS) -o $@ $< 
 
