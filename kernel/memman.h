@@ -31,6 +31,7 @@ static uint64_t	_mem_used_blocks=0;
 static uint64_t _mem_max_blocks=0;
 static uint64_t* _mem_memory_map = 0;
 // static pml4_table* _kernel_pml4t = 0;
+static uint64_t _kernel_next_block = 0;
 
 // format of entry in BIOS memory map
 struct memory_region
@@ -167,6 +168,7 @@ void switch_paging(void* new);
 int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user);
 page_entry* get_page(uint64_t physical_address, pml4_entry* pml4);
 page_entry* create_page(uint64_t address, pml4_entry* pml4, int user);
+void* palloc();
 
 // debug procedures
 void debug_memmap(uint64_t blocks);

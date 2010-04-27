@@ -19,6 +19,7 @@
 #include "memman.h"
 #include "apic.h"
 #include "ioapic.h"
+#include "fat32.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -32,6 +33,11 @@ void kernel_entry (multiboot_info* bootinfo)
 	puts("IDT initialised.\n");
 
     memman_init(bootinfo);
+
+	// init fat32
+	fat32_init();
+	
+	asm ("int $0x3");
 
 	brute_create_page(0xFEE00000, 0xFEE00000, 1, get_current_pml4(), 0); // APIC address space
 	//brute_create_page(0xFEC00000, 0xFEC00000, 1, get_current_pml4(), 0); // IOAPIC address space
