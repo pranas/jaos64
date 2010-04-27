@@ -149,6 +149,9 @@ void memman_init(multiboot_info* bootinfo)
     puts("Highest address of available memory: ");
     putint(limit);
     puts("\n");
+
+	// reset limit -> limit memory to 32mb
+	limit = 33091584;
     
     _mem_memory_size = total;
     _mem_max_blocks = limit / MEM_BLOCK_SIZE;
