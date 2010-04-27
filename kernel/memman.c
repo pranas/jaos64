@@ -202,17 +202,6 @@ void memman_init(multiboot_info* bootinfo)
     
     debug_memmap(_mem_max_blocks);
     
-    // mmap_unset(3);
-    // mmap_unset(124);
-    // mmap_unset(125);
-    // mmap_unset(126);
-    // 
-    // for (i = 200; i < 300; i++) mmap_unset(i);
-    // 
-    // puts("First zone for 3 blocks: \n");
-    // putint(mmap_first_free_zone(10));
-    // puts("\n");
-    
     mmap_unset(511);
     mmap_unset(510);
     mmap_unset(509);
@@ -230,26 +219,18 @@ void memman_init(multiboot_info* bootinfo)
     // _kernel_pml4t = pml4;
     
     // creates 512 pages at virtual 3gb zone and maps to 0x100000
-    for (i = 0; i < 512; i++)
-    {
-        create_page(0x00000000c0000000 + i * MEM_BLOCK_SIZE, pml4, 0)->frame = (0x100000 / 0x1000)+i;
-    }
+    brute_create_page(0x100000, 0x00000000c0000000, 512, pml4, 0);
     
     // creates 512 pages at virtual 0 and maps to 0
-    for (i = 0; i < 512; i++)
-    {
-        create_page(i * MEM_BLOCK_SIZE, pml4, 0)->frame = i;
-    }
-
-    asm volatile ("xchg %bx, %bx");
-        
+    brute_create_page(0, 0, 512, pml4, 0);
+    
     switch_paging((uint64_t) pml4);
     
     puts("Current PML4 table: ");
     puthex(get_current_pml4());
     puts("\n");
     
-    puthex(get_page(0x00000000c0000000, get_current_pml4())->frame * 0x1000);
+    //puthex(get_page(0x00000000c0000000, get_current_pml4())->frame * 0x1000);
     
     asm volatile ("xchg %bx, %bx");
 }
@@ -406,10 +387,28 @@ page_entry* create_page(uint64_t address, pml4_entry* pml4, int user)
     return &pt[addr->pt];
 }
 
-// void page_region(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size)
-// {
-//     
-// }
+int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user)
+{
+    uint64_t i;
+    page_entry* page;
+    
+    // approximation how many blocks we will need, it's actually more if size > 512*512 (this counts only page_tables, not pd, pdp, pml4)
+    if (size / 512 > mem_free_block_count()) return 0;
+    
+    for (i = 0; i < size; i++)
+    {
+        page = create_page(virtual_addr + i * MEM_BLOCK_SIZE, pml4, user);
+        if (!page)
+        {
+            // should revert changes to free memory and report error
+            return i+1;
+            // but we will return only count of pages made and that's all :D
+        }
+        page->frame = (physical_addr / 0x1000) + i;
+    }
+    
+    return i;
+}
 
 void page_fault(registers_t regs)
 {

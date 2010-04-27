@@ -32,28 +32,6 @@ static uint64_t _mem_max_blocks=0;
 static uint64_t* _mem_memory_map = 0;
 // static pml4_table* _kernel_pml4t = 0;
 
-// private functions to work with memory bitmap
-inline void mmap_set (uint64_t bit);
-inline void mmap_unset (uint64_t bit);
-inline uint64_t mmap_test (uint64_t bit);
-uint64_t mmap_first_free();
-uint64_t mmap_first_free_zone(uint64_t size);
-
-// public api of memory manager
-void memman_init (multiboot_info*);
-void mem_init_region(uint64_t base, uint64_t size);
-void* mem_alloc_block();
-void mem_free_block(void* physical_address);
-void* mem_alloc_blocks(uint64_t size);
-void mem_free_blocks(void* physical_address, uint64_t size);
-uint64_t mem_free_block_count();
-uint64_t get_current_pml4();
-
-void switch_paging(void* new);
-
-// debug procedures
-void debug_memmap(uint64_t blocks);
-
 // format of entry in BIOS memory map
 struct memory_region
 {
@@ -168,7 +146,29 @@ struct page_entry
 
 typedef struct page_entry page_entry;
 
+// private functions to work with memory bitmap
+inline void mmap_set (uint64_t bit);
+inline void mmap_unset (uint64_t bit);
+inline uint64_t mmap_test (uint64_t bit);
+uint64_t mmap_first_free();
+uint64_t mmap_first_free_zone(uint64_t size);
+
+// public api of memory manager
+void memman_init (multiboot_info*);
+void mem_init_region(uint64_t base, uint64_t size);
+void* mem_alloc_block();
+void mem_free_block(void* physical_address);
+void* mem_alloc_blocks(uint64_t size);
+void mem_free_blocks(void* physical_address, uint64_t size);
+uint64_t mem_free_block_count();
+
+uint64_t get_current_pml4();
+void switch_paging(void* new);
+int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user);
 page_entry* get_page(uint64_t physical_address, pml4_entry* pml4);
 page_entry* create_page(uint64_t address, pml4_entry* pml4, int user);
+
+// debug procedures
+void debug_memmap(uint64_t blocks);
 
 #endif
