@@ -17,6 +17,8 @@
 #include "idt.h"
 #include "msr.h"
 #include "memman.h"
+#include "apic.h"
+#include "ioapic.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -28,10 +30,15 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	idt_install();
 	puts("IDT initialised.\n");
-    // parse bootinfo
-    memman_init(bootinfo);
-	brute_create_page(0xFEC00000, 0xFEC00000, 0x20, get_current_pml4(), 0);
-	puts_ioapic_info();
-	asm ("xchg %bx, %bx");
 
+    memman_init(bootinfo);
+
+	brute_create_page(0xFEE00000, 0xFEE00000, 1, get_current_pml4(), 0); // APIC address space
+	//brute_create_page(0xFEC00000, 0xFEC00000, 1, get_current_pml4(), 0); // IOAPIC address space
+	disable_legacy_pic();
+	puts_apic_info();
+	asm ("xchg %bx, %bx");
+	//puts_ioapic_info();
+
+	asm ("xchg %bx, %bx");
 }

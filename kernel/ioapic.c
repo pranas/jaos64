@@ -32,7 +32,6 @@ void puts_ioapic_info()
 		puts(" ");
 		puthex(hi);
 		puts(" ");
-		asm ("xchg %bx, %bx");
 	}
 	puts("\n");
 }

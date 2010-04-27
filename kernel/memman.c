@@ -232,7 +232,6 @@ void memman_init(multiboot_info* bootinfo)
     
     //puthex(get_page(0x00000000c0000000, get_current_pml4())->frame * 0x1000);
     
-    asm volatile ("xchg %bx, %bx");
 }
 
 void mem_init_region(uint64_t base, uint64_t size)
