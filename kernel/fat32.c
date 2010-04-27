@@ -69,4 +69,13 @@ uint64_t find_next_cluster(uint64_t cluster)
 	return fat[cluster % _partition->bytes_per_sector / 4];
 }
 
-uint64_t put_dir()
+uint64_t put_dir(dir_entry* dir, int size)
+{
+	int i;
+	puts("Files in dir:\n");
+	for (i = 0; i < size; i++)
+	{
+		puts(dir[i].filename);
+		puts("\n");
+	}
+}

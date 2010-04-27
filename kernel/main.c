@@ -17,6 +17,7 @@
 #include "idt.h"
 #include "msr.h"
 #include "memman.h"
+#include "fat32.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -30,6 +31,9 @@ void kernel_entry (multiboot_info* bootinfo)
 	puts("IDT initialised.\n");
     // parse bootinfo
     memman_init(bootinfo);
+	// init fat32
+	fat32_init();
+	
 	asm ("int $0x3");
 
 	asm ("xchg %bx, %bx");

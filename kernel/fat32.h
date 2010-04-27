@@ -70,7 +70,19 @@ typedef struct partition_table partition_table;
 
 struct dir_entry
 {
-	
+	char filename[11];
+	uint8_t ro:1;
+	uint8_t hidden:1;
+	uint8_t sys:1;
+	uint8_t volid:1;
+	uint8_t dir:1;
+	uint8_t archive:1;
+	uint8_t unused:2;
+	uint8_t chs;
+	uint16_t cluster_high;
+	uint32_t chs2;
+	uint16_t cluster_low;
+	uint32_t size;
 };
 
 typedef struct dir_entry dir_entry;
