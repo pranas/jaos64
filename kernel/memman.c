@@ -384,24 +384,34 @@ page_entry* create_page(uint64_t address, pml4_entry* pml4, int user)
     return &pt[addr->pt];
 }
 
-void* palloc()
+void* alloc_kernel_page(int size)
 {
-	// puts("palloc() called\nWill give block ");
-	// puthex(_kernel_next_block);
+	int i;
+	puts("palloc() called...\n");
 	
-	page_entry* page = create_page(_kernel_next_block * 0x1000, get_current_pml4(), 0);
-	if (!page) return 0;
+	for (i = 0; i < size; i++)
+	{
+		puts("Will give block ");
+		puthex(_kernel_next_block);
+		page_entry* page = create_page((_kernel_next_block + 1 * i) * 0x1000, get_current_pml4(), 0);
+		// if (!page) return 0;
 	
-	void* phys_frame = mem_alloc_block();
-	if (!phys_frame) return 0;
+		void* phys_frame = mem_alloc_block();
+		// if (!phys_frame) return 0;
 	
-	// puts(" put at ");
-	// puthex((uint64_t) phys_frame);
-	// puts(" physical memory...\n");
+		puts(" put at ");
+		puthex((uint64_t) phys_frame);
+		puts(" physical memory...\n");
 	
-	page->frame = (uint64_t) phys_frame / 0x1000;
+		page->frame = (uint64_t) phys_frame / 0x1000;
+	}
+	_kernel_next_block += size;
+	return (void*) ((uint64_t) (_kernel_next_block - size) * 0x1000);
+}
+
+void free_kernel_page(void* address)
+{
 	
-	return (void*) ((uint64_t) (_kernel_next_block++) * 0x1000);
 }
 
 int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user)
@@ -429,10 +439,13 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
 
 void page_fault(registers_t regs)
 {
-    // // A page fault has occurred.
-    // // The faulting address is stored in the CR2 register.
+    // A page fault has occurred.
+    // The faulting address is stored in the CR2 register.
     uint64_t faulting_address;
     asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
+	puts("Page fault! ");
+	puthex(faulting_address);
+	puts("\n");
     // 
     // // The error code gives us details of what happened.
     // int present   = !(regs.err_code & 0x1); // Page not present
