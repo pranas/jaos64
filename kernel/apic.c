@@ -11,17 +11,19 @@ void disable_legacy_pic()
 void write_apicr(const void* apic_base, const uint8_t offset, const uint32_t val)
 {
 	/* tell IOREGSEL where we want to write to */
-	*(uint32_t*)(apic_base) = offset;
+//	*(uint32_t*)(apic_base) = offset;
 	/* write the value to IOWIN */
-	*(uint32_t*)(apic_base + 0x10) = val;
+//	*(uint32_t*)(apic_base + 0x10) = val;
+	*(uint32_t*)(apic_base + offset) = val;
 }
 
 uint32_t read_apicr(const void* apic_base, const uint8_t offset)
 {
 	/* tell IOREGSEL where we want to read from */
-	*(uint32_t*)(apic_base) = offset;
+//	*(uint32_t*)(apic_base) = offset;
 	/* return the data from IOWIN */
-	return *(uint32_t*)(apic_base + 0x10);
+//	return *(uint32_t*)(apic_base + 0x10);
+	return *(uint32_t*)(apic_base + offset);
 }
 
 void puts_apic_info()

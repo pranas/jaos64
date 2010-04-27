@@ -37,6 +37,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	//brute_create_page(0xFEC00000, 0xFEC00000, 1, get_current_pml4(), 0); // IOAPIC address space
 	disable_legacy_pic();
 	puts_apic_info();
+	write_apicr(APIC_BASE, 0x320, 0x00000014);
 	asm ("xchg %bx, %bx");
 	//puts_ioapic_info();
 

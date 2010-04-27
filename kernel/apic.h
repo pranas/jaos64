@@ -5,6 +5,21 @@
 
 #define APIC_BASE 0xfee00000
 
+struct lvt_entry
+{
+	int32_t vector    : 8;
+	int32_t msgtype   : 3;
+	int32_t reserved  : 1;
+	int32_t delstat   : 1;
+	int32_t reserved2 : 1;
+	int32_t rirr      : 1;
+	int32_t trigmode  : 1;
+	int32_t mask      : 1;
+	int32_t timermode : 1;
+	int32_t reserved3 : 14;
+};
+typedef struct lvt_entry lvt_entry;
+
 void disable_legacy_pic();
 
 void write_apicr(const void* apic_base, const uint8_t offset, const uint32_t val);
