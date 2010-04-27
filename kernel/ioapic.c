@@ -1,4 +1,4 @@
-#include "apic.h"
+#include "ioapic.h"
 
 void write_ioapicr(const void* apic_base, const uint8_t offset, const uint32_t val)
 {

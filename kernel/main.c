@@ -30,7 +30,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	puts("IDT initialised.\n");
     // parse bootinfo
     memman_init(bootinfo);
-	brute_create_page(0xFEC00000, 0xFEC00000, 0x100, get_current_pml4(), 0);
+	brute_create_page(0xFEC00000, 0xFEC00000, 0x20, get_current_pml4(), 0);
 	puts_ioapic_info();
 	asm ("xchg %bx, %bx");
 
