@@ -47,4 +47,40 @@ struct fat32_volume_id {
 
 typedef struct fat32_volume_id fat32_volume_id;
 
+struct partition_entry
+{
+	uint8_t flag;
+	uint8_t chs_begin[3];
+	uint8_t type;
+	uint8_t chs_end[3];
+	uint32_t lba;
+	uint32_t sectors;
+} __attribute__((packed));
+
+typedef struct partition_entry partition_entry;
+
+struct partition_table
+{
+	char boot_code[446];
+	partition_entry partition[4];
+	uint16_t magic;
+} __attribute__((packed));
+
+typedef struct partition_table partition_table;
+
+struct dir_entry
+{
+	
+};
+
+typedef struct dir_entry dir_entry;
+
+static fat32_volume_id* _partition = 0;
+static uint64_t _partition_begin_lba = 0;
+static uint64_t _cluster_begin_lba = 0;
+static uint64_t _fat_begin_lba = 0;
+
+void fat32_init();
+uint64_t cluster2lba(uint64_t cluster);
+
 #endif
