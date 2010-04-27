@@ -30,6 +30,7 @@ static uint64_t	_mem_memory_size=0;
 static uint64_t	_mem_used_blocks=0;
 static uint64_t _mem_max_blocks=0;
 static uint64_t* _mem_memory_map = 0;
+// static pml4_table* _kernel_pml4t = 0;
 
 // private functions to work with memory bitmap
 inline void mmap_set (uint64_t bit);
@@ -46,6 +47,9 @@ void mem_free_block(void* physical_address);
 void* mem_alloc_blocks(uint64_t size);
 void mem_free_blocks(void* physical_address, uint64_t size);
 uint64_t mem_free_block_count();
+uint64_t get_current_pml4();
+
+void switch_paging(void* new);
 
 // debug procedures
 void debug_memmap(uint64_t blocks);
@@ -69,9 +73,9 @@ typedef struct memory_region memory_region;
 struct virtual_addr
 {
     uint64_t physical_offset: 12;
-    uint64_t page_table: 9;
-    uint64_t page_directory: 9;
-    uint64_t directory_pointer: 9;
+    uint64_t pt: 9;
+    uint64_t pd: 9;
+    uint64_t pdp: 9;
     uint64_t pml4: 9;
     uint64_t sign: 16;
 } __attribute__((packed));
@@ -100,7 +104,7 @@ struct pml4_entry
     uint64_t ignored : 1;
     uint64_t mbz : 2;
     uint64_t avl : 3;
-    uint64_t directory_pointer : 20;
+    uint64_t directory_pointer : 40;
     uint64_t reserved : 11;
     uint64_t nx : 1;
 } __attribute__((packed));
@@ -119,7 +123,7 @@ struct pdp_entry
     uint64_t zero : 1;
     uint64_t mbz : 1;
     uint64_t avl : 3;
-    uint64_t directory : 20;
+    uint64_t directory : 40;
     uint64_t reserved : 11;
     uint64_t nx : 1;
 } __attribute__((packed));
@@ -138,7 +142,7 @@ struct pd_entry
     uint64_t zero : 1;
     uint64_t ignored2 : 1;
     uint64_t avl : 3;
-    uint64_t table : 20;
+    uint64_t table : 40;
     uint64_t reserved : 11;
     uint64_t nx : 1;
 } __attribute__((packed));
@@ -164,24 +168,7 @@ struct page_entry
 
 typedef struct page_entry page_entry;
 
-typedef struct
-{
-    pml4_entry entry[512];
-} pml_table;
-
-typedef struct
-{
-    pdp_entry entry[512];
-} pdp_table;
-
-typedef struct
-{   
-    pd_entry entry[512];
-} pd_table;
-
-typedef struct
-{
-    page_entry entry[512];
-} page_table;
+page_entry* get_page(uint64_t physical_address, pml4_entry* pml4);
+page_entry* create_page(uint64_t address, pml4_entry* pml4, int user);
 
 #endif
