@@ -71,19 +71,33 @@ typedef struct partition_table partition_table;
 struct dir_entry
 {
 	char filename[11];
-	uint8_t ro:1;
-	uint8_t hidden:1;
-	uint8_t sys:1;
-	uint8_t volid:1;
-	uint8_t dir:1;
-	uint8_t archive:1;
-	uint8_t unused:2;
-	uint8_t chs;
+	struct
+	{
+		union
+		{
+			uint8_t attribute;
+			struct {
+				uint8_t ro:1;
+				uint8_t hidden:1;
+				uint8_t sys:1;
+				uint8_t volid:1;
+				uint8_t dir:1;
+				uint8_t archive:1;
+				uint8_t unused:2;
+			};
+		};
+	};
+	uint8_t nt;
+	uint8_t creation_ms;
+	uint16_t creation_time;
+	uint16_t creation_date;
+	uint16_t access_date;
 	uint16_t cluster_high;
-	uint32_t chs2;
+	uint16_t modification_time;
+	uint16_t modification_date;
 	uint16_t cluster_low;
 	uint32_t size;
-};
+} __attribute__((packed));
 
 typedef struct dir_entry dir_entry;
 
@@ -92,7 +106,15 @@ static uint64_t _partition_begin_lba = 0;
 static uint64_t _cluster_begin_lba = 0;
 static uint64_t _fat_begin_lba = 0;
 
+// private
 void fat32_init();
 uint64_t cluster2lba(uint64_t cluster);
+uint64_t read_cluster(uint64_t cluster, void* address);
+uint64_t find_next_cluster(uint64_t cluster);
+// public
+void read_file(uint64_t cluster, void* address);
+uint64_t find_file(char* name);
+// debug
+uint64_t put_dir(dir_entry* dir, int size);
 
 #endif
