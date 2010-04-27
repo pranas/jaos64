@@ -4,8 +4,8 @@
 #include <stdint.h>
 
 struct fat32_volume_id {
-	char[3] jump;
-	char[8] oem_identifier;
+	char jump[3];
+	char oem_identifier[8];
 	uint16_t bytes_per_sector;
 	uint8_t sectors_per_cluster;
 	uint16_t reserved_sectors;
@@ -27,7 +27,7 @@ struct fat32_volume_id {
 	uint32_t root_cluster;
 	uint16_t fsinfo;
 	uint16_t backup_boot;
-	uint32_t[3] reserved;
+	uint32_t reserved[3];
 	//The values here are identical to the values returned by the 
 	//BIOS interrupt 0x13
 	//0x00 for a floppy disk
@@ -39,10 +39,10 @@ struct fat32_volume_id {
 	uint8_t signature;
 	uint32_t volume_id;
 	//11-bytes volume label padded with spaces
-	char[11] label;
+	char label[11];
 	//System identifier string. Always "FAT32 ".
 	//The spec says never to trust the contents of this string for any use.
-	char[8] identifier;
+	char identifier[8];
 } __attribute__((packed));
 
 typedef struct fat32_volume_id fat32_volume_id;
