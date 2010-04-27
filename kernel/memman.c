@@ -182,8 +182,8 @@ void memman_init(multiboot_info* bootinfo)
     // 0x3gb -> 0x1mb (2MB)
     // total 3MB (cause those ranges overlap)
     // 3MB = 767 blocks
-    // this loop will mark them as used
-    for (i = 0; i < 767; i++)
+    // this loop will mark 2MB as used (1MB left for kernel neads)
+    for (i = 0; i < 511; i++)
     {
         if (!mmap_test(i)) // some mem can already be reserved
         {
@@ -202,27 +202,23 @@ void memman_init(multiboot_info* bootinfo)
     
     debug_memmap(_mem_max_blocks);
     
-    mmap_unset(511);
-    mmap_unset(510);
-    mmap_unset(509);
-    mmap_unset(508);
-    mmap_unset(507);
-    mmap_unset(506);
-    mmap_unset(505);
-    
+	// extend current map
+	brute_create_page(0, 0, 1024, get_current_pml4(), 0);
+
     puts("Current PML4 table: ");
     puthex(get_current_pml4());
     puts("\n");
     
     pml4_entry* pml4 = mem_alloc_block();
-    
-    // _kernel_pml4t = pml4;
-    
+
     // creates 512 pages at virtual 3gb zone and maps to 0x100000
     brute_create_page(0x100000, 0x00000000c0000000, 512, pml4, 0);
+
+	// probably 512 is enough, but let's say 513
+	_kernel_next_block = (0x00000000c0000000 / 0x1000) + 512 ;
     
     // creates 512 pages at virtual 0 and maps to 0
-    brute_create_page(0, 0, 512, pml4, 0);
+    brute_create_page(0, 0, 1024, pml4, 0);
     
     switch_paging((uint64_t) pml4);
     
@@ -230,9 +226,7 @@ void memman_init(multiboot_info* bootinfo)
     puthex(get_current_pml4());
     puts("\n");
     
-    //puthex(get_page(0x00000000c0000000, get_current_pml4())->frame * 0x1000);
-    
-    asm volatile ("xchg %bx, %bx");
+	asm volatile ("xchg %bx, %bx");
 }
 
 void mem_init_region(uint64_t base, uint64_t size)
@@ -385,6 +379,26 @@ page_entry* create_page(uint64_t address, pml4_entry* pml4, int user)
     pt[addr->pt].rw = 1;
     pt[addr->pt].user = user;
     return &pt[addr->pt];
+}
+
+void* palloc()
+{
+	// puts("palloc() called\nWill give block ");
+	// puthex(_kernel_next_block);
+	
+	page_entry* page = create_page(_kernel_next_block * 0x1000, get_current_pml4(), 0);
+	if (!page) return 0;
+	
+	void* phys_frame = mem_alloc_block();
+	if (!phys_frame) return 0;
+	
+	// puts(" put at ");
+	// puthex((uint64_t) phys_frame);
+	// puts(" physical memory...\n");
+	
+	page->frame = (uint64_t) phys_frame / 0x1000;
+	
+	return (void*) ((uint64_t) (_kernel_next_block++) * 0x1000);
 }
 
 int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user)
