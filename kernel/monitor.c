@@ -44,8 +44,8 @@ static void scroll()
 	if (cursor_y >= 25)
 	{
 		int i;
-		for (i = (80*25) - 1; i > (1*80); i--)
-			video_memory[i-80] = video_memory[i];
+		for (i = 0; i < (80*24); i++)
+			video_memory[i] = video_memory[i+80];
 		for (i = 24*80; i < 25*80; i++)
 			video_memory[i] = blank;
 
