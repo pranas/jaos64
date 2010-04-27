@@ -8,31 +8,41 @@ void disable_legacy_pic()
 			::: "rax");
 }
 
-void write_apicr(const void* apic_base, const uint8_t offset, const uint32_t val)
+void write_apicr(uint32_t* apic_base, uint16_t offset, uint32_t val)
 {
-	/* tell IOREGSEL where we want to write to */
-//	*(uint32_t*)(apic_base) = offset;
-	/* write the value to IOWIN */
-//	*(uint32_t*)(apic_base + 0x10) = val;
-	*(uint32_t*)(apic_base + offset) = val;
+	uint32_t* addr = (char*) apic_base + offset;
+	*addr = val;
 }
 
-uint32_t read_apicr(const void* apic_base, const uint8_t offset)
+uint32_t read_apicr(uint32_t* apic_base, uint16_t offset)
 {
-	/* tell IOREGSEL where we want to read from */
-//	*(uint32_t*)(apic_base) = offset;
-	/* return the data from IOWIN */
-//	return *(uint32_t*)(apic_base + 0x10);
-	return *(uint32_t*)(apic_base + offset);
+	uint32_t* addr = (char*) apic_base + offset;
+	return *addr;
 }
 
 void puts_apic_info()
 {
 	int var = read_apicr(APIC_BASE, 0x20);
-	puts("APIC info\n");
-	puts("ID: "); puthex(var >> 24); puts("\n");
-	var = read_apicr(APIC_BASE, 0x400);
-	puts("Version: "); puthex(var & 0x000f); puts("\n");
-	puts("Max LVT entries: "); puthex(var & 0x0f00); puts("\n");
-	puts("Extended enabled: "); puthex(var >> 32); puts("\n");
+	puts("APIC info => "); puts("ID: "); puthex(var >> 24); puts("\n");
+
+	// NOT IMPLEMENTED ON BOCHS T_T
+	//var = read_apicr(APIC_BASE, 0x0400);
+	//puts("Version: "); puthex(var & 0x000f); puts("\n");
+	//puts("Max LVT entries: "); puthex(var & 0x0f00); puts("\n");
+	//puts("Extended enabled: "); puthex(var >> 32); puts("\n");
+}
+
+void puts_apic_register(int offset)
+{
+	puts("APIC register "); puthex(offset); puts(": ");
+	puthex(read_apicr(APIC_BASE, offset));
+	puts("\n");
+}
+
+void enable_apic()
+{
+	uint32_t lo = 0, hi = 0;
+	rdmsr(0x1B, &lo, &hi);
+	lo |= 0x00000800;
+	wrmsr(0x1B, lo, hi);
 }
