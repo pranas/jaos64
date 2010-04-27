@@ -46,7 +46,6 @@ void fat32_init()
 	_fat_begin_lba = _partition_begin_lba + _partition->reserved_sectors;
 	
 	
-	asm volatile ("xchg %bx, %bx");
 }
 
 uint64_t cluster2lba(uint64_t cluster)
