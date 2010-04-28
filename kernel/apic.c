@@ -26,7 +26,7 @@ uint32_t read_apicr(uint32_t* apic_base, uint16_t offset)
 void puts_apic_info()
 {
 	int var = read_apicr(APIC_BASE, 0x20);
-	puts("APIC info => "); puts("ID: "); puthex(var >> 24); puts("\n");
+	puts("[APIC] ID: "); puthex(var >> 24); puts("\n");
 
 	// NOT IMPLEMENTED ON BOCHS T_T
 	//var = read_apicr(APIC_BASE, 0x0400);
@@ -37,7 +37,7 @@ void puts_apic_info()
 
 void puts_apic_register(int offset)
 {
-	puts("APIC register "); puthex(offset); puts(": ");
+	puts("[APIC] APIC register "); puthex(offset); puts(": ");
 	puthex(read_apicr(APIC_BASE, offset));
 	puts("\n");
 }
@@ -69,5 +69,5 @@ void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic)
 	write_apicr(APIC_BASE, 0x3e0, divider); // divider
 	write_apicr(APIC_BASE, 0x320, timer_lvt); // persistent
 	write_apicr(APIC_BASE, 0x380, counter); // counter
-	puts("Local timer initialised.\n");
+	puts("[APIC] Local timer initialised.\n");
 }

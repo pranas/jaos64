@@ -11,7 +11,7 @@ void acpi_init()
 {
 	brute_create_page( 0x1FF0000, 0x1FF0000, 16, get_current_pml4(), 0);
 	madt = find_sdt(get_rsdt(), "APIC");
-	puts("MADT found at "); puthex(madt); puts("\n");
+	puts("[ACPI] MADT found at "); puthex(madt); puts("\n");
 }
 
 void * get_rsdt()
@@ -21,7 +21,7 @@ void * get_rsdt()
 	{
 		if (strncmp(i, "RSD PTR ", 8))
 		{
-			puts("RSD PTR found at "); puthex(i); puts(" and it points to ");
+			puts("[ACPI] RSD PTR found at "); puthex(i); puts(" and it points to ");
 			void * ptr = * (uint64_t*) (i + 16);
 			puthex(ptr); puts("\n");
 			return ptr;

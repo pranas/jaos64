@@ -16,8 +16,8 @@ uint32_t read_ioapicr(const void* apic_base, const uint8_t offset)
 
 void puts_ioapic_info()
 {
-	puts("IOAPIC info => ");
-	puts("ID: "); puthex(read_ioapicr(0xfec00000, 0x0)); puts(" Version: "); puthex(read_ioapicr(0xfec00000, 0x1));
+	puts("[IOAPIC] ID: ");
+	puthex(read_ioapicr(0xfec00000, 0x0)); puts(" Version: "); puthex(read_ioapicr(0xfec00000, 0x1));
    	puts(" AID: "); puthex(read_ioapicr(0xfec00000, 0x2)); puts("\n");
 	int i;
 	for (i = 0; i < 24; i++)
