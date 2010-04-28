@@ -13,11 +13,11 @@
 
 */
 
-#include "memman.h"
-#include "isr.h"
 #include <bootinfo.h>
 #include <ctype.h>
 
+#include "memman.h"
+#include "isr.h"
 /*
 
     Private functions used by memory manager
@@ -225,6 +225,8 @@ void memman_init(multiboot_info* bootinfo)
     puts("Current PML4 table: ");
     puthex(get_current_pml4());
     puts("\n");
+
+	register_handler(0x0E, page_fault_handler);
     
 	// asm volatile ("xchg %bx, %bx");
 }
@@ -434,7 +436,7 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
     return i;
 }
 
-void page_fault(registers_t regs)
+void page_fault_handler(registers_t regs)
 {
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.

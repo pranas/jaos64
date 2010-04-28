@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <bootinfo.h>
 
+#include "isr.h"
+
 #define MEM_BLOCKS_PER_BYTE 8
 #define MEM_BYTES_PER_WORD 8
 #define MEM_BLOCK_SIZE	4096
@@ -169,6 +171,8 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
 page_entry* get_page(uint64_t physical_address, pml4_entry* pml4);
 page_entry* create_page(uint64_t address, pml4_entry* pml4, int user);
 void* alloc_kernel_page(int size);
+
+void page_fault_handler(registers_t regs);
 
 // debug procedures
 void debug_memmap(uint64_t blocks);

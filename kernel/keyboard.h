@@ -1,6 +1,8 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
 
-void keyboard_handler();
+#include "isr.h"
+
+void keyboard_handler(registers_t);
 
 #endif

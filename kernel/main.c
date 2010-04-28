@@ -20,6 +20,8 @@
 #include "apic.h"
 #include "ioapic.h"
 #include "fat32.h"
+#include "isr.h"
+#include "keyboard.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -33,7 +35,10 @@ void kernel_entry (multiboot_info* bootinfo)
 	acpi_init();
 	apic_init();
 	ioapic_init(); // keyboard only for now
-	init_timer(0x20, 0x00ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
+
+	register_handler(0x21, keyboard_handler);
+
+	init_timer(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 	for (;;);
