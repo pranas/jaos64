@@ -1,27 +1,7 @@
 // #include <string.h>
 #include "fat32.h"
 #include "memman.h"
-
-int strcmp (const char* str, const char* str2)
-{
-	int i = 0;
-	while (str[i] == str2[i])
-	{
-		if (str[i] == 0)
-			if (str2[i] == 0)
-				return 1;	// both ended up equal
-				
-		if (str[i] == 0)
-			if (str2[i] != 0)
-				return 0;
-			
-		if (str2[i] == 0)
-			if (str[i] != 0)
-				return 0;
-		i++;
-	}
-	return 0;
-}
+#include <string.h>
 
 void fat32_init()
 {
@@ -67,15 +47,15 @@ void fat32_init()
 	_cluster_begin_lba = _partition_begin_lba + _partition->reserved_sectors + (_partition->number_of_fats * _partition->sectors_per_fat2);
 	_fat_begin_lba = _partition_begin_lba + _partition->reserved_sectors;
 	
-	void* buffer = alloc_kernel_page(((_partition->sectors_per_cluster * _partition->bytes_per_sector) / 4096) + 1);
+	// void* buffer = alloc_kernel_page(((_partition->sectors_per_cluster * _partition->bytes_per_sector) / 4096) + 1);
 	
-	read_cluster(_partition->root_cluster, buffer);
-	puthex((uint64_t) buffer);
-	put_dir(buffer, 10);
+	// read_cluster(_partition->root_cluster, buffer);
+	// puthex((uint64_t) buffer);
+	// put_dir(buffer, 10);
 	
-	puts("Search returned: ");
-	puthex(find_file("TST7132   \0"));
-	puts("\n");
+	// puts("Search returned: ");
+	// puthex(find_file("TST7132   \0"));
+	// puts("\n");
 	
 }
 
