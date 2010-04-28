@@ -9,11 +9,7 @@ void * madt;
 
 void acpi_init()
 {
-	if (!brute_create_page( 0x1FF0000, 0x1FF0000, 16, get_current_pml4(), 0))
-	{
-		puts("ACPI init failed: burte_create_page failes.\n"); // ACPI reserved memory
-		return;
-	}
+	brute_create_page( 0x1FF0000, 0x1FF0000, 16, get_current_pml4(), 0);
 	madt = find_sdt(get_rsdt(), "APIC");
 	puts("MADT found at "); puthex(madt); puts("\n");
 }
