@@ -37,3 +37,19 @@ void puts_ioapic_info()
 	}
 	puts("\n");
 }
+
+void ioapic_init()
+{
+	ioapic_redirect_entry irq0;
+	irq0.vector         = 0x21; // vector 0x21
+	irq0.delmod         =  0x0; // fixed
+	irq0.destmod        =  0x0; // physical
+	irq0.intpol         =  0x0; // ??? 0 - high active polarity
+	irq0.triggermode    =  0x0; // ??? 0 - edge sensitive
+	irq0.mask           =  0x0; // unmask
+	irq0.reserved       =  0x0; // zero out reserved
+	irq0.reserved2      =  0x0; // zero out reserved
+	irq0.destination    =  0x0; // apic id, 0th apic
+	write_ioapicr(IOAPIC_BASE, 0x12, irq0.low); // irq1 low
+	write_ioapicr(IOAPIC_BASE, 0x13, irq0.high); // irq1 high
+}

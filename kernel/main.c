@@ -40,20 +40,20 @@ void kernel_entry (multiboot_info* bootinfo)
 	
 	brute_create_page(0xFEE00000, 0xFEE00000, 1, get_current_pml4(), 0); // APIC address space
 	brute_create_page(0xFEC00000, 0xFEC00000, 1, get_current_pml4(), 0); // IOAPIC address space
+	brute_create_page(0x1FF0000, 0x1FF0000, 16, get_current_pml4(), 0); // ACPI reserved memory
 
 	disable_legacy_pic();
 	enable_apic(); // even though its already enabled :S
 	puts_apic_info();
 	puts_ioapic_info();
 
-	brute_create_page(0x1FF0000, 0x1FF0000, 16, get_current_pml4(), 0); // ACPI reserved memory
 	apci_init();
+	ioapic_init(); // keyboard only for now
 
 	write_apicr(APIC_BASE, 0xf0, 0x00000100); 
 	write_apicr(APIC_BASE, 0x3e0, 0x0000000B); // divider
 	write_apicr(APIC_BASE, 0x320, 0x00020020); // persistent
 	write_apicr(APIC_BASE, 0x380, 0x00ffffff); // counter
 
-	asm ("xchg %bx, %bx");
 	for (;;);
 }
