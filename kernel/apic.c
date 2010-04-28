@@ -2,12 +2,13 @@
 
 #include <string.h>
 
+#include "memman.h"
+#include "io.h"
+
 void disable_legacy_pic()
 {
-	asm volatile ("movb $0xff, %%al\n\t"
-			"out %%al, $0xa1\n\t"
-			"out %%al, $0x21"
-			::: "rax");
+	outb(0xa1, 0xff);
+	outb(0x21, 0xff);
 }
 
 void write_apicr(uint32_t* apic_base, uint16_t offset, uint32_t val)
@@ -49,3 +50,24 @@ void enable_apic()
 	wrmsr(0x1B, lo, hi);
 }
 
+void apic_init()
+{
+	disable_legacy_pic();
+	brute_create_page(APIC_BASE, APIC_BASE, 1, get_current_pml4(), 0); // APIC address space
+	enable_apic(); // even though its already enabled :S
+	write_apicr(APIC_BASE, 0xf0, 0x000001ff); // spurious int register
+	puts_apic_info();
+}
+
+void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic)
+{
+	uint32_t timer_lvt = 0x0;
+	timer_lvt |= vector;
+	if (periodic)
+		timer_lvt |= 0x0020000;
+
+	write_apicr(APIC_BASE, 0x3e0, divider); // divider
+	write_apicr(APIC_BASE, 0x320, timer_lvt); // persistent
+	write_apicr(APIC_BASE, 0x380, counter); // counter
+	puts("Local timer initialised.\n");
+}

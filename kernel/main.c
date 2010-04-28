@@ -23,37 +23,17 @@
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
-	clear_screen();
-	puts("Hello world!\n");
-
-	gdt_install();
-	puts("GDT initialised.\n");
-
-	idt_install();
-	puts("IDT initialised.\n");
-
+	clear_screen();	puts("Kernel loaded.\n");
+	gdt_install();  puts("GDT initialised.\n");
+	idt_install();	puts("IDT initialised.\n");
     memman_init(bootinfo);
-
 	// init fat32
 	fat32_init();
-	asm ("sti"); // release monsters
-	
-	brute_create_page(0xFEE00000, 0xFEE00000, 1, get_current_pml4(), 0); // APIC address space
-	brute_create_page(0xFEC00000, 0xFEC00000, 1, get_current_pml4(), 0); // IOAPIC address space
-	brute_create_page(0x1FF0000, 0x1FF0000, 16, get_current_pml4(), 0); // ACPI reserved memory
 
-	disable_legacy_pic();
-	enable_apic(); // even though its already enabled :S
-	puts_apic_info();
-	puts_ioapic_info();
-
-	apci_init();
+	acpi_init();
+	apic_init();
 	ioapic_init(); // keyboard only for now
-
-	write_apicr(APIC_BASE, 0xf0, 0x00000100); 
-	write_apicr(APIC_BASE, 0x3e0, 0x0000000B); // divider
-	write_apicr(APIC_BASE, 0x320, 0x00020020); // persistent
-	write_apicr(APIC_BASE, 0x380, 0x00ffffff); // counter
-
+	init_timer(0x20, 0x00ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
+	asm ("sti"); // release monsters
 	for (;;);
 }

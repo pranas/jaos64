@@ -18,7 +18,8 @@ void gdt_set_gate(int num, int32_t base, int32_t limit, int8_t access, int8_t gr
 
 void gdt_install()
 {
-	gdt_ptr.limit = (sizeof(gdt_ptr_struct) * GDT_ENTRY_NR) - 1;
+	gdt_ptr.limit = (sizeof(gdt_entry_struct) * GDT_ENTRY_NR) - 1;
+	putint(gdt_ptr.limit);
 	gdt_ptr.base  = (int64_t) &gdt;
 
 	// NULL gate

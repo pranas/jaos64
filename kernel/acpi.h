@@ -22,7 +22,7 @@ struct rsdt_t {
 };
 typedef struct rsdt_t rsdt_t;
 
-void apci_init();
+void acpi_init();
 void* get_rsdt();
 void* find_sdt(void*, const char*);
 

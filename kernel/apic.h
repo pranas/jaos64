@@ -21,10 +21,11 @@ struct lvt_entry
 typedef struct lvt_entry lvt_entry;
 
 void disable_legacy_pic();
-
 void write_apicr(uint32_t* apic_base, uint16_t offset, uint32_t val);
 uint32_t read_apicr(uint32_t* apic_base, uint16_t offset);
 void puts_apic_info();
 void enable_apic();
+void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic);
+void apic_init();
 
 #endif
