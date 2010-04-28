@@ -168,7 +168,7 @@ void switch_paging(void* new);
 int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user);
 page_entry* get_page(uint64_t physical_address, pml4_entry* pml4);
 page_entry* create_page(uint64_t address, pml4_entry* pml4, int user);
-void* palloc();
+void* alloc_kernel_page(int size);
 
 // debug procedures
 void debug_memmap(uint64_t blocks);

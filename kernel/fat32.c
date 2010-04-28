@@ -1,11 +1,33 @@
+// #include <string.h>
 #include "fat32.h"
 #include "memman.h"
 
+int strcmp (const char* str, const char* str2)
+{
+	int i = 0;
+	while (str[i] == str2[i])
+	{
+		if (str[i] == 0)
+			if (str2[i] == 0)
+				return 1;	// both ended up equal
+				
+		if (str[i] == 0)
+			if (str2[i] != 0)
+				return 0;
+			
+		if (str2[i] == 0)
+			if (str[i] != 0)
+				return 0;
+		i++;
+	}
+	return 0;
+}
+
 void fat32_init()
 {
-	partition_table* table = palloc();
+	partition_table* table = alloc_kernel_page(1);
 	fat32_volume_id* volume = ((uint64_t) table) + 512;
-	
+		
 	puts("Initialising file system (using ");
 	puthex((uint64_t) table);
 	puts(" page)...\n");
@@ -45,7 +67,69 @@ void fat32_init()
 	_cluster_begin_lba = _partition_begin_lba + _partition->reserved_sectors + (_partition->number_of_fats * _partition->sectors_per_fat2);
 	_fat_begin_lba = _partition_begin_lba + _partition->reserved_sectors;
 	
+	void* buffer = alloc_kernel_page(((_partition->sectors_per_cluster * _partition->bytes_per_sector) / 4096) + 1);
 	
+	read_cluster(_partition->root_cluster, buffer);
+	puthex((uint64_t) buffer);
+	put_dir(buffer, 10);
+	
+	puts("Search returned: ");
+	puthex(find_file("TST7132   \0"));
+	puts("\n");
+	
+}
+
+uint64_t read_cluster(uint64_t cluster, void* address)
+{
+	// puts("Read ");
+	// putint(cluster);
+	// puts(" cluster (");
+	// putint(_partition->sectors_per_cluster);
+	// puts(" sectors) at ");
+	// puthex((uint64_t) address);
+	// puts("\n");
+	
+	return read_sectors(cluster2lba(cluster), address, _partition->sectors_per_cluster);
+}
+
+void read_file(uint64_t cluster, void* address)
+{
+	read_cluster(cluster, address);
+	
+	while ((cluster = find_next_cluster(cluster)) < 0x0ffffff8)
+	{
+		address = (uint64_t) address + (_partition->sectors_per_cluster * _partition->bytes_per_sector);
+		read_cluster(cluster, address);
+	}
+}
+
+uint64_t find_file(char* name)
+{
+	dir_entry* list = alloc_kernel_page(((_partition->sectors_per_cluster * _partition->bytes_per_sector) / 4096) + 1);
+	
+	uint64_t cluster = _partition->root_cluster;
+	int entries_per_cluster = (_partition->sectors_per_cluster * _partition->bytes_per_sector) / 32;
+	do
+	{
+		read_cluster(cluster, list);
+		
+		int i;
+		
+		for (i = 0; i < entries_per_cluster; i++)
+		{
+			list[i].filename[10] = 0;
+			if (strcmp(list[i].filename, name))
+				return list[i].cluster_high * 0x100 + list[i].cluster_low;
+		}
+		
+		// puts("Next cluster to read:");
+		// puthex(find_next_cluster(cluster));
+		// puts("\n");
+	} while ((cluster = find_next_cluster(cluster)) < 0x0ffffff8);
+	
+	free_kernel_page(list);
+	
+	return 0;
 }
 
 uint64_t cluster2lba(uint64_t cluster)
@@ -60,12 +144,14 @@ uint64_t find_next_cluster(uint64_t cluster)
 	
 	uint32_t* fat = ((uint64_t) _partition) + 512;
 	
+	//puthex(fat);
+	
 	if (!read_sector(_fat_begin_lba + (cluster / _partition->bytes_per_sector / 4), fat))
 	{
 		puts("Error!");
 	}
 	
-	return fat[cluster % _partition->bytes_per_sector / 4];
+	return fat[cluster % _partition->bytes_per_sector];
 }
 
 uint64_t put_dir(dir_entry* dir, int size)
@@ -74,7 +160,10 @@ uint64_t put_dir(dir_entry* dir, int size)
 	puts("Files in dir:\n");
 	for (i = 0; i < size; i++)
 	{
-		puts(dir[i].filename);
-		puts("\n");
+		if ((dir[i].attribute != 0x0F) || (dir[i].attribute != 0x10)) // no long names and dirs
+		{
+			puts(dir[i].filename);
+			puts("\n");
+		}
 	}
 }
