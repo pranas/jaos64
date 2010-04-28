@@ -19,16 +19,13 @@ void gdt_set_gate(int num, int32_t base, int32_t limit, int8_t access, int8_t gr
 void gdt_install()
 {
 	gdt_ptr.limit = (sizeof(gdt_entry_struct) * GDT_ENTRY_NR) - 1;
-	putint(gdt_ptr.limit);
 	gdt_ptr.base  = (int64_t) &gdt;
 
 	// NULL gate
 	gdt_set_gate(0, 0, 0, 0, 0);
 	//code
-	//gdt_set_gate(1, 0, 0xFFFFFFFF, 0x9A, 0xCF);
 	gdt_set_gate(1, 0, 0, 0x98, 0x20);
 	//data
-	//gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
 	gdt_set_gate(2, 0, 0, 0x92, 0x00);
 
 	//apply changes

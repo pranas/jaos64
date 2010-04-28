@@ -16,8 +16,10 @@ typedef struct ioapic_version_table ioapic_version_table;
 
 struct ioapic_redirect_entry
 {
-	union {
-		struct {
+	union
+	{
+		struct
+		{
 			uint64_t vector      :  8; // interrupt vector
 			uint64_t delmod      :  3; // delivery mode
 			uint64_t destmod     :  1; // destination mode, 0 - physical, 1 - logical
@@ -30,16 +32,12 @@ struct ioapic_redirect_entry
 		};
 		uint32_t low;
 	};
-	union {
-		struct {
+	union
+	{
+		struct
+		{
 			uint64_t reserved2   : 24; // 0
-			union {
-				uint64_t destination :  8; // if destmod == 1
-				struct {
-					uint64_t apicid : 4; // if destmod == 0
-					uint64_t zero : 4;
-				};
-			};
+			uint64_t destination :  8; // if destmod == 1
 		};
 		uint32_t high;
 	};

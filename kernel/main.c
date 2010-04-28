@@ -34,7 +34,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	apic_init();
 	ioapic_init(); // keyboard only for now
 	init_timer(0x20, 0x00ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
-	asm ("sti"); // release monsters
-	asm ("xchg %bx, %bx");
+
+	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 	for (;;);
 }
