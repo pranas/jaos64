@@ -18,4 +18,4 @@ string.o: string.c
 	$(CC) $(CFLAGS) -o $@ -c $^
 
 clean:
-	-rm libcorelib.a corelib.o
+	-rm libcorelib.a corelib.o string.o stdlib.o
