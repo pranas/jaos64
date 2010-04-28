@@ -14,14 +14,16 @@ void isr_handler(registers_t regs)
 		puthex(regs.err_code);
 	}
 	puts(".\n");
-	//if (regs.int_no == 0x20)
+	if (regs.int_no == 0x20)
+	{
+		write_apicr(APIC_BASE, 0xb0, 0); // acknowledge ioapic interrupt
 		//local_timer_handler();
+	}
 	if (regs.int_no == 0x21) // keyboard
 	{
-		asm("xchg %bx, %bx");
 		keyboard_handler();
+		write_apicr(APIC_BASE, 0xb0, 0); // acknowledge ioapic interrupt
 	}
 
-	if (regs.int_no >= 0x20)
-		write_apicr(APIC_BASE, 0xb0, 0); // acknowledge ioapic interrupt
+	//if (regs.int_no >= 0x20)
 }

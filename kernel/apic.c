@@ -55,7 +55,7 @@ void apic_init()
 	disable_legacy_pic();
 	brute_create_page(APIC_BASE, APIC_BASE, 1, get_current_pml4(), 0); // APIC address space
 	enable_apic(); // even though its already enabled :S
-	write_apicr(APIC_BASE, 0xf0, 0x000001ff); // spurious int register
+	write_apicr(APIC_BASE, 0xf0, 0x00000100); // spurious int register
 	puts_apic_info();
 }
 
