@@ -123,9 +123,7 @@ void memman_init(multiboot_info* bootinfo)
     uint64_t i;
     uint64_t total = 0, limit = 0;
     
-    puts("Initialising memory manager...\n");
-    puts("Analyzing memory map:\n");
-    
+    puts("Initialising memory manager... "); puts("Analyzing memory map:\n");
     for (i = 0; i < bootinfo->m_mmap_length; i++)
     {
         if (memory_map[i].type == 1)
@@ -133,8 +131,7 @@ void memman_init(multiboot_info* bootinfo)
             if ((memory_map[i].start + memory_map[i].size) > limit) { limit = memory_map[i].start + memory_map[i].size; }
             total = total + memory_map[i].size;
         }
-        puts("   From: ");
-        puthex(memory_map[i].start);
+        puts("   From: "); puthex(memory_map[i].start);
         puts("    Size: ");
         puthex(memory_map[i].size);
         puts("    Type: ");
@@ -142,7 +139,7 @@ void memman_init(multiboot_info* bootinfo)
         puts("\n");
     }
     
-    puts("\nFound ");
+    puts("Found ");
     putint(total);
     puts(" bytes of usable memory...\n");
     

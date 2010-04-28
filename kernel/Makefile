@@ -16,7 +16,7 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-OBJECTS = kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o msr.o interrupt.o ioapic.o apic.o diskio.o readdisk.o fat32.o
+OBJECTS = kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o msr.o interrupt.o ioapic.o apic.o diskio.o readdisk.o fat32.o acpi.o
 
 
 $(KERNEL): $(OBJECTS) link.ld
@@ -25,6 +25,9 @@ $(KERNEL): $(OBJECTS) link.ld
 	-rm $(OBJS)
 
 kernel.o: main.c
+	$(CC) -c $(CFLAGS) $< -o $@
+
+acpi.o: acpi.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
 ioapic.o: ioapic.c

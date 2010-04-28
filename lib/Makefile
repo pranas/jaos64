@@ -8,11 +8,14 @@ ARFLAGS = rcsv
 
 all: libcorelib.a
 
-libcorelib.a: corelib.o
+libcorelib.a: stdlib.o string.o
 	$(AR) $(ARFLAGS) $@ $^
 
-corelib.o: stdlib.c
-	$(CC) $(CFLAGS) -c $^ -o $@
+stdlib.o: stdlib.c
+	$(CC) $(CFLAGS) -o $@ -c $^
+
+string.o: string.c
+	$(CC) $(CFLAGS) -o $@ -c $^
 
 clean:
 	-rm libcorelib.a corelib.o

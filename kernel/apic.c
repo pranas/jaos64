@@ -1,5 +1,7 @@
 #include "apic.h"
 
+#include <string.h>
+
 void disable_legacy_pic()
 {
 	asm volatile ("movb $0xff, %%al\n\t"
@@ -46,3 +48,4 @@ void enable_apic()
 	lo |= 0x00000800;
 	wrmsr(0x1B, lo, hi);
 }
+

@@ -60,7 +60,7 @@ void idt_install()
 	idt_set_gate(28, (int64_t)isr28, 0x08, 0x8E, 0);
 	idt_set_gate(29, (int64_t)isr29, 0x08, 0x8E, 0);
 	idt_set_gate(30, (int64_t)isr30, 0x08, 0x8E, 0);
-	idt_set_gate(31, (int64_t)isr31, 0x08, 0x8E, 0);
+	idt_set_gate(31, (int64_t)isr31, 0x08, 0x8E, 0); // end of pmode intel int handlers
 	idt_set_gate(32, (int64_t)isr32, 0x08, 0x8E, 0);
 
 	idt_flush(&idt_ptr);
