@@ -71,3 +71,27 @@ void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic)
 	write_apicr(APIC_BASE, 0x380, counter); // counter
 	puts("[APIC] Local timer initialised.\n");
 }
+
+void start_ap(uint8_t apicid, uint8_t vector)
+{
+	/* AP startup code, starts at 0x9000 */
+	icr_reg startupipi;
+	startupipi.vector  = 0x0;
+	startupipi.msgtype = 0x5;
+	startupipi.destmod = 0x0;
+	startupipi.level   = 0x0;
+	startupipi.trigmod = 0x0;
+	startupipi.dsh     = 0x0;
+	startupipi.dest    = apicid;
+	write_apicr(APIC_BASE, 0x310, startupipi.high);
+	write_apicr(APIC_BASE, 0x300, startupipi.low);
+	startupipi.vector  = vector;
+	startupipi.msgtype = 0x6;
+	startupipi.destmod = 0x0;
+	startupipi.level   = 0x0;
+	startupipi.trigmod = 0x0;
+	startupipi.dsh     = 0x0;
+	startupipi.dest    = apicid;
+	write_apicr(APIC_BASE, 0x310, startupipi.high);
+	write_apicr(APIC_BASE, 0x300, startupipi.low);
+}
