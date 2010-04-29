@@ -28,7 +28,7 @@ org stage2
     mov [bootinfo.mmap_addr], di
     pushad
     call BiosGetMemoryMap
-    mov [bootinfo.mmap_length], ebp ; count of entries in map
+    ;mov [bootinfo.mmap_length], ebp ; count of entries in map
 	popad
 	
     mov si, loading
