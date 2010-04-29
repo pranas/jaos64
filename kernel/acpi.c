@@ -10,6 +10,7 @@ void * madt;
 void acpi_init()
 {
 	brute_create_page( 0x1FF0000, 0x1FF0000, 16, get_current_pml4(), 0);
+	brute_create_page( 0x3FF0000, 0x3FF0000, 16, get_current_pml4(), 0);
 	madt = find_sdt(get_rsdt(), "APIC");
 	puts("[ACPI] MADT found at "); puthex(madt); puts("\n");
 }
