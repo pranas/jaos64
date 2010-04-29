@@ -123,7 +123,10 @@ void memman_init(multiboot_info* bootinfo)
     uint64_t i;
     uint64_t total = 0, limit = 0;
     
-    puts("Initialising memory manager... "); puts("Analyzing memory map:\n");
+    puts("Initialising memory manager... \n");
+	register_handler(0x0E, page_fault_handler);
+	puts("Analyzing memory map:\n");
+
     for (i = 0; i < bootinfo->m_mmap_length; i++)
     {
         if (memory_map[i].type == 1)
@@ -226,8 +229,6 @@ void memman_init(multiboot_info* bootinfo)
     puthex(get_current_pml4());
     puts("\n");
 
-	register_handler(0x0E, page_fault_handler);
-    
 	// asm volatile ("xchg %bx, %bx");
 }
 
@@ -445,6 +446,8 @@ void page_fault_handler(registers_t regs)
 	puts("Page fault! ");
 	puthex(faulting_address);
 	puts("\n");
+	for (;;);
+	// asm volatile ("hlt");
     // 
     // // The error code gives us details of what happened.
     // int present   = !(regs.err_code & 0x1); // Page not present
