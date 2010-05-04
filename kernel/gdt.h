@@ -14,6 +14,19 @@ struct gdt_entry_struct
 } __attribute__((packed));
 typedef struct gdt_entry_struct gdt_entry_struct;
 
+struct system_segment_descriptor
+{
+   int16_t limit_low;           // The lower 16 bits of the limit.
+   int16_t base_low;            // The lower 16 bits of the base.
+   int8_t  base_middle;         // The next 8 bits of the base.
+   int8_t  access;              // Access flags
+   int8_t  granularity;         // with 4 bits of limit
+   int8_t  base_high;           // The last 8 bits of the base.
+   uint32_t base_veryhigh;
+   uint32_t zero;
+} __attribute__((packed));
+typedef struct system_segment_descriptor system_segment_descriptor;
+
 /* GDT table pointer */
 struct gdt_ptr_struct
 {
@@ -22,7 +35,7 @@ struct gdt_ptr_struct
 } __attribute__((packed));
 typedef struct gdt_ptr_struct gdt_ptr_struct;
 
-#define GDT_ENTRY_NR 5
+#define GDT_ENTRY_NR 7
 struct gdt_ptr_struct gdt_ptr;
 struct gdt_entry_struct gdt[GDT_ENTRY_NR];
 
@@ -31,6 +44,7 @@ extern void gdt_flush();
 
 void gdt_install();
 void gdt_set_gate(int num, int32_t base, int32_t limit, int8_t access, int8_t granularity);
+void gdt_set_ss_gate(int num, int64_t base, int32_t limit, int8_t access, int8_t granularity);
 
 #endif
 

@@ -16,6 +16,26 @@ void gdt_set_gate(int num, int32_t base, int32_t limit, int8_t access, int8_t gr
 	gdt[num].access       = access;
 }
 
+void gdt_set_ss_gate(int num, int64_t base, int32_t limit, int8_t access, int8_t granularity)
+{
+	system_segment_descriptor* ss_gdt = (system_segment_descriptor*) gdt;
+	/* base address */
+	ss_gdt[num].base_low     = (base & 0xFFFF);
+	ss_gdt[num].base_middle  = (base >> 16) & 0xFF;
+	ss_gdt[num].base_high    = (base >> 24) & 0xFF;
+	ss_gdt[num].base_veryhigh = (base >> 32) & 0xFFFF;
+
+	/* limit */
+	ss_gdt[num].limit_low    = (limit & 0xFFFF);
+	ss_gdt[num].granularity  = (limit >> 16) & 0x0F;
+
+	/* granularity */
+	ss_gdt[num].granularity |= (granularity & 0xF0);
+	ss_gdt[num].access       = access;
+
+	ss_gdt[num].zero = 0;
+}
+
 void gdt_install()
 {
 	gdt_ptr.limit = (sizeof(gdt_entry_struct) * GDT_ENTRY_NR) - 1;
