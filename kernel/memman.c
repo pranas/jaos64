@@ -224,45 +224,55 @@ void memman_init(multiboot_info* bootinfo)
     puthex(get_current_pml4());
     puts("\n");
 	
-	pml4_entry* pml4 = mem_alloc_block();
+	pml4_entry* pml4 = get_current_pml4();
+	pml4_entry* pml4_new = mem_alloc_block();
 	
-	pml4[511].directory_pointer = (uint64_t) pml4 / 0x1000;
+	pml4[511].directory_pointer = (uint64_t) pml4_new / 0x1000;
 	pml4[511].present = 1;
 	pml4[511].rw = 1;
 	pml4[511].user = 0;
-
-	pml4[510].directory_pointer = (uint64_t) pml4 / 0x1000;
-	pml4[510].present = 1;
-	pml4[510].rw = 1;
-	pml4[510].user = 0;
-    
+	
+	pml4_new[511].directory_pointer = (uint64_t) pml4_new / 0x1000;
+	pml4_new[511].present = 1;
+	pml4_new[511].rw = 1;
+	pml4_new[511].user = 0;
+	
+	page_entry* page;
+	
+	for (i = 0; i < blocks_used_by_kernel; i++)
+	{
+		page = create_page_for_current((addr) ((void *) 0x00000000c0000000 + i * MEM_BLOCK_SIZE), 0);
+		page->frame = (uint64_t) (0x200000 + i * MEM_BLOCK_SIZE) / 0x1000;
+		page->present = 1;
+		page->user = 0;
+		page->rw = 1;
+	}
+	
+	for (i = 0; i < 256; i++)
+	{
+		page = create_page_for_current((addr) ((void *) 0x0000000000000000 + i * MEM_BLOCK_SIZE), 0);
+		page->frame = (uint64_t) (0x0 + i * MEM_BLOCK_SIZE) / 0x1000;
+		page->present = 1;
+		page->user = 0;
+		page->rw = 1;
+	}
+	
 	// creates 512 pages at virtual 3gb zone and maps to 0x100000
-	brute_create_page(0x200000, 0x00000000c0000000, blocks_used_by_kernel, pml4, 0);
+	//brute_create_page(0x200000, 0x00000000c0000000, blocks_used_by_kernel, pml4, 0);
     
     // creates 512 pages at virtual 0 and maps to 0
-    brute_create_page(0, 0, 256, pml4, 0);
+    //brute_create_page(0, 0, 256, pml4, 0);
 	
 	asm volatile ("xchg %bx, %bx");
 	
-    switch_paging((uint64_t) pml4);
+    switch_paging((uint64_t) pml4_new);
     
     puts("Current PML4 table: ");
     puthex(get_current_pml4());
     puts("\n");
 
-	asm volatile ("xchg %bx, %bx");
-	
 	//	(addr) ((void *) _kernel_next_block)
-	page_entry* page;
-	
-	for (i = 0; i < 256; i++)
-	{
-		page = create_page_for_current((addr) ((void *) 0x00000000b0000000 + i * MEM_BLOCK_SIZE), 0);
-		page->frame = (uint64_t) 0x0 + i * MEM_BLOCK_SIZE / 0x1000;
-		page->present = 1;
-		page->user = 0;
-		page->rw = 1;
-	}
+
 	
 	asm volatile ("xchg %bx, %bx");
 }
@@ -415,35 +425,35 @@ page_entry* create_page_for_current(address a, int user)
 	// uint32_t pde = ((addr >> 21) & 0x1FF);
 	// uint32_t pte = ((addr >> 12) & 0x1FF);
 	
-	debug_address(a);
+	// debug_address(a);
 	if (_current_pml4[a.pml4].present == 0)
 	{
-		puts("kuriam pdp\n");
+		// puts("kuriam pdp\n");
 		_current_pml4[a.pml4].directory_pointer = (uint64_t) mem_alloc_block() / 0x1000;
 		_current_pml4[a.pml4].present = 1;
 		_current_pml4[a.pml4].rw = 1;
 		_current_pml4[a.pml4].user = user;
-		invalidate_single(&_current_pml4[a.pml4]);
+		// invalidate_single(&_current_pml4[a.pml4]);
 	}
 	
 	if (_current_pdp[a.pml4 * 512 + a.pdp].present == 0)
 	{
-		puts("kuriam pd\n");
+		// puts("kuriam pd\n");
 		_current_pdp[a.pml4 * 512 + a.pdp].directory = (uint64_t) mem_alloc_block() / 0x1000;
 		_current_pdp[a.pml4 * 512 + a.pdp].present = 1;
 		_current_pdp[a.pml4 * 512 + a.pdp].rw = 1;
 		_current_pdp[a.pml4 * 512 + a.pdp].user = user;
-		invalidate_single(&_current_pdp[a.pml4 * a.pdp]);
+		// invalidate_single(&_current_pdp[a.pml4 * a.pdp]);
 	}
 	
 	if (_current_pd[(a.pml4 * 512 + a.pdp) * 512 + a.pd].present == 0)
 	{
-		puts("kuriam pt\n");
+		// puts("kuriam pt\n");
 		_current_pd[(a.pml4 * 512 + a.pdp) * 512 + a.pd].table = (uint64_t) mem_alloc_block() / 0x1000;
 		_current_pd[(a.pml4 * 512 + a.pdp) * 512 + a.pd].present = 1;
 		_current_pd[(a.pml4 * 512 + a.pdp) * 512 + a.pd].rw = 1;
 		_current_pd[(a.pml4 * 512 + a.pdp) * 512 + a.pd].user = user;
-		invalidate_single(&_current_pd[a.pml4 * a.pdp * a.pd]);
+		// invalidate_single(&_current_pd[a.pml4 * a.pdp * a.pd]);
 	}
 	
 	return &_current_pt[a.frame];
