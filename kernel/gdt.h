@@ -22,7 +22,7 @@ struct gdt_ptr_struct
 } __attribute__((packed));
 typedef struct gdt_ptr_struct gdt_ptr_struct;
 
-#define GDT_ENTRY_NR 3
+#define GDT_ENTRY_NR 5
 struct gdt_ptr_struct gdt_ptr;
 struct gdt_entry_struct gdt[GDT_ENTRY_NR];
 

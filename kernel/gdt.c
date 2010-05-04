@@ -23,10 +23,14 @@ void gdt_install()
 
 	// NULL gate
 	gdt_set_gate(0, 0, 0, 0, 0);
-	//code
-	gdt_set_gate(1, 0, 0, 0x98, 0x20);
-	//data
-	gdt_set_gate(2, 0, 0, 0x92, 0x00);
+
+	// kernel space
+	gdt_set_gate(1, 0, 0, 0x98, 0x20); // code
+	gdt_set_gate(2, 0, 0, 0x92, 0x00); // data
+
+	// user space
+	gdt_set_gate(3, 0, 0, 0xF8, 0x20); // code
+	gdt_set_gate(4, 0, 0, 0xF2, 0x00); // data
 
 	//apply changes
 	gdt_flush();
