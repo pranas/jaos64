@@ -42,7 +42,6 @@ struct tss_entry_t
 	uint64_t rsp1;
 	uint64_t rsp2;
 	uint64_t zero2;
-	uint64_t ist0;
 	uint64_t ist1;
 	uint64_t ist2;
 	uint64_t ist3;
