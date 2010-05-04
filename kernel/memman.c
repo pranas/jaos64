@@ -580,9 +580,13 @@ void* alloc_kernel_page(int size)
 	{
 		puts("Will give block ");
 		puthex(_kernel_next_block);
-		page_entry* page = create_page((_kernel_next_block + 1 * i) * 0x1000, get_current_pml4(), 0);
+		// page_entry* page = create_page((_kernel_next_block + 1 * i) * 0x1000, get_current_pml4(), 0);
+		page_entry* page = create_page_for_current( (addr) ((void* )((_kernel_next_block + 1 * i) * 0x1000)),0);
 		// if (!page) return 0;
-	
+		page->present = 1;
+		page->user = 0;
+		page->rw = 1;
+		
 		void* phys_frame = mem_alloc_block();
 		// if (!phys_frame) return 0;
 	
@@ -612,7 +616,14 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
     
     for (i = 0; i < size; i++)
     {
-        page = create_page(virtual_addr + i * MEM_BLOCK_SIZE, pml4, user);
+        // page = create_page(virtual_addr + i * MEM_BLOCK_SIZE, pml4, user);
+		page = create_page_for_current( (addr) ((void* )(virtual_addr + i * MEM_BLOCK_SIZE)),0);
+		// if (!page) return 0;
+		page->present = 1;
+		page->user = 0;
+		page->rw = 1;
+
+
         if (!page)
         {
             // should revert changes to free memory and report error
