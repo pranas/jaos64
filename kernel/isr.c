@@ -17,7 +17,7 @@ void isr_handler(registers_t regs)
 	}
 
 	if (regs.int_no >= 0x20)
-		write_apicr(APIC_BASE, 0xb0, 0); // acknowledge ioapic interrupt
+		write_apicr(0xb0, 0); // acknowledge ioapic interrupt
 }
 
 void register_handler(int int_no, isr_t handler)
