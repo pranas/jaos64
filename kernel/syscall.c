@@ -3,6 +3,7 @@
 #include "isr.h"
 #include "monitor.h"
 
+
 void syscall_handler(registers_t *regs);
 
 const int syscall_num = 3;
@@ -31,3 +32,7 @@ void syscall_handler(registers_t regs)
    regs->rax = ret;
 } 
 
+void goto_usermode()
+{
+	usermode();
+}
