@@ -46,7 +46,6 @@ static uint64_t	_mem_memory_size=0;
 static uint64_t	_mem_used_blocks=0;
 static uint64_t _mem_max_blocks=0;
 static uint64_t* _mem_memory_map = 0;
-// static pml4_table* _kernel_pml4t = 0;
 static uint64_t _kernel_next_block = 0;
 
 extern uint64_t _kernel_start;
@@ -64,6 +63,7 @@ struct memory_region
 typedef struct memory_region memory_region;
 
 union address {
+	uint64_t hex;
 	void* ptr;
 	struct {
 	    uint64_t offset: 12;
@@ -162,6 +162,7 @@ static pml4_entry* _current_pml4 = 0xFFFFFFFFFFFFF000;
 static pdp_entry* _current_pdp = 0xFFFFFFFFFFE00000;
 static pd_entry* _current_pd = 0xFFFFFFFFC0000000;
 static page_entry* _current_pt = 0xFFFFFF8000000000;
+static pml4_entry* _kernel_pml4t = 0;
 
 // private functions (should not be used outside memory manager)
 inline void mmap_set (uint64_t bit);
@@ -178,6 +179,8 @@ void mem_free_block(void* physical_address);
 void* mem_alloc_blocks(uint64_t size);
 void mem_free_blocks(void* physical_address, uint64_t size);
 uint64_t mem_free_block_count();
+
+pml4_entry* clone_pml4t();
 
 // replaces the same pml4
 void invalidate();
