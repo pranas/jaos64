@@ -52,6 +52,9 @@ ISR_NOERRCODE 31
 ISR_NOERRCODE 32
 ISR_NOERRCODE 33
 
+;syscall
+ISR_NOERRCODE 128
+
 [EXTERN isr_handler] ; its in isr.c
 isr_common:
 	push rax
@@ -62,6 +65,8 @@ isr_common:
 	push rdi
 	push rbp
 	push rsp
+	push r8
+	push r9
 	mov ax, ds
 	push rax
 	
@@ -82,6 +87,8 @@ isr_common:
 	mov fs, ax
 	mov gs, ax
 
+	pop r9
+	pop r8
 	pop rsp
 	pop rbp
 	pop rdi
@@ -90,6 +97,6 @@ isr_common:
 	pop rcx
 	pop rbx
 	pop rax
-	add esp, 16 ; clean up pushed error and int numbers (2 * 8bytes)
+	add rsp, 16 ; clean up pushed error and int numbers (2 * 8bytes)
 	sti         ; reenable interrupts
 	iretq

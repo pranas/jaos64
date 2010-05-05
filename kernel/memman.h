@@ -198,7 +198,7 @@ void* alloc_table(pml4_entry* pml4);
 
 void copy_page_tables(pml4_entry* from, pml4_entry* to);
 
-void page_fault_handler(registers_t regs);
+void page_fault_handler(registers_t* regs);
 
 // debug procedures
 void debug_memmap();

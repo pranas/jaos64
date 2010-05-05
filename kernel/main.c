@@ -12,17 +12,21 @@
 */
 
 #include <bootinfo.h>
+
 #include "monitor.h"
+
 #include "gdt.h"
 #include "idt.h"
+#include "isr.h"
 #include "msr.h"
 #include "memman.h"
+#include "acpi.h"
 #include "apic.h"
 #include "ioapic.h"
 #include "fat32.h"
-#include "isr.h"
 #include "keyboard.h"
 #include "scheduler.h"
+#include "syscall.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -30,7 +34,6 @@ void kernel_entry (multiboot_info* bootinfo)
 	gdt_install();  puts("GDT initialised.\n");
 	idt_install();	puts("IDT initialised.\n");
     memman_init(bootinfo);
-	// init fat32
 	fat32_init();
 
 	// acpi_init();
@@ -38,7 +41,9 @@ void kernel_entry (multiboot_info* bootinfo)
 	ioapic_init(); // keyboard only for now
 
 	register_handler(0x21, keyboard_handler);
-	
+
+	init_syscalls(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
+
 	init_timer(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
 	// sets up kernel task and registers handler for timer
@@ -63,5 +68,6 @@ void kernel_entry (multiboot_info* bootinfo)
 	}
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
+
 	for (;;);
 }
