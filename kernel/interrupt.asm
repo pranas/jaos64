@@ -52,6 +52,9 @@ ISR_NOERRCODE 31
 ISR_NOERRCODE 32
 ISR_NOERRCODE 33
 
+;syscall
+ISR_NOERRCODE 128
+
 [EXTERN isr_handler] ; its in isr.c
 isr_common:
 	push rax

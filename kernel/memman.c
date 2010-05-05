@@ -437,7 +437,7 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
     return i;
 }
 
-void page_fault_handler(registers_t regs)
+void page_fault_handler(registers_t* regs)
 {
     // A page fault has occurred.
     // The faulting address is stored in the CR2 register.

@@ -13,7 +13,7 @@ void isr_handler(registers_t regs)
 	if (handlers[regs.int_no] != 0)
 	{
 		isr_t handler = handlers[regs.int_no];
-		handler(regs);
+		handler(&regs);
 	}
 
 	if (regs.int_no >= 0x20)

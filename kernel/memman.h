@@ -172,7 +172,7 @@ page_entry* get_page(uint64_t physical_address, pml4_entry* pml4);
 page_entry* create_page(uint64_t address, pml4_entry* pml4, int user);
 void* alloc_kernel_page(int size);
 
-void page_fault_handler(registers_t regs);
+void page_fault_handler(registers_t* regs);
 
 // debug procedures
 void debug_memmap(uint64_t blocks);

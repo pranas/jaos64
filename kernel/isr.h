@@ -14,7 +14,7 @@ typedef struct registers
 } registers_t;
 
 
-typedef void (*isr_t) (registers_t);
+typedef void (*isr_t) (registers_t*);
 void register_handler(int int_no, isr_t custom_handler);
 
 void isr_handler(registers_t regs);

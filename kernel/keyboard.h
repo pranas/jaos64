@@ -3,6 +3,6 @@
 
 #include "isr.h"
 
-void keyboard_handler(registers_t);
+void keyboard_handler(registers_t*);
 
 #endif

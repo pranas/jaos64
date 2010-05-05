@@ -79,7 +79,10 @@ void tss_set_gate(int num, uint64_t rsp0, uint64_t rsp1, uint64_t rsp2)
 	gdt_set_ss_gate(num, base, limit, 0x89, 0x9F);
 	memset(&tss_entry, 0, sizeof(tss_entry));
 
-	tss_entry.rsp0 = rsp0;
-	tss_entry.rsp1 = rsp1;
-	tss_entry.rsp2 = rsp2;
+	tss_entry.rsp0_high = (rsp0 >> 32);
+	tss_entry.rsp0_low = rsp0 & 0xFFFFFFFF;
+	tss_entry.rsp1_high = (rsp1 >> 32);
+	tss_entry.rsp1_low = rsp1 & 0xFFFFFFFF;
+	tss_entry.rsp2_high = (rsp2 >> 32);
+	tss_entry.rsp2_low = rsp2 & 0xFFFFFFFF;
 }
