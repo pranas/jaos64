@@ -3,6 +3,7 @@ all:
 	$(MAKE) -C boot/
 	$(MAKE) -C kernel/
 	$(MAKE) -C bin/
+	$(MAKE) clean -C lib/
 	@echo -e '\033[0;32m---- BUILD SUCCESSFUL ----\033[m'
 
 clean:

@@ -1,5 +1,4 @@
 BIN = ../bin
-VPATH = .
 INCLUDE_PATH = ../include
 LIBRARY_PATH = ../lib
 CC = gcc
@@ -16,36 +15,17 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-$(KERNEL): kernel.o monitor.o io.o gdt.o idt.o isr.o gdt_flush.o memman.o interrupt.o link.ld
+OBJECTS = main.o readdisk.o interrupt.o gdt_flush.o monitor.o io.o gdt.o idt.o isr.o \
+		  memman.o ioapic.o apic.o acpi.o msr.o diskio.o fat32.o keyboard.o usermode.o \
+		  syscall.o read_rip.o scheduler.o
+
+$(KERNEL): $(OBJECTS) link.ld
 	$(LD) $^ $(LDFLAGS) -o $@
 	strip $@
-	-rm $(OBJS)
+	-rm $(OBJECTS)
 
-kernel.o: main.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-gdt.o: gdt.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-monitor.o: monitor.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-io.o: io.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-isr.o: isr.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-idt.o: idt.c
-	$(CC) -c $(CFLAGS) $< -o $@
-	
-memman.o: memman.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-gdt_flush.o: gdt_flush.asm
-	$(AS) $(ASFLAGS) -o $@ $< 
-interrupt.o: interrupt.asm
-	$(AS) $(ASFLAGS) -o $@ $< 
+%.o: %.asm
+	$(AS) $(ASFLAGS) -o $@ $<
 
 clean:
-	-rm $(KERNEL) $(OBJS) defaultlibs
+	-rm $(KERNEL) $(OBJECTS) defaultlibs

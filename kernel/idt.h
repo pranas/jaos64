@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-#define IDT_ENTRIES 256
 
 struct idt_descriptor
 {
@@ -24,6 +23,7 @@ struct idt_ptr_struct
 } __attribute__((packed));
 typedef struct idt_ptr_struct idt_ptr_struct;
 
+#define IDT_ENTRIES 256
 idt_ptr_struct idt_ptr;
 idt_descriptor idt[IDT_ENTRIES];
 
@@ -65,5 +65,8 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
+extern void isr32();
+extern void isr33();
+extern void isr128();
 
 #endif

@@ -23,7 +23,17 @@ int8_t cursor_x = 0;
 int8_t cursor_y = 0;
 
 /* video memory mapped here */
-int16_t* video_memory = (int16_t*) 0xB8000;
+int16_t* video_memory = (int16_t*) 0xB8000; // default
+
+void set_video_memory(void* address)
+{
+	video_memory = address;
+}
+
+void* get_video_memory()
+{
+	return video_memory;
+}
 
 // update cursor position
 static void move_cursor()
@@ -44,8 +54,8 @@ static void scroll()
 	if (cursor_y >= 25)
 	{
 		int i;
-		for (i = (80*25) - 1; i > (1*80); i--)
-			video_memory[i-80] = video_memory[i];
+		for (i = 0; i < (80*24); i++)
+			video_memory[i] = video_memory[i+80];
 		for (i = 24*80; i < 25*80; i++)
 			video_memory[i] = blank;
 
@@ -122,7 +132,7 @@ void puts(char* str)
 char tbuf[32];
 char bchars[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-void itoa(unsigned i, unsigned base, char* buf) {
+void itoa(uint64_t i, unsigned base, char* buf) {
    int pos = 0;
    int opos = 0;
    int top = 0;
@@ -145,7 +155,7 @@ void itoa(unsigned i, unsigned base, char* buf) {
    buf[opos] = 0;
 }
 
-void itoa_s(int i,unsigned base,char* buf) {
+void itoa_s(int64_t i, unsigned base, char* buf) {
    if (base > 16) return;
    if (i < 0) {
       *buf++ = '-';
@@ -154,16 +164,23 @@ void itoa_s(int i,unsigned base,char* buf) {
    itoa(i,base,buf);
 }
 
-void putint(int i)
+void uitoa_s(uint64_t i, unsigned base, char* buf) {
+   if (base > 16) return;
+   itoa(i,base,buf);
+}
+
+void putint(int64_t i)
 {
 	char str[32]={0};
 	itoa_s (i, 10, str);
 	puts (str);
 }
 
-void puthex(int i)
+void puthex(uint64_t i)
 {
     char str[32]={0};
-	itoa_s (i, 16, str);
+    str[0] = '0';
+    str[1] = 'x';
+	uitoa_s (i, 16, str+2);
 	puts (str);
 }

@@ -4,8 +4,8 @@ bits 64
 	[GLOBAL isr%1]
 	isr%1:
 		cli
-		push byte 0
-		push byte %1
+		push qword 0
+		push qword %1
 		jmp isr_common
 %endmacro 
 
@@ -13,7 +13,7 @@ bits 64
 	[GLOBAL isr%1]
 	isr%1:
 		cli
-		push byte %1
+		push qword %1
 		jmp isr_common
 %endmacro 
 
@@ -25,7 +25,7 @@ ISR_NOERRCODE 4
 ISR_NOERRCODE 5
 ISR_NOERRCODE 6
 ISR_NOERRCODE 7
-ISR_ERRCODE 8
+ISR_NOERRCODE 8
 ISR_NOERRCODE 9
 ISR_ERRCODE 10
 ISR_ERRCODE 11
@@ -49,6 +49,11 @@ ISR_NOERRCODE 28
 ISR_NOERRCODE 29
 ISR_NOERRCODE 30
 ISR_NOERRCODE 31
+ISR_NOERRCODE 32
+ISR_NOERRCODE 33
+
+;syscall
+ISR_NOERRCODE 128
 
 [EXTERN isr_handler] ; its in isr.c
 isr_common:
@@ -60,6 +65,8 @@ isr_common:
 	push rdi
 	push rbp
 	push rsp
+	push r8
+	push r9
 	mov ax, ds
 	push rax
 	
@@ -80,6 +87,8 @@ isr_common:
 	mov fs, ax
 	mov gs, ax
 
+	pop r9
+	pop r8
 	pop rsp
 	pop rbp
 	pop rdi
@@ -88,6 +97,6 @@ isr_common:
 	pop rcx
 	pop rbx
 	pop rax
-	add esp, 16 ; clean up pushed error and int numbers (2 * 8bytes)
+	add rsp, 16 ; clean up pushed error and int numbers (2 * 8bytes)
 	sti         ; reenable interrupts
 	iretq
