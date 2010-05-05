@@ -4,6 +4,7 @@
 ; 0x18 - ring 3 code segment
 [global usermode]
 usermode:
+	cli
 	mov ax, 0x23
 	mov ds, ax
 	mov es, ax

@@ -206,7 +206,7 @@ void memman_init(multiboot_info* bootinfo)
     debug_memmap(_mem_max_blocks);
     
 	// extend current map
-	brute_create_page(0, 0, 1024, get_current_pml4(), 0);
+	brute_create_page(0, 0, 1024, get_current_pml4(), 1);
 
     puts("Current PML4 table: ");
     puthex(get_current_pml4());
@@ -215,13 +215,13 @@ void memman_init(multiboot_info* bootinfo)
     pml4_entry* pml4 = mem_alloc_block();
 
     // creates 512 pages at virtual 3gb zone and maps to 0x100000
-    brute_create_page(0x100000, 0x00000000c0000000, 512, pml4, 0);
+    brute_create_page(0x100000, 0x00000000c0000000, 512, pml4, 1);
 
 	// probably 512 is enough, but let's say 513
 	_kernel_next_block = (0x00000000c0000000 / 0x1000) + 512 ;
     
     // creates 512 pages at virtual 0 and maps to 0
-    brute_create_page(0, 0, 1024, pml4, 0);
+    brute_create_page(0, 0, 1024, pml4, 1);
     
     switch_paging((uint64_t) pml4);
     
@@ -376,7 +376,7 @@ page_entry* create_page(uint64_t address, pml4_entry* pml4, int user)
         pd[addr->pd].table = (uint64_t) pt / 0x1000;
         pd[addr->pd].present = 1;
         pd[addr->pd].rw = 1;
-        pd[addr->pd].user = 0;
+        pd[addr->pd].user = user;
     }
     pt[addr->pt].present = 1;
     pt[addr->pt].rw = 1;

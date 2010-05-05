@@ -33,7 +33,6 @@ void kernel_entry (multiboot_info* bootinfo)
 	gdt_install();  puts("GDT initialised.\n");
 	idt_install();	puts("IDT initialised.\n");
     memman_init(bootinfo);
-	// init fat32
 	fat32_init();
 
 	acpi_init();
@@ -41,12 +40,13 @@ void kernel_entry (multiboot_info* bootinfo)
 	ioapic_init(); // keyboard only for now
 
 	register_handler(0x21, keyboard_handler);
-
+	init_syscalls();
 	init_timer(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
-	//usermode(); // switch to usermod :)
-
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
+	usermode(); // switch to usermode :)
+	syscall_puts("Im a happy user!\n");
+
 	for (;;);
 }
 

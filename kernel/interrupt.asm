@@ -4,8 +4,8 @@ bits 64
 	[GLOBAL isr%1]
 	isr%1:
 		cli
-		push byte 0
-		push byte %1
+		push qword 0
+		push qword %1
 		jmp isr_common
 %endmacro 
 
@@ -13,7 +13,7 @@ bits 64
 	[GLOBAL isr%1]
 	isr%1:
 		cli
-		push byte %1
+		push qword %1
 		jmp isr_common
 %endmacro 
 
@@ -65,6 +65,8 @@ isr_common:
 	push rdi
 	push rbp
 	push rsp
+	push r8
+	push r9
 	mov ax, ds
 	push rax
 	
@@ -85,6 +87,8 @@ isr_common:
 	mov fs, ax
 	mov gs, ax
 
+	pop r9
+	pop r8
 	pop rsp
 	pop rbp
 	pop rdi
