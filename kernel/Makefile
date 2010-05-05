@@ -3,7 +3,7 @@ INCLUDE_PATH = ../include
 LIBRARY_PATH = ../lib
 CC = gcc
 LD = ld
-CFLAGS = -Wall -ffreestanding -mno-red-zone -mcmodel=large -nostdlib -m64 \
+CFLAGS = -ffreestanding -mno-red-zone -mcmodel=large -nostdlib -m64 \
 		 -I$(INCLUDE_PATH) 
 LDFLAGS = -L$(LIBRARY_PATH) -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld -lcorelib --traditional-format
 
