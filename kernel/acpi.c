@@ -28,6 +28,7 @@ void * get_rsdt()
 			return ptr;
 		}
 	}
+	return NULL;
 }
 
 void * find_sdt(void* rsdt_ptr, const char * signature)

@@ -12,15 +12,18 @@
 */
 
 #include <bootinfo.h>
+
 #include "monitor.h"
+
 #include "gdt.h"
 #include "idt.h"
+#include "isr.h"
 #include "msr.h"
 #include "memman.h"
+#include "acpi.h"
 #include "apic.h"
 #include "ioapic.h"
 #include "fat32.h"
-#include "isr.h"
 #include "keyboard.h"
 #include "syscall.h"
 

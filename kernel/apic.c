@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "monitor.h"
+#include "msr.h"
 #include "memman.h"
 #include "io.h"
 

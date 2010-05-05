@@ -1,5 +1,8 @@
 #include "gdt.h"
 
+#include "monitor.h"
+#include "stdlib.h"
+
 void gdt_set_gate(int num, int32_t base, int32_t limit, int8_t access, int8_t granularity)
 {
 	/* base address */
