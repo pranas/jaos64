@@ -97,7 +97,7 @@ protectedMode:
 
 	mov di, 0x1000
 	xor ax, ax
-	mov cx, 0x4000
+	mov cx, 0x5000
 	rep stosb
 
 ; We will use paging to set-up higher half kernel addressing
@@ -113,38 +113,53 @@ protectedMode:
 ; Bits 20-12 ... PT
 ; Bits 11-0 offset in page
 ;
+; 3 is used to set first two bits (present and rw)
 
-	mov di, 0x1000
+	mov di, 0x1000          ; pml[0]
 	mov WORD [di], 0x2003
 	
-	mov di, 0x2000
+	mov di, 0x2000          ; pdp[0]
 	mov WORD [di], 0x3003
 	
-	add di, 0x18            ;3gb
+	add di, 0x18            ; pdp[3]
 	mov WORD [di], 0x4003
 	
-; 3 is used to set first two bits
-; (it's Present and RW flags)
+; pd table for pdp[0]
+; maps 0x0 -> 0x0
+; using 2MB pages
 
-    mov di, 0x3000              ; Our PT starts there
-    mov ebx, 0x00000083         ; 3 to set first two bits
-    mov cx, 512                 ; Loop
+    mov di, 0x3000
+    mov ebx, 0x00000083
+    mov cx, 512
 
     .setPageEntry:
     mov DWORD [di], ebx
     add ebx, 0x200000
-    add di, 8                   ; Move to next page entry
+    add di, 8
     loop .setPageEntry
 
-    mov di, 0x4000                ; Our PT starts there
-    mov ebx, 0x00200083           ; 3 to set first two bits
-    mov cx, 512                   ; Loop
+; pd table for pdp[3]
+; maps 3GB to 2MB physical
+; using 2MB pages
+
+    mov di, 0x4000
+    mov ebx, 0x00200083
+    mov cx, 511                 ; only pd[0..510]
 
     .setPageEntry2:
     mov DWORD [di], ebx
     add ebx, 0x200000
-    add di, 8                 ; Move to next page entry
+    add di, 8
     loop .setPageEntry2
+    
+; last entry (pd[511])
+; directs to page table at 0x5000
+; this is used to map stack at end of kernel zone (3GB)
+
+    mov WORD [di], 0x5003
+    
+    mov di, 0x6000-8            ; pt[511]
+    mov DWORD [di], 0x00008003  ; our stack is from 0x9000 to 0x8000
 
 ; Now we should enable PAE-paging by setting the PAE-bit in the CR4
 
@@ -207,7 +222,8 @@ longMode:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
-	mov rsp, stack-22; 0x90000         ; stack starts at 36kb
+	mov rbp, 0x0000000100000000     ; we mapped our stack at end of our kernel (3GB zone)
+	mov rsp, 0x0000000100000000-22
 ;
 ; Let's look for kernel file in disk
 ;
@@ -241,6 +257,8 @@ kernelFound:
 	xchg bx, bx                 ; debugger trap
 	mov r12, rbx
 	mov rdi, bootinfo           ; integer/pointer for first arg of kernel
+	mov rsi, rsp
+
 	call r12                    ; call kernel
 
 	hlt
