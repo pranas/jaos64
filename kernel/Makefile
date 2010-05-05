@@ -29,4 +29,4 @@ $(KERNEL): $(OBJECTS) link.ld
 	$(AS) $(ASFLAGS) -o $@ $<
 
 clean:
-	-rm $(KERNEL) $(OBJS) defaultlibs
+	-rm $(KERNEL) $(OBJECTS) defaultlibs

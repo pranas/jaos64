@@ -6,16 +6,12 @@ CFLAGS = -ffreestanding -mcmodel=large -nodefaultlibs -nostartfiles -nostdlib -m
 AR = ar
 ARFLAGS = rcsv
 
+OBJECTS = stdlib.o string.o
+
 all: libcorelib.a
 
-libcorelib.a: stdlib.o string.o
+libcorelib.a: $(OBJECTS)
 	$(AR) $(ARFLAGS) $@ $^
 
-stdlib.o: stdlib.c
-	$(CC) $(CFLAGS) -o $@ -c $^
-
-string.o: string.c
-	$(CC) $(CFLAGS) -o $@ -c $^
-
 clean:
-	-rm libcorelib.a corelib.o string.o stdlib.o
+	-rm libcorelib.a $(OBJECTS)
