@@ -3,3 +3,5 @@ bin/*
 !bin/fdisk.script
 lib/corelib.o
 lib/libcorelib.a
+*.swp
+*~
