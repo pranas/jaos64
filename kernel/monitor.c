@@ -23,7 +23,17 @@ int8_t cursor_x = 0;
 int8_t cursor_y = 0;
 
 /* video memory mapped here */
-int16_t* video_memory = (int16_t*) 0xB8000;
+int16_t* video_memory = (int16_t*) 0xB8000; // default
+
+void set_video_memory(void* address)
+{
+	video_memory = address;
+}
+
+void* get_video_memory()
+{
+	return video_memory;
+}
 
 // update cursor position
 static void move_cursor()
@@ -122,7 +132,7 @@ void puts(char* str)
 char tbuf[32];
 char bchars[] = {'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
 
-void itoa(unsigned i, unsigned base, char* buf) {
+void itoa(uint64_t i, unsigned base, char* buf) {
    int pos = 0;
    int opos = 0;
    int top = 0;
@@ -154,6 +164,11 @@ void itoa_s(int64_t i, unsigned base, char* buf) {
    itoa(i,base,buf);
 }
 
+void uitoa_s(uint64_t i, unsigned base, char* buf) {
+   if (base > 16) return;
+   itoa(i,base,buf);
+}
+
 void putint(int64_t i)
 {
 	char str[32]={0};
@@ -161,11 +176,11 @@ void putint(int64_t i)
 	puts (str);
 }
 
-void puthex(int64_t i)
+void puthex(uint64_t i)
 {
     char str[32]={0};
     str[0] = '0';
     str[1] = 'x';
-	itoa_s (i, 16, str+2);
+	uitoa_s (i, 16, str+2);
 	puts (str);
 }

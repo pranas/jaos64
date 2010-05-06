@@ -17,8 +17,7 @@ all: $(KERNEL)
 
 OBJECTS = main.o readdisk.o interrupt.o gdt_flush.o monitor.o io.o gdt.o idt.o isr.o \
 		  memman.o ioapic.o apic.o acpi.o msr.o diskio.o fat32.o keyboard.o usermode.o \
-		  syscall.o
-
+		  syscall.o read_rip.o scheduler.o
 
 $(KERNEL): $(OBJECTS) link.ld
 	$(LD) $^ $(LDFLAGS) -o $@
