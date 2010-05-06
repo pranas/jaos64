@@ -3,7 +3,7 @@
 #
 
 IMAGE = hdd.img
-CONTENT = stage2 kernel
+CONTENT = stage2 loop kernel
 LODEV = $(shell losetup -f)
 
 all: $(IMAGE) format mbr

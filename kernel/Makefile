@@ -15,9 +15,9 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-OBJECTS = main.o readdisk.o interrupt.o gdt_flush.o monitor.o io.o gdt.o idt.o isr.o \
-		  memman.o ioapic.o apic.o acpi.o msr.o diskio.o fat32.o keyboard.o usermode.o \
-		  syscall.o read_rip.o scheduler.o
+OBJECTS = main.o read_sectors.o interrupt.o gdt_flush.o monitor.o io.o gdt.o idt.o isr.o \
+		  memman.o ioapic.o apic.o acpi.o msr.o diskio.o fat32.o keyboard.o switch_to_user_mode.o \
+		  syscall.o read_rip.o scheduler.o elf.o
 
 $(KERNEL): $(OBJECTS) link.ld
 	$(LD) $^ $(LDFLAGS) -o $@

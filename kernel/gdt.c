@@ -59,7 +59,7 @@ void gdt_install()
 	gdt_set_gate(4, 0, 0, 0xF2, 0x00); // data
 
 	// try to add a tss gate
-	tss_set_gate(5, 0x90000, 0x90000, 0x90000);
+	tss_set_gate(5, 0x0000000100000000-0x500, 0x0000000100000000-0x500, 0x0000000100000000-0x500);
 
 	// apply changes
 	gdt_flush();

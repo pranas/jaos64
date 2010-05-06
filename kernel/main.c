@@ -27,6 +27,9 @@
 #include "keyboard.h"
 #include "scheduler.h"
 #include "syscall.h"
+#include "elf.h"
+
+extern void switch_to_user_mode(void*);
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -52,6 +55,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
 	if (fork_kernel() == 0)
 	{
+		switch_to_user_mode(load_executable("LOOP      \0"));
 		for(;;)
 		{
 			puts("PONG!\n\n");
