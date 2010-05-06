@@ -47,7 +47,7 @@ uint64_t fork_kernel()
 	task* new_task = &task_list[next_pid];
 	
 	new_task->pid = next_pid++;
-	new_task->rbp = new_task->rsp = alloc_kernel_page(1) + 0x1000;
+	new_task->rbp = new_task->rsp = alloc_page(0xbffff000, 1) + 0x1000;
 	new_task->rip = 0;
 	new_task->pml4 = clone_pml4t();
 	
