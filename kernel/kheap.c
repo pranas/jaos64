@@ -1,39 +1,25 @@
 #include "kheap.h"
 #include "memman.h"
 
-// end is defined in the linker script.
-extern uint32_t end;
-uint32_t placement_address = (uint32_t)&end;
-extern page_directory_t *kernel_directory;
-heap_t *kheap=0;
+heap_t *kheap = 0;
 
 uint64_t kmalloc_int(uint32_t sz, int align, uint64_t *phys)
 {
     if (kheap != 0)
     {
         void *addr = alloc(sz, (uint8_t)align, kheap);
-        if (phys != 0)
-        {
-            page_t *page = get_page((uint32_t)addr, 0, kernel_directory);
-            *phys = page->frame*0x1000 + (uint32_t)addr&0xFFF;
-        }
-        return (uint32_t)addr;
+//        if (phys != 0)
+//        {
+//            page_t *page = get_page((uint32_t)addr, 0, kernel_directory);
+//            *phys = page->frame*0x1000 + (uint32_t)addr&0xFFF;
+//        }
+        return (uint64_t) addr;
     }
     else
     {
-        if (align == 1 && (placement_address & 0xFFFFF000) )
-        {
-            // Align the placement address;
-            placement_address &= 0xFFFFF000;
-            placement_address += 0x1000;
-        }
-        if (phys)
-        {
-            *phys = placement_address;
-        }
-        uint64_t tmp = placement_address;
-        placement_address += sz;
-        return tmp;
+		int size = sz / MEM_BLOCK_SIZE;
+		size = size == 0 ? 1 : size;
+        return (uint64_t) alloc_kernel_page(size);
     }
 }
 
@@ -65,7 +51,8 @@ uint64_t kmalloc(uint32_t sz)
 static void expand(uint32_t new_size, heap_t *heap)
 {
     // Sanity check.
-    ASSERT(new_size > heap->end_address - heap->start_address);
+    if (new_size < heap->end_address - heap->start_address)
+		puts("expand: new_size smaller than current size\n");
 
     // Get the nearest following page boundary.
     if (new_size&0xFFFFF000 != 0)
@@ -75,28 +62,33 @@ static void expand(uint32_t new_size, heap_t *heap)
     }
 
     // Make sure we are not overreaching ourselves.
-    ASSERT(heap->start_address+new_size <= heap->max_address);
+    if (heap->start_address+new_size > heap->max_address)
+		puts("expand: expanded address exceeds maximum\n");
 
     // This should always be on a page boundary.
     uint32_t old_size = heap->end_address-heap->start_address;
 
     uint32_t i = old_size;
-    while (i < new_size)
-    {
-        alloc_frame( get_page(heap->start_address+i, 1, kernel_directory),
-                     (heap->supervisor)?1:0, (heap->readonly)?0:1);
-        i += 0x1000 /* page size */;
-    }
+	alloc_kernel_page( (new_size - old_size) / MEM_BLOCK_SIZE );
+	/*
+	while (i < new_size)
+	{
+		alloc_frame( get_page(heap->start_address+i, 1, kernel_directory),
+					 (heap->supervisor)?1:0, (heap->readonly)?0:1);
+		i += 0x1000;
+	}
+	*/
     heap->end_address = heap->start_address+new_size;
 }
 
 static uint32_t contract(uint32_t new_size, heap_t *heap)
 {
     // Sanity check.
-    ASSERT(new_size < heap->end_address-heap->start_address);
+    if (new_size >= heap->end_address-heap->start_address)
+		puts("contract: contracting, but new_size is larger than old_size\n");
 
     // Get the nearest following page boundary.
-    if (new_size&0x1000)
+    if (new_size & 0xFFFFF000 != 0)
     {
         new_size &= 0x1000;
         new_size += 0x1000;
@@ -108,12 +100,8 @@ static uint32_t contract(uint32_t new_size, heap_t *heap)
 
     uint32_t old_size = heap->end_address-heap->start_address;
     uint32_t i = old_size - 0x1000;
-    while (new_size < i)
-    {
-        free_frame(get_page(heap->start_address+i, 0, kernel_directory));
-        i -= 0x1000;
-    }
 
+	free_kernel_page(heap->start_address + new_size, (old_size - new_size) / MEM_BLOCK_SIZE);
     heap->end_address = heap->start_address + new_size;
     return new_size;
 }
@@ -156,17 +144,18 @@ static int8_t header_t_less_than(void*a, void *b)
 
 heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t supervisor, uint8_t readonly)
 {
-    heap_t *heap = (heap_t*)kmalloc(sizeof(heap_t));
+    heap_t *heap = (heap_t*) alloc_kernel_page(1); // 1 page ought to be enough for any heap
 
-    // All our assumptions are made on startAddress and endAddress being page-aligned.
-    ASSERT(start%0x1000 == 0);
-    ASSERT(end_addr%0x1000 == 0);
+    if (!(start % 0x1000 == 0))
+		puts("Start address not page-aligned\n");
+	if (!(end_addr % 0x1000 == 0))
+		puts("End address not page-aligned\n");
     
     // Initialise the index.
-    heap->index = place_ordered_array( (void*)start, HEAP_INDEX_SIZE, &header_t_less_than);
+    heap->index = place_ordered_array((void*) start, HEAP_INDEX_SIZE, &header_t_less_than);
     
     // Shift the start address forward to resemble where we can start putting data.
-    start += sizeof(type_t)*HEAP_INDEX_SIZE;
+    start += sizeof(void*) * HEAP_INDEX_SIZE;
 
     // Make sure the start address is page-aligned.
     if (start & 0xFFFFF000 != 0)
@@ -183,10 +172,10 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 
     // We start off with one large hole in the index.
     header_t *hole = (header_t *)start;
-    hole->size = end_addr-start;
+    hole->size = end_addr - start;
     hole->magic = HEAP_MAGIC;
     hole->is_hole = 1;
-    insert_ordered_array((void*)hole, &heap->index);     
+    insert_ordered_array((void*) hole, &heap->index);     
 
     return heap;
 }
@@ -325,8 +314,10 @@ void free(void *p, heap_t *heap)
     footer_t *footer = (footer_t*) ( (uint32_t)header + header->size - sizeof(footer_t) );
 
     // Sanity checks.
-    ASSERT(header->magic == HEAP_MAGIC);
-    ASSERT(footer->magic == HEAP_MAGIC);
+    if (header->magic != HEAP_MAGIC)
+		puts("free: header magic bad\n");
+    if (footer->magic != HEAP_MAGIC)
+		puts("free: footer magic bad\n");
 
     // Make us a hole.
     header->is_hole = 1;
@@ -364,7 +355,8 @@ void free(void *p, heap_t *heap)
             iterator++;
 
         // Make sure we actually found the item.
-        ASSERT(iterator < heap->index.size);
+        if (iterator >= heap->index.size)
+			puts("free: iterator failed to find item to unify\n");
         // Remove it.
         remove_ordered_array(iterator, &heap->index);
     }

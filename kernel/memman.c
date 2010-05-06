@@ -19,6 +19,9 @@
 #include "memman.h"
 #include "isr.h"
 
+#include "kheap.h"
+extern heap_t *kheap;
+
 /*
 
     Private functions used by memory manager
@@ -265,8 +268,12 @@ void memman_init(multiboot_info* bootinfo)
     puts("\n");
 
 	_kernel_pml4t = pml4_new; // not used!
-	
-	// asm volatile ("xchg %bx, %bx");
+
+   // Initialise the kernel heap.
+	asm volatile ("xchg %bx, %bx");
+	uint64_t kheap_start = (uint64_t) alloc_kernel_page(KHEAP_INITIAL_SIZE / MEM_BLOCK_SIZE);
+	uint64_t kheap_end   = kheap_start + KHEAP_INITIAL_SIZE;
+	kheap = create_heap(kheap_start, kheap_end, 0x10000000, 0, 0);
 }
 
 void mem_init_region(uint64_t base, uint64_t size)
