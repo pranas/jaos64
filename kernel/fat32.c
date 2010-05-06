@@ -83,7 +83,7 @@ void read_file(uint64_t cluster, void* address)
 	}
 }
 
-uint64_t find_file(char* name)
+dir_entry* find_file(char* name)
 {
 	dir_entry* list = alloc_kernel_page(((_partition->sectors_per_cluster * _partition->bytes_per_sector) / 4096) + 1);
 	
@@ -99,7 +99,11 @@ uint64_t find_file(char* name)
 		{
 			list[i].filename[10] = 0;
 			if (strcmp(list[i].filename, name))
-				return list[i].cluster_high * 0x100 + list[i].cluster_low;
+			{
+				dir_entry file = list[i];
+				free_kernel_page(list);
+				return &file;//.cluster_high * 0x100 + list[i].cluster_low;
+			}
 		}
 		
 		// puts("Next cluster to read:");

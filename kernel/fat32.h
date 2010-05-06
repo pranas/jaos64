@@ -113,7 +113,7 @@ uint64_t read_cluster(uint64_t cluster, void* address);
 uint64_t find_next_cluster(uint64_t cluster);
 // public
 void read_file(uint64_t cluster, void* address);
-uint64_t find_file(char* name);
+dir_entry* find_file(char* name);
 // debug
 uint64_t put_dir(dir_entry* dir, int size);
 
