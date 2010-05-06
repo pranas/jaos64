@@ -140,7 +140,7 @@ void memman_init(multiboot_info* bootinfo)
     puts(" bytes of usable memory...\n");
     
 	// reset limit -> limit memory to 32mb
-	limit = 33488896;
+	//limit = 33488896;
 
     puts("Highest address of available memory: ");
     putint(limit);
@@ -435,6 +435,26 @@ void* temp_map_page(void* physical_address)
 void* map_mem_block()
 {
 	
+}
+
+void* alloc_page(void* virtual, uint64_t size)
+{
+	uint64_t i;
+	
+	if (size == 0) size = 1;
+	
+	for (i = 0; i < size; i++)
+	{
+		page_entry* page = create_page_for_current( (addr) (virtual + i * 0x1000), 1);
+		if (!page) return 0;
+		page->present = 1;
+		page->user = 1;
+		page->rw = 1;
+		void* phys_frame = mem_alloc_block();
+		if (!phys_frame) return 0;
+		page->frame = (uint64_t) phys_frame / 0x1000;
+	}
+	return virtual;
 }
 
 void* alloc_kernel_page(int size)

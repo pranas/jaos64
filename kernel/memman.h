@@ -184,6 +184,7 @@ pml4_entry* clone_pml4t();
 
 // replaces the same pml4
 void invalidate();
+void* alloc_page(void* virtual, uint64_t size);
 
 uint64_t get_current_pml4();
 void switch_paging(void* new);
