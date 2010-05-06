@@ -46,6 +46,7 @@ int strcmp (const char* str, const char* str2)
                         return 1;
                 if ((str[i] == 0) || (str2[i] == 0))
                         return 0;
+				i++;
         }
         return 0;
 }
