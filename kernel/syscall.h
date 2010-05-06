@@ -33,7 +33,5 @@ DECL_SYSCALL1(putint, int64_t);
 void init_syscalls();
 void syscall_handler(registers_t * regs);
 
-extern void usermode();
-
 #endif
 
