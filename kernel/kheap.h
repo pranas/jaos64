@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "ordered_array.h"
 
-#define KHEAP_INITIAL_SIZE  0x100000
+#define KHEAP_INITIAL_SIZE  0x1000000
 #define HEAP_INDEX_SIZE   0x20000
 #define HEAP_MAGIC        0xDEADBABA
 #define HEAP_MIN_SIZE     0x70000

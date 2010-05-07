@@ -145,7 +145,8 @@ static int8_t header_t_less_than(void*a, void *b)
 heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t supervisor, uint8_t readonly)
 {
 	puts("create_heap: start\n");
-	heap_t *heap = (heap_t*) start; // 1 page ought to be enough for any heap
+	heap_t *heap = (heap_t*) alloc_kernel_page(1); // 1 page ought to be enough for any heap
+	puthex(heap);
 
 	if (!(start % 0x1000 == 0))
 		puts("Start address not page-aligned\n");
@@ -154,10 +155,12 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 
 	// Initialise the index.
 	heap->index = place_ordered_array((void*) start, HEAP_INDEX_SIZE, &header_t_less_than);
+	puthex(heap->index);
 	puthex(&heap->index);
 
 	// Shift the start address forward to resemble where we can start putting data.
 	start += sizeof(void*) * HEAP_INDEX_SIZE;
+	puthex(start);
 
 	// Make sure the start address is page-aligned.
 	if (start & 0xFFFFF000 != 0)
@@ -173,7 +176,7 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 	heap->readonly = readonly;
 
 	// We start off with one large hole in the index.
-	header_t *hole = (header_t *)start;
+	header_t *hole = (header_t *) start;
 	hole->size = end_addr - start;
 	hole->magic = HEAP_MAGIC;
 	hole->is_hole = 1;
