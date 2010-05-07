@@ -13,7 +13,7 @@ struct header_t
 {
 	uint32_t magic;   // Magic number, used for error checking and identification.
 	uint8_t is_hole;   // 1 if this is a hole. 0 if this is a block.
-	uint32_t size;    // size of the block, including the end footer.
+	uint64_t size;    // size of the block, including the end footer.
 };
 typedef struct header_t header_t;
 
@@ -36,7 +36,14 @@ struct heap_t
 typedef struct heap_t heap_t;
 
 heap_t *create_heap(uint64_t start, uint64_t end, uint64_t max, uint8_t supervisor, uint8_t readonly);
-void *alloc(uint32_t size, uint8_t page_align, heap_t *heap);
+void *alloc(uint64_t size, uint8_t page_align, heap_t *heap);
 void free(void *p, heap_t *heap); 
+
+uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys);
+uint64_t kmalloc(uint64_t sz);
+uint64_t kmalloc_a(uint64_t sz);
+uint64_t kmalloc_p(uint64_t sz, uint64_t *phys);
+uint64_t kmalloc_ap(uint64_t sz, uint64_t *phys);
+void kfree(void *p);
 
 #endif

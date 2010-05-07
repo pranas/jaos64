@@ -27,6 +27,7 @@
 #include "keyboard.h"
 #include "scheduler.h"
 #include "syscall.h"
+#include "kheap.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -47,6 +48,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	init_timer(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
 	// sets up kernel task and registers handler for timer
+	/*
 	scheduler_init();
 
 	// testing scheduler
@@ -66,6 +68,18 @@ void kernel_entry (multiboot_info* bootinfo)
 			asm volatile("hlt");
 		}
 	}
+	*/
+	uint64_t a = kmalloc(8);
+	*(uint64_t*) a = 0xdeadbaba1badbabe;
+	uint64_t b = kmalloc(8);
+	*(uint64_t*) b = 0xdeadbaba2badbabe;
+	puts("a: "); puthex(a); puts(" value: "); puthex(*(uint64_t*)a); puts("\n");
+	puts("b: "); puthex(b); puts(" value: "); puthex(*(uint64_t*)b); puts("\n");
+	kfree(a);
+	kfree(b);
+	uint64_t c = kmalloc(12);
+	puts("c: "); puthex(c); puts(" value: "); puthex(*(uint64_t*)c); puts("\n");
+	asm ("xchg %bx, %bx");
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 

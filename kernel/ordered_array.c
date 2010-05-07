@@ -6,7 +6,7 @@ int8_t standard_lessthan_predicate(void* a, void* b)
 	return (a<b)?1:0;
 }
 
-ordered_array_t create_ordered_array(uint32_t max_size, cmpfunc_t less_than)
+ordered_array_t create_ordered_array(uint64_t max_size, cmpfunc_t less_than)
 {
 	ordered_array_t to_ret;
 	to_ret.array = (void*)kmalloc(max_size*sizeof(void*));
@@ -17,7 +17,7 @@ ordered_array_t create_ordered_array(uint32_t max_size, cmpfunc_t less_than)
 	return to_ret;
 }
 
-ordered_array_t place_ordered_array(void *addr, uint32_t max_size, cmpfunc_t less_than)
+ordered_array_t place_ordered_array(void *addr, uint64_t max_size, cmpfunc_t less_than)
 {
 	ordered_array_t to_ret;
 	to_ret.array = (void**)addr;
@@ -37,7 +37,7 @@ void insert_ordered_array(void* item, ordered_array_t *array)
 {
 	if (!array->less_than)
 		puts("insert_ordered_array: missing less_than\n");
-	uint32_t i = 0;
+	uint64_t i = 0;
 	while (i < array->size && array->less_than(array->array[i], item))
 		i++;
 	if (i == array->size) // just add at the end of the array.
@@ -59,7 +59,7 @@ void insert_ordered_array(void* item, ordered_array_t *array)
 	}
 }
 
-void* lookup_ordered_array(uint32_t i, ordered_array_t *array)
+void* lookup_ordered_array(uint64_t i, ordered_array_t *array)
 {
 
 //	ASSERT(i < array->size);
@@ -69,7 +69,7 @@ void* lookup_ordered_array(uint32_t i, ordered_array_t *array)
 		return 0;
 }
 
-void remove_ordered_array(uint32_t i, ordered_array_t *array)
+void remove_ordered_array(uint64_t i, ordered_array_t *array)
 {
 	while (i < array->size)
 	{
