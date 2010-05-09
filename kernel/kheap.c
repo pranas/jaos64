@@ -3,16 +3,33 @@
 
 heap_t *kheap = 0;
 
+// prints handy heap information, 0 -- alloc, 1 -- free
+static void heap_debug(int n)
+{
+	if (n == 0)
+		puts("[ALLOC] ");
+	else if (n == 1)
+		puts("[FREE] ");
+	puts("start: "); puthex(kheap->start_address);
+	puts(" end: "); puthex(kheap->end_address);
+	puts(" max: "); puthex(kheap->max_address);
+	puts("\n");
+}
+
 uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys)
 {
 	if (kheap != 0)
 	{
+		//heap_debug(0);
 		void *addr = alloc(sz, (uint8_t)align, kheap);
-		//        if (phys != 0)
-		//        {
-		//            page_t *page = get_page((uint32_t)addr, 0, kernel_directory);
-		//            *phys = page->frame*0x1000 + (uint32_t)addr&0xFFF;
-		//        }
+		/*
+		if (phys != 0)
+		{
+			page_t *page = get_page((uint32_t)addr, 0, kernel_directory);
+			*phys = page->frame*0x1000 + (uint32_t)addr&0xFFF;
+		}
+		*/
+		//heap_debug(0);
 		return (uint64_t) addr;
 	}
 	else
@@ -26,6 +43,7 @@ uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys)
 void kfree(void *p)
 {
 	free(p, kheap);
+	//heap_debug(1);
 }
 
 uint64_t kmalloc_a(uint64_t sz)
@@ -55,7 +73,7 @@ static void expand(uint64_t new_size, heap_t *heap)
 		puts("expand: new_size smaller than current size\n");
 
 	// Get the nearest following page boundary.
-	if (new_size&0xFFFFF000 != 0)
+	if (new_size & 0xFFFFF000 != 0)
 	{
 		new_size &= 0xFFFFF000;
 		new_size += 0x1000;
@@ -65,19 +83,9 @@ static void expand(uint64_t new_size, heap_t *heap)
 	if (heap->start_address+new_size > heap->max_address)
 		puts("expand: expanded address exceeds maximum\n");
 
-	// This should always be on a page boundary.
-	uint64_t old_size = heap->end_address-heap->start_address;
+	uint64_t old_size = heap->end_address - heap->start_address;
 
-	uint64_t i = old_size;
-	alloc_kernel_page( (new_size - old_size) / MEM_BLOCK_SIZE );
-	/*
-	   while (i < new_size)
-	   {
-	   alloc_frame( get_page(heap->start_address+i, 1, kernel_directory),
-	   (heap->supervisor)?1:0, (heap->readonly)?0:1);
-	   i += 0x1000;
-	   }
-	   */
+	alloc_kernel_page( ((new_size - old_size) / MEM_BLOCK_SIZE) + 1); // TODO: supervisor and readonly bits
 	heap->end_address = heap->start_address+new_size;
 }
 
@@ -90,7 +98,7 @@ static uint64_t contract(uint64_t new_size, heap_t *heap)
 	// Get the nearest following page boundary.
 	if (new_size & 0xFFFFF000 != 0)
 	{
-		new_size &= 0x1000;
+		new_size &= 0xFFFFF000;
 		new_size += 0x1000;
 	}
 
@@ -101,7 +109,7 @@ static uint64_t contract(uint64_t new_size, heap_t *heap)
 	uint64_t old_size = heap->end_address-heap->start_address;
 	uint64_t i = old_size - 0x1000;
 
-	free_kernel_page(heap->start_address + new_size, (old_size - new_size) / MEM_BLOCK_SIZE);
+	free_kernel_page(heap->start_address + new_size, ((old_size - new_size) / MEM_BLOCK_SIZE) + 1);
 	heap->end_address = heap->start_address + new_size;
 	return new_size;
 }
@@ -144,9 +152,7 @@ static uint8_t header_t_less_than(void*a, void *b)
 
 heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t supervisor, uint8_t readonly)
 {
-	puts("create_heap: start\n");
-	heap_t *heap = (heap_t*) alloc_kernel_page(1); // 1 page ought to be enough for any heap
-	puthex(heap);
+	heap_t *heap = (heap_t*) start;
 
 	if (!(start % 0x1000 == 0))
 		puts("Start address not page-aligned\n");
@@ -154,13 +160,10 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 		puts("End address not page-aligned\n");
 
 	// Initialise the index.
-	heap->index = place_ordered_array((void*) start, HEAP_INDEX_SIZE, &header_t_less_than);
-	puthex(heap->index);
-	puthex(&heap->index);
+	heap->index = place_ordered_array((void*) start + sizeof(heap_t), HEAP_INDEX_SIZE, &header_t_less_than);
 
 	// Shift the start address forward to resemble where we can start putting data.
 	start += sizeof(void*) * HEAP_INDEX_SIZE;
-	puthex(start);
 
 	// Make sure the start address is page-aligned.
 	if (start & 0xFFFFF000 != 0)
@@ -201,7 +204,7 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 
 		// We need to allocate some more space.
 		expand(old_length+new_size, heap);
-		uint64_t new_length = heap->end_address-heap->start_address;
+		uint64_t new_length = heap->end_address - heap->start_address;
 
 		// Find the endmost header. (Not endmost in size, but in location).
 		iterator = 0;
@@ -257,7 +260,7 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	}
 
 	// If we need to page-align the data, do it now and make a new hole in front of our block.
-	if (page_align && orig_hole_pos&0xFFFFF000)
+	if (page_align && orig_hole_pos & 0xFFFFF000)
 	{
 		uint64_t new_location   = orig_hole_pos + 0x1000 /* page size */ - (orig_hole_pos&0xFFF) - sizeof(header_t);
 		header_t *hole_header = (header_t *)orig_hole_pos;
@@ -315,8 +318,8 @@ void free(void *p, heap_t *heap)
 		return;
 
 	// Get the header and footer associated with this pointer.
-	header_t *header = (header_t*) ( (uint64_t)p - sizeof(header_t) );
-	footer_t *footer = (footer_t*) ( (uint64_t)header + header->size - sizeof(footer_t) );
+	header_t *header = (header_t*) ( (uint64_t) p - sizeof(header_t) );
+	footer_t *footer = (footer_t*) ( (uint64_t) header + header->size - sizeof(footer_t) );
 
 	// Sanity checks.
 	if (header->magic != HEAP_MAGIC)
@@ -354,16 +357,16 @@ void free(void *p, heap_t *heap)
 				test_header->size - sizeof(footer_t) );
 		footer = test_footer;
 		// Find and remove this header from the index.
-		uint64_t iterator = 0;
-		while ( (iterator < heap->index.size) &&
-				(lookup_ordered_array(iterator, &heap->index) != (void*)test_header) )
-			iterator++;
+		uint64_t i = 0;
+		while ( (i < heap->index.size) &&
+				(lookup_ordered_array(i, &heap->index) != (void*)test_header) )
+			i++;
 
 		// Make sure we actually found the item.
-		if (iterator >= heap->index.size)
+		if (i >= heap->index.size)
 			puts("free: iterator failed to find item to unify\n");
 		// Remove it.
-		remove_ordered_array(iterator, &heap->index);
+		remove_ordered_array(i, &heap->index);
 	}
 
 	// If the footer location is the end address, we can contract.
