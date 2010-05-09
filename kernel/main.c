@@ -76,7 +76,14 @@ void kernel_entry (multiboot_info* bootinfo)
 		}
 	}
 	*/
+	print_index();
+	void* mem = kmalloc_a(48);
+	puthex((uint64_t) mem); puts("\n");
+	print_index();
+	kfree(mem);
+	print_index();
 	
+	asm("xchg %bx, %bx");
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 
 	for (;;);
