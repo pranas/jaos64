@@ -90,9 +90,10 @@ dir_entry* find_file(char* name)
 			list[i].filename[10] = 0;
 			if (strncmp(list[i].filename, name, strlen(name)-1))
 			{
-				dir_entry file = list[i];
+                dir_entry* file = kmalloc(sizeof(dir_entry));
+                *file = list[i];
 				kfree(list);
-				return &file;//.cluster_high * 0x100 + list[i].cluster_low;
+				return file;//.cluster_high * 0x100 + list[i].cluster_low;
 			}
 		}
 		

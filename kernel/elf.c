@@ -18,19 +18,23 @@ void* load_executable(char* filename)
 {
 	// find file
 	dir_entry* file = find_file(filename);
+    puthex(file);
 
 	// not found?
-	if (!file) return 0;
+	if (!file) puts("not found");//return 0;
 	
 	// calculate size and prepare buffer in kernel
-	void* buffer = alloc_kernel_page(file->size / 8); // file size is in blocks (=512B)
-	
+	asm volatile("xchg %bx, %bx");
+    void* buffer = kmalloc(file->size * _partition->bytes_per_sector);
+    puthex(buffer);
+    
 	// read to buffer
 	read_file(file->cluster_high * 0x100 + file->cluster_low, buffer);
 	
 	// is it elf?
-	if (elf_check(buffer)) return 0;
+	if (elf_check(buffer)) puts("not elf");//return 0;
 	
+    puts("so far so good...");
 	// use program header to load
 	Elf64_Phdr* ph = buffer + ((Elf64_Ehdr *) buffer)->e_phoff;
 	uint64_t i;
@@ -38,6 +42,7 @@ void* load_executable(char* filename)
 	{
 		if (ph[i].p_type == 1)
 		{
+            //puts("a");
 			if (!alloc_page(ph[i].p_vaddr, ph[i].p_memsz / MEM_BLOCK_SIZE)) return 0;
 			memcpy(ph[i].p_vaddr, buffer + ph[i].p_offset, ph[i].p_filesz);
 		}
