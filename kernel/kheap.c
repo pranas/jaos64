@@ -3,6 +3,21 @@
 
 heap_t *kheap = 0;
 
+void kheap_init()
+{
+	if (KHEAP_INITIAL_SIZE - HEAP_INDEX_SIZE * 8 + MEM_BLOCK_SIZE < HEAP_MIN_SIZE)
+	{
+		puts("[KHEAP] cannot initialize heap due to bad size constants.\n");
+	}
+	else
+	{
+		// Initialise the kernel heap.
+		uint64_t kheap_start = (uint64_t) alloc_kernel_page(KHEAP_INITIAL_SIZE / MEM_BLOCK_SIZE);
+		uint64_t kheap_end   = kheap_start + KHEAP_INITIAL_SIZE;
+		kheap = create_heap(kheap_start, kheap_end, 0xd0000000, 0, 0);
+		puts("[KHEAP] kernel heap initialized.\n");
+	}
+}
 // prints handy heap information, 0 -- alloc, 1 -- free
 static void heap_debug(int n)
 {
@@ -106,7 +121,7 @@ static void expand(uint64_t new_size, heap_t *heap)
 static uint64_t contract(uint64_t new_size, heap_t *heap)
 {
 	// Sanity check.
-	if (new_size >= heap->end_address-heap->start_address)
+	if (new_size >= heap->end_address - heap->start_address)
 		puts("contract: contracting, but new_size is larger than old_size\n");
 
 	// Get the nearest following page boundary.
@@ -200,9 +215,6 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 	hole->magic = HEAP_MAGIC;
 	hole->is_hole = 1;
 	insert_ordered_array((void*) hole, &heap->index);
-	puthex(heap->start_address); puts("\n");
-	puthex(heap->end_address); puts("\n");
-	puthex(heap->end_address - heap->start_address); puts("\n");
 
 	return heap;
 }
@@ -393,8 +405,6 @@ void free(void *p, heap_t *heap)
 	{
 		uint64_t old_length = heap->end_address - heap->start_address;
 		uint64_t new_length = contract( (uint64_t)header - heap->start_address, heap);
-		puts("Contracted from "); puthex(old_length); puts(" to ");
-		puthex(new_length); puts("\n");
 		// Check how big we will be after resizing.
 		if (header->size - (old_length-new_length) > 0)
 		{

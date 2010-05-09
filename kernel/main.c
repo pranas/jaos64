@@ -35,11 +35,13 @@ void kernel_entry (multiboot_info* bootinfo)
 	gdt_install();  puts("GDT initialised.\n");
 	idt_install();	puts("IDT initialised.\n");
     memman_init(bootinfo);
+	kheap_init();
 
 	// TODO: needs to be ported to use kmalloc
 	// fat32_init();
 
-	// acpi_init();
+	// TODO: figure out how to do it safely
+	//acpi_init();
 	apic_init();
 	ioapic_init(); // keyboard only for now
 
@@ -71,23 +73,6 @@ void kernel_entry (multiboot_info* bootinfo)
 		}
 	}
 	*/
-	//print_index();
-	int** array = kmalloc(sizeof(int*) * 3);
-	int i;
-	for (i = 0; i < 3; i++)
-	{
-		array[i] = (int*) kmalloc(sizeof(int));
-		*array[i] = i;
-		//print_index();
-	}
-	for (i = 0; i < 3; i++)
-	{
-		if (i == 2)
-			asm("xchg %bx, %bx");
-		kfree(array[i]);
-		//print_index();
-	}
-	asm ("xchg %bx, %bx");
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 
