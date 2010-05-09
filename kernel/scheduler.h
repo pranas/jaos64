@@ -17,7 +17,10 @@
 */
 
 #include <stdint.h>
+#include "common.h"
 #include "memman.h"
+#include "kheap.h"
+#include "fork.h"
 #include "isr.h"
 
 struct task
@@ -26,21 +29,20 @@ struct task
    uint64_t rsp, rbp;     // Stack and base pointers.
    uint64_t rip;          // Instruction pointer.
    pml4_entry* pml4; 	  // Page directory.
+   struct task* next;
 };
 
 typedef struct task task;
 
-static task* current_task = 0;
-static task task_list[32];
+static volatile task* current_task = 0;
+static volatile task* task_list;
 static uint64_t next_pid = 0;
-static uint64_t ret = 0;
 
 extern uint64_t read_rip();
 
 void scheduler_init();
-uint64_t fork_kernel();
-uint64_t fork();
-uint64_t getpid();
 void switch_task();
+void add_task(task* new_task);
+uint64_t getpid();
 
 #endif
