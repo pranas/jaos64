@@ -444,13 +444,16 @@ void* alloc_page(void* virtual, uint64_t size)
 	
 	for (i = 0; i < size; i++)
 	{
+		void* phys_frame = mem_alloc_block();
+		if (!phys_frame) return 0;
+		
 		page_entry* page = create_page_for_current( (addr) (virtual + i * 0x1000), 1);
 		if (!page) return 0;
+		
 		page->present = 1;
 		page->user = 1;
 		page->rw = 1;
-		void* phys_frame = mem_alloc_block();
-		if (!phys_frame) return 0;
+
 		page->frame = (uint64_t) phys_frame / 0x1000;
 	}
 	return virtual;
@@ -462,14 +465,15 @@ void* alloc_kernel_page(int size)
 
 	for (i = 0; i < size; i++)
 	{
+		void* phys_frame = mem_alloc_block();
+		if (!phys_frame) return 0;
+		
 		page_entry* page = create_page_for_current( (addr) ((void* )((_kernel_next_block + 1 * i) * 0x1000)),0);
-		// if (!page) return 0;
+		if (!page) return 0;
+		
 		page->present = 1;
 		page->user = 0;
 		page->rw = 1;
-
-		void* phys_frame = mem_alloc_block();
-		// if (!phys_frame) return 0;
 
 		page->frame = (uint64_t) phys_frame / 0x1000;
 	}

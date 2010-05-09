@@ -2,6 +2,9 @@
 #define _FAT32_H
 
 #include <stdint.h>
+#include <string.h>
+#include "memman.h"
+#include "kheap.h"
 
 struct fat32_volume_id {
 	char jump[3];
