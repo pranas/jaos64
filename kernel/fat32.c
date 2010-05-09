@@ -98,7 +98,7 @@ dir_entry* find_file(char* name)
 		for (i = 0; i < entries_per_cluster; i++)
 		{
 			list[i].filename[10] = 0;
-			if (strcmp(list[i].filename, name))
+			if (strncmp(list[i].filename, name, strlen(name)-1))
 			{
 				dir_entry file = list[i];
 				free_kernel_page(list);

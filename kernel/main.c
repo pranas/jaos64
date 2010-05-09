@@ -55,7 +55,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
 	if (fork_kernel() == 0)
 	{
-		switch_to_user_mode(load_executable("LOOP      \0"));
+		switch_to_user_mode(load_executable("LOOP"));
 		for(;;)
 		{
 			puts("PONG!\n\n");
