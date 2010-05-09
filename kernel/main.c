@@ -75,6 +75,7 @@ void kernel_entry (multiboot_info* bootinfo)
 		}
 	}
 	
+	asm("xchg %bx, %bx");
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 
 	for (;;);

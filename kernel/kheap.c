@@ -294,8 +294,9 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	}
 
 	// If we need to page-align the data, do it now and make a new hole in front of our block.
-	if (page_align && orig_hole_pos & 0x00000FFF)
+	if (page_align && (orig_hole_pos + sizeof(header_t)) & 0x00000FFF)
 	{
+		puts("aligning\n");
 		uint64_t new_location   = orig_hole_pos + MEM_BLOCK_SIZE - (orig_hole_pos&0xFFF) - sizeof(header_t);
 		header_t *hole_header = (header_t *)orig_hole_pos;
 		hole_header->size     = MEM_BLOCK_SIZE - (orig_hole_pos&0xFFF) - sizeof(header_t);
