@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "memman.h"
 #include "common.h"
+#include "kheap.h"
 #include "scheduler.h"
 
 static uint64_t kernel_fork_ret = 0;

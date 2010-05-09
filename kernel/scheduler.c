@@ -30,12 +30,13 @@ void scheduler_init()
 	current_task->pml4 = get_current_pml4();
     current_task->next = 0;
 	
-    // register_handler(0x20, switch_task);
+    register_handler(0x20, switch_task);
     sti();
 }
 
 void add_task(task* new_task)
 {
+    new_task->pid = next_pid++;
     task* tmp = task_list;
     while(tmp->next)
     {
@@ -44,8 +45,14 @@ void add_task(task* new_task)
     tmp->next = new_task;
 }
 
+task* get_current_task()
+{
+    return current_task;
+}
+
 void switch_task()
 {
+    asm("xchg %bx, %bx");
 	// if scheduling is not initialized
 	if (!current_task)
 	{
@@ -66,11 +73,14 @@ void switch_task()
 	current_task->rip = rip;
    	current_task->rsp = rsp;
    	current_task->rbp = rbp;
-   	
-    current_task = current_task->next;
-    
-    if (!current_task) current_task = task_list;
-	
+    debug_task(current_task);
+    puthex(current_task);
+    puts("\n");
+    if (!current_task->next) current_task = task_list;
+    else current_task = current_task->next;
+    debug_task(current_task);
+	puthex(current_task);
+    puts("\n");
 	rsp = current_task->rsp;
    	rbp = current_task->rbp;
 	rip = current_task->rip;
@@ -87,4 +97,17 @@ void switch_task()
 	                : : "r"(rip), "r"(rsp), "r"(rbp), "r"(current_task->pml4));
 	
 	
+}
+
+void debug_task(task* tsk)
+{
+    puts("PID: ");
+    puthex(tsk->pid);
+    puts(" RIP: ");
+    puthex(tsk->rip);
+    puts(" PML4: ");
+    puthex(tsk->pml4);
+    puts(" Next: ");
+    puthex(tsk->next);
+    puts("\n");
 }

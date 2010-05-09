@@ -18,7 +18,8 @@
 
 #include <stdint.h>
 #include <bootinfo.h>
-
+#include <ctype.h>
+#include "kheap.h"
 #include "isr.h"
 
 #define MEM_BLOCKS_PER_BYTE 8
@@ -28,7 +29,6 @@
 #define MEM_BLOCK_ALIGN	MEM_BLOCK_SIZE
 //#define MEM_BITMAP 0x00000000c0200000 //0x20000
 // #define PHYS_PAGE_TABLE_PREFIX 0x0000000100000000
-#define PHYS_PAGE_TABLE_PREFIX 0x00000000d0000000
 #define MEM_DEBUG 1
 
 #define invalidate_single(addr) asm volatile ("invlpg %0": :"m" (*(char *) addr));

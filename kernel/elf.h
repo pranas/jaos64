@@ -10,6 +10,10 @@
 #define	ELF64_FSZ_XWORD	8
 
 #include <stdint.h>
+#include "memman.h"
+#include "kheap.h"
+#include "fat32.h"
+
 
 typedef uint64_t Elf64_Addr;
 typedef uint64_t Elf64_Off;

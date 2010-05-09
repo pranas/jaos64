@@ -117,6 +117,7 @@ uint64_t find_next_cluster(uint64_t cluster);
 // public
 void read_file(uint64_t cluster, void* address);
 dir_entry* find_file(char* name);
+fat32_volume_id* get_current_partition();
 // debug
 uint64_t put_dir(dir_entry* dir, int size);
 

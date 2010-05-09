@@ -30,7 +30,7 @@ struct task
    uint64_t rip;          // Instruction pointer.
    pml4_entry* pml4; 	  // Page directory.
    struct task* next;
-};
+}__attribute__((packed));
 
 typedef struct task task;
 

@@ -58,8 +58,9 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
 	if (fork_kernel() == 0)
 	{
-        puts("a\n");
-		switch_to_user_mode(load_executable("LOOP"));
+        // puthex(load_executable("LOOP"));
+        asm("xchg %bx, %bx");
+		switch_to_user_mode((uint64_t) load_executable("LOOP"));
 		for(;;)
 		{
 			puts("PONG!\n\n");

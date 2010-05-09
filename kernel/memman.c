@@ -13,11 +13,7 @@
 
 */
 
-#include <bootinfo.h>
-#include <ctype.h>
-
 #include "memman.h"
-#include "isr.h"
 
 /*
 
@@ -506,8 +502,8 @@ void mem_copy_block(void* from, void* to)
 // return physical address of new pml4
 pml4_entry* clone_pml4t()
 {
-	pml4_entry* pml4 = alloc_kernel_page(1);
-	pdp_entry* pdp = alloc_kernel_page(1);
+    pml4_entry* pml4 = kmalloc_a(4096); //alloc_kernel_page(1);
+	pdp_entry* pdp = kmalloc_a(4096); //alloc_kernel_page(1);
 	pd_entry* pd;
 	page_entry* pt;
 
@@ -524,7 +520,6 @@ pml4_entry* clone_pml4t()
 	pml4[0].present = 1;
 	pml4[0].rw = 1;
 	pml4[0].user = 1;
-
 	// to simplify this procedure for now
 	// copy pdp[0..2] and link pdp[3] (kernel)
 
@@ -532,7 +527,7 @@ pml4_entry* clone_pml4t()
 	{
 		if (get_pdp_entry(0, i).present == 1)
 		{
-			pd = alloc_kernel_page(1);
+			pd = kmalloc_a(4096);//alloc_kernel_page(1);
 			pdp[i].directory = (uint64_t) get_physical_address(pd) / 0x1000;
 			pdp[i].present = 1;
 			pdp[i].rw = 1;
@@ -542,7 +537,7 @@ pml4_entry* clone_pml4t()
 			{
 				if(get_pd_entry(0, i, z).present == 1)
 				{
-					pt = alloc_kernel_page(1);
+					pt = kmalloc_a(4096);//alloc_kernel_page(1);
 					pd[z].table = (uint64_t) get_physical_address(pt) / 0x1000;
 					pd[z].present = 1;
 					pd[z].rw = 1;
@@ -551,7 +546,7 @@ pml4_entry* clone_pml4t()
 					{
 						if(get_page_entry(0, i, z, y).present == 1)
 						{
-							void* new_page = alloc_kernel_page(1);
+							void* new_page = kmalloc_a(4096);//alloc_kernel_page(1);
 							address original_page = { 0 };
 							original_page.pml4 = 0; 
 							original_page.pdp = i;

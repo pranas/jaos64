@@ -47,6 +47,11 @@ void fat32_init()
 	
 }
 
+fat32_volume_id* get_current_partition()
+{
+    return _partition;
+}
+
 uint64_t read_cluster(uint64_t cluster, void* address)
 {
 	// puts("Read ");

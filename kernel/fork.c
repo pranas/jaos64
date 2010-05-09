@@ -8,22 +8,23 @@ uint64_t fork_kernel()
 	
     cli();
 	
-	task* parent_task = current_task;
+	task* parent_task = get_current_task();
     task* new_task = kmalloc(sizeof(task));
 	
-	new_task->pid = next_pid++;
 	// allocate stack in user space
 	new_task->rbp = new_task->rsp = alloc_page(0xbffff000, 1) + 0x1000;
 	new_task->rip = 0;
 	new_task->pml4 = clone_pml4t();
     new_task->next = 0;
     
+    // adds to list and sets pid
     add_task(new_task);
 	
 	// entry point for child
 	uint64_t rip = read_rip();
 	
-    if (parent_task == current_task)
+    //if (parent_task == current_task)
+    if(parent_task == get_current_task())
 	{
 		// parents should take care of their children
 		// (setting up stuff for child)
