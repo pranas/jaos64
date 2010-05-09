@@ -272,6 +272,7 @@ void memman_init(multiboot_info* bootinfo)
 	// Initialise the kernel heap.
 	uint64_t kheap_start = (uint64_t) alloc_kernel_page(KHEAP_INITIAL_SIZE / MEM_BLOCK_SIZE);
 	uint64_t kheap_end   = kheap_start + KHEAP_INITIAL_SIZE;
+	puts("Heap occupies "); puthex(kheap_start); puts(" to "); puthex(kheap_end); puts("\n");
 	kheap = create_heap(kheap_start, kheap_end, 0xd0000000, 0, 0);
 }
 

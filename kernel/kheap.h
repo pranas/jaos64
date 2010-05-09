@@ -4,10 +4,13 @@
 #include <stdint.h>
 #include "ordered_array.h"
 
-#define KHEAP_INITIAL_SIZE  0x64000
-#define HEAP_INDEX_SIZE   0x8000
+// TODO: make this more fool proof
+// if initial_size - index_size * 8 + 1 page < min_size
+// errors come up
+#define KHEAP_INITIAL_SIZE  0x20000
+#define HEAP_INDEX_SIZE   0x1000
 #define HEAP_MAGIC        0xDEADBABA
-#define HEAP_MIN_SIZE     0x32000
+#define HEAP_MIN_SIZE     0x10000
 
 struct header_t
 {

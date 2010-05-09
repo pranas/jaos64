@@ -30,7 +30,8 @@ ordered_array_t place_ordered_array(void *addr, uint64_t max_size, cmpfunc_t les
 
 void destroy_ordered_array(ordered_array_t *array)
 {
-	// kfree(array->array);
+	// TODO: consider this
+	//kfree(array->array);
 }
 
 void insert_ordered_array(void* item, ordered_array_t *array)
@@ -61,8 +62,6 @@ void insert_ordered_array(void* item, ordered_array_t *array)
 
 void* lookup_ordered_array(uint64_t i, ordered_array_t *array)
 {
-
-//	ASSERT(i < array->size);
 	if (i < array->size)
 		return array->array[i];
 	else

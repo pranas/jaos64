@@ -16,26 +16,41 @@ static void heap_debug(int n)
 	puts("\n");
 }
 
+void print_index()
+{
+	ordered_array_t arr = kheap->index;
+	int i;
+	for (i = 0; i < arr.size; i++)
+	{
+		header_t* header = (header_t*) arr.array[i];
+		puts("Header "); putint(i);
+		puts(" position: "); puthex(header);
+		puts(" magic: "); puthex(header->magic);
+		puts(" is_hole: "); putint(header->is_hole);
+		puts(" size: "); puthex(header->size);
+		puts("\n");
+	}
+}
+
 uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys)
 {
+	if (sz == 0)
+		return 0;
 	if (kheap != 0)
 	{
-		//heap_debug(0);
 		void *addr = alloc(sz, (uint8_t)align, kheap);
-		/*
+		/* TODO: figure out what to do with frame physical addresses
 		if (phys != 0)
 		{
 			page_t *page = get_page((uint32_t)addr, 0, kernel_directory);
 			*phys = page->frame*0x1000 + (uint32_t)addr&0xFFF;
 		}
 		*/
-		//heap_debug(0);
 		return (uint64_t) addr;
 	}
 	else
 	{
-		uint64_t size = sz / MEM_BLOCK_SIZE;
-		size = size == 0 ? 1 : size;
+		uint64_t size = (sz / MEM_BLOCK_SIZE) + 1;
 		return (uint64_t) alloc_kernel_page(size);
 	}
 }
@@ -43,7 +58,6 @@ uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys)
 void kfree(void *p)
 {
 	free(p, kheap);
-	//heap_debug(1);
 }
 
 uint64_t kmalloc_a(uint64_t sz)
@@ -73,7 +87,7 @@ static void expand(uint64_t new_size, heap_t *heap)
 		puts("expand: new_size smaller than current size\n");
 
 	// Get the nearest following page boundary.
-	if (new_size & 0xFFFFF000 != 0)
+	if (new_size & 0x00000FFF)
 	{
 		new_size &= 0xFFFFF000;
 		new_size += 0x1000;
@@ -96,7 +110,7 @@ static uint64_t contract(uint64_t new_size, heap_t *heap)
 		puts("contract: contracting, but new_size is larger than old_size\n");
 
 	// Get the nearest following page boundary.
-	if (new_size & 0xFFFFF000 != 0)
+	if (new_size & 0x00000FFF)
 	{
 		new_size &= 0xFFFFF000;
 		new_size += 0x1000;
@@ -107,7 +121,7 @@ static uint64_t contract(uint64_t new_size, heap_t *heap)
 		new_size = HEAP_MIN_SIZE;
 
 	uint64_t old_size = heap->end_address-heap->start_address;
-	uint64_t i = old_size - 0x1000;
+	uint64_t i = old_size - MEM_BLOCK_SIZE;
 
 	free_kernel_page(heap->start_address + new_size, ((old_size - new_size) / MEM_BLOCK_SIZE) + 1);
 	heap->end_address = heap->start_address + new_size;
@@ -127,8 +141,8 @@ static uint64_t find_smallest_hole(uint64_t size, uint8_t page_align, heap_t *he
 			// Page-align the starting point of this header.
 			uint64_t location = (uint64_t)header;
 			uint64_t offset = 0;
-			if ((location+sizeof(header_t)) & 0xFFFFF000 != 0)
-				offset = 0x1000 /* page size */  - (location+sizeof(header_t))%0x1000;
+			if ((location+sizeof(header_t)) & 0x00000FFF)
+				offset = MEM_BLOCK_SIZE - (location+sizeof(header_t)) % MEM_BLOCK_SIZE;
 			uint64_t hole_size = (int64_t)header->size - offset;
 			// Can we fit now?
 			if (hole_size >= (uint64_t)size)
@@ -154,19 +168,21 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 {
 	heap_t *heap = (heap_t*) start;
 
-	if (!(start % 0x1000 == 0))
+	if (start & 0x00000FFF)
 		puts("Start address not page-aligned\n");
-	if (!(end_addr % 0x1000 == 0))
+	if (end_addr & 0x00000FFF)
 		puts("End address not page-aligned\n");
 
 	// Initialise the index.
+	// place it right after the heap structure
 	heap->index = place_ordered_array((void*) start + sizeof(heap_t), HEAP_INDEX_SIZE, &header_t_less_than);
 
 	// Shift the start address forward to resemble where we can start putting data.
-	start += sizeof(void*) * HEAP_INDEX_SIZE;
+	// dont forget heap structure size
+	start += sizeof(void*) * HEAP_INDEX_SIZE + sizeof(heap_t);
 
 	// Make sure the start address is page-aligned.
-	if (start & 0xFFFFF000 != 0)
+	if (start & 0x00000FFF)
 	{
 		start &= 0xFFFFF000;
 		start += 0x1000;
@@ -184,6 +200,9 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 	hole->magic = HEAP_MAGIC;
 	hole->is_hole = 1;
 	insert_ordered_array((void*) hole, &heap->index);
+	puthex(heap->start_address); puts("\n");
+	puthex(heap->end_address); puts("\n");
+	puthex(heap->end_address - heap->start_address); puts("\n");
 
 	return heap;
 }
@@ -260,11 +279,11 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	}
 
 	// If we need to page-align the data, do it now and make a new hole in front of our block.
-	if (page_align && orig_hole_pos & 0xFFFFF000)
+	if (page_align && orig_hole_pos & 0x00000FFF)
 	{
-		uint64_t new_location   = orig_hole_pos + 0x1000 /* page size */ - (orig_hole_pos&0xFFF) - sizeof(header_t);
+		uint64_t new_location   = orig_hole_pos + MEM_BLOCK_SIZE - (orig_hole_pos&0xFFF) - sizeof(header_t);
 		header_t *hole_header = (header_t *)orig_hole_pos;
-		hole_header->size     = 0x1000 /* page size */ - (orig_hole_pos&0xFFF) - sizeof(header_t);
+		hole_header->size     = MEM_BLOCK_SIZE - (orig_hole_pos&0xFFF) - sizeof(header_t);
 		hole_header->magic    = HEAP_MAGIC;
 		hole_header->is_hole  = 1;
 		footer_t *hole_footer = (footer_t *) ( (uint64_t)new_location - sizeof(footer_t) );
@@ -370,10 +389,12 @@ void free(void *p, heap_t *heap)
 	}
 
 	// If the footer location is the end address, we can contract.
-	if ( (uint64_t)footer+sizeof(footer_t) == heap->end_address)
+	if ( (uint64_t)footer + sizeof(footer_t) == heap->end_address)
 	{
-		uint64_t old_length = heap->end_address-heap->start_address;
+		uint64_t old_length = heap->end_address - heap->start_address;
 		uint64_t new_length = contract( (uint64_t)header - heap->start_address, heap);
+		puts("Contracted from "); puthex(old_length); puts(" to ");
+		puthex(new_length); puts("\n");
 		// Check how big we will be after resizing.
 		if (header->size - (old_length-new_length) > 0)
 		{
