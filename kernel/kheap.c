@@ -65,8 +65,12 @@ uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys)
 	}
 	else
 	{
-		uint64_t size = (sz / MEM_BLOCK_SIZE) + 1;
-		return (uint64_t) alloc_kernel_page(size);
+		if (sz & 0x00000FFF)
+		{
+			sz &= 0xFFFFF000;
+			sz /= 0x1000;
+		}
+		return (uint64_t) alloc_kernel_page(sz);
 	}
 }
 
@@ -114,7 +118,7 @@ static void expand(uint64_t new_size, heap_t *heap)
 
 	uint64_t old_size = heap->end_address - heap->start_address;
 
-	alloc_kernel_page( ((new_size - old_size) / MEM_BLOCK_SIZE) + 1); // TODO: supervisor and readonly bits
+	alloc_kernel_page((new_size - old_size) / MEM_BLOCK_SIZE); // TODO: supervisor and readonly bits
 	heap->end_address = heap->start_address+new_size;
 }
 
@@ -136,9 +140,8 @@ static uint64_t contract(uint64_t new_size, heap_t *heap)
 		new_size = HEAP_MIN_SIZE;
 
 	uint64_t old_size = heap->end_address-heap->start_address;
-	uint64_t i = old_size - MEM_BLOCK_SIZE;
 
-	free_kernel_page(heap->start_address + new_size, ((old_size - new_size) / MEM_BLOCK_SIZE) + 1);
+	free_kernel_page(heap->start_address + new_size, (old_size - new_size) / MEM_BLOCK_SIZE);
 	heap->end_address = heap->start_address + new_size;
 	return new_size;
 }
