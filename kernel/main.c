@@ -28,8 +28,9 @@
 #include "scheduler.h"
 #include "syscall.h"
 #include "elf.h"
-extern void switch_to_user_mode(void*);
 #include "kheap.h"
+
+extern void switch_to_user_mode(void*);
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -38,10 +39,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	idt_install();	puts("IDT initialised.\n");
     memman_init(bootinfo);
 	kheap_init();
-
-	// TODO: needs to be ported to use kmalloc
-	// fat32_init();
-
+	fat32_init();
 	// TODO: figure out how to do it safely
 	//acpi_init();
 	apic_init();
