@@ -28,8 +28,8 @@
 #include "scheduler.h"
 #include "syscall.h"
 #include "elf.h"
-
 extern void switch_to_user_mode(void*);
+#include "kheap.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -37,9 +37,13 @@ void kernel_entry (multiboot_info* bootinfo)
 	gdt_install();  puts("GDT initialised.\n");
 	idt_install();	puts("IDT initialised.\n");
     memman_init(bootinfo);
-	fat32_init();
+	kheap_init();
 
-	// acpi_init();
+	// TODO: needs to be ported to use kmalloc
+	// fat32_init();
+
+	// TODO: figure out how to do it safely
+	//acpi_init();
 	apic_init();
 	ioapic_init(); // keyboard only for now
 
@@ -50,6 +54,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	init_timer(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
 	// sets up kernel task and registers handler for timer
+	/*
 	scheduler_init();
 
 	// testing scheduler
@@ -70,6 +75,7 @@ void kernel_entry (multiboot_info* bootinfo)
 			asm volatile("hlt");
 		}
 	}
+	*/
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 

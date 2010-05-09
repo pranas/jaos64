@@ -52,8 +52,6 @@ void ioapic_init()
 	irq1.reserved       =  0x0; // zero out reserved
 	irq1.reserved2      =  0x0; // zero out reserved
 	irq1.destination    =  0x0; // apic id, 0th apic
-	puthex(irq1.low);
-	puthex(irq1.high);
 	write_ioapicr(0x12, irq1.low); // irq1 low
 	write_ioapicr(0x13, irq1.high); // irq1 high
 
