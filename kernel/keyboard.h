@@ -23,7 +23,10 @@ enum SCANCODE {
 	f11, f12
 };
 
-void recognize_scancode(char scancode);
+char recognize_scancode(char scancode);
 char* readline();
+void keyboard_init();
+char* readline();
+char get_char();
 
 #endif

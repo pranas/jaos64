@@ -60,6 +60,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	apic_init();
 	ioapic_init(); // keyboard only for now
 
+	keyboard_init();
 	register_handler(0x21, keyboard_handler);
 
 	syscalls_init(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
