@@ -29,6 +29,7 @@ struct task
    uint64_t rsp, rbp;     // Stack and base pointers.
    uint64_t rip;          // Instruction pointer.
    pml4_entry* pml4; 	  // Page directory.
+   uint8_t status;          // 0 - free, 1 - blocked
    struct task* next;
 }__attribute__((packed));
 
@@ -43,6 +44,8 @@ extern uint64_t read_rip();
 void scheduler_init();
 void switch_task();
 void add_task(task* new_task);
-uint64_t getpid();
+void change_task_status(uint64_t pid, uint8_t status);
+uint64_t get_current_pid();
+task* get_current_task();
 
 #endif

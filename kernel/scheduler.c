@@ -45,14 +45,8 @@ void add_task(task* new_task)
     tmp->next = new_task;
 }
 
-task* get_current_task()
-{
-    return current_task;
-}
-
 void switch_task()
 {
-    asm("xchg %bx, %bx");
 	// if scheduling is not initialized
 	if (!current_task)
 	{
@@ -73,18 +67,18 @@ void switch_task()
 	current_task->rip = rip;
    	current_task->rsp = rsp;
    	current_task->rbp = rbp;
-    debug_task(current_task);
-    puthex(current_task);
-    puts("\n");
-    if (!current_task->next) current_task = task_list;
-    else current_task = current_task->next;
-    debug_task(current_task);
-	puthex(current_task);
-    puts("\n");
+    
+    // round robin untill unblocked task will be found
+    do
+    {
+        if (!current_task->next) current_task = task_list;
+        else current_task = current_task->next;
+    } while (current_task->status != 0);
+
 	rsp = current_task->rsp;
    	rbp = current_task->rbp;
 	rip = current_task->rip;
-
+	
 	asm volatile("         \ 
 	     cli;                 \ 
 	     mov %0, %%rcx;       \ 
@@ -97,6 +91,33 @@ void switch_task()
 	                : : "r"(rip), "r"(rsp), "r"(rbp), "r"(current_task->pml4));
 	
 	
+}
+
+uint64_t get_current_pid()
+{
+    return current_task->pid;
+}
+
+task* get_current_task()
+{
+    return current_task;
+}
+
+void change_task_status(uint64_t pid, uint8_t status)
+{
+    task* tmp = task_list;
+    while(tmp->next)
+    {
+        if (tmp->pid = pid)
+        {
+            tmp->status = status;
+        }
+        else
+        {
+            tmp = tmp->next;
+        }
+    }
+    tmp->next = new_task;
 }
 
 void debug_task(task* tsk)
