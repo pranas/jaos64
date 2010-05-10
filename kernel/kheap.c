@@ -33,7 +33,7 @@ static void heap_debug(int n)
 void print_index()
 {
 	ordered_array_t arr = kheap->index;
-	int i;
+	uint64_t i;
 	for (i = 0; i < arr.size; i++)
 	{
 		header_t* header = (header_t*) arr.array[i];
@@ -229,7 +229,7 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	// Find the smallest hole that will fit.
 	uint64_t iterator = find_smallest_hole(new_size, page_align, heap);
 
-	if (iterator == -1) // If we didn't find a suitable hole
+	if ((int64_t)iterator == -1) // If we didn't find a suitable hole
 	{
 		// Save some previous data.
 		uint64_t old_length = heap->end_address - heap->start_address;
@@ -255,7 +255,7 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 		}
 
 		// If we didn't find ANY headers, we need to add one.
-		if (idx == -1)
+		if ((int64_t) idx == -1)
 		{
 			header_t *header = (header_t *)old_end_address;
 			header->magic = HEAP_MAGIC;

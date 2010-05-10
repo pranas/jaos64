@@ -47,9 +47,9 @@ struct ioapic_redirect_entry
 };
 typedef struct ioapic_redirect_entry ioapic_redirect_entry;
 
-void     write_ioapicr    (const uint8_t offset, const uint32_t val);
-uint32_t read_ioapicr     (const uint8_t offset);
-void     puts_ioapic_info ();
-void     ioapic_init();
+void write_ioapicr(const uint8_t offset, const uint32_t val);
+uint32_t read_ioapicr(const uint8_t offset);
+void puts_ioapic_info ();
+void ioapic_init();
 
 #endif
