@@ -58,7 +58,7 @@ uint64_t mmap_first_free()
 	uint64_t i, j;
 	for (i = 0; i < _mem_max_blocks / 64; i++)
 	{
-		if (_mem_memory_map[i] != 0-1)
+		if (_mem_memory_map[i] != (uint64_t) 0-1)
 		{
 			for (j = 0; j < 64; j++)
 			{
@@ -84,7 +84,7 @@ uint64_t mmap_first_free_zone(uint64_t size)
 
 	for (i = 0; i < _mem_max_blocks / 64; i++)
 	{
-		if (_mem_memory_map[i] != 0-1)
+		if (_mem_memory_map[i] != (uint64_t) 0-1)
 		{
 			for (j = 0; j < 64; j++)
 			{
@@ -443,7 +443,7 @@ page_entry* create_page_for_current(address a, int user)
 
 void* temp_map_page(void* physical_address)
 {
-    return (void*) 0;
+    return physical_address;
 }
 
 void* map_mem_block()
@@ -474,7 +474,7 @@ void* alloc_page(void* virtual, uint64_t size)
 	return virtual;
 }
 
-void* alloc_kernel_page(int size)
+void* alloc_kernel_page(uint64_t size)
 {
 	uint64_t i;
 
@@ -498,7 +498,8 @@ void* alloc_kernel_page(int size)
 
 void free_kernel_page(void* address, uint64_t size)
 {
-
+    size++;
+    address++;
 }
 
 void mem_copy_block(void* from, void* to)
@@ -597,7 +598,7 @@ pml4_entry* clone_pml4t()
 	return get_physical_address(pml4);
 }
 
-int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user)
+int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, int user)
 {
 	uint64_t i;
 	page_entry* page;
@@ -611,7 +612,7 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
 		page = create_page_for_current( (addr) ((void* )(virtual_addr + i * MEM_BLOCK_SIZE)),0);
 		// if (!page) return 0;
 		page->present = 1;
-		page->user = 0;
+		page->user = user;
 		page->rw = 1;
 
 

@@ -38,7 +38,7 @@ void puts_ioapic_info()
 
 void ioapic_init()
 {
-	brute_create_page(IOAPIC_BASE, IOAPIC_BASE, 1, (void*)get_current_pml4(), 0); // IOAPIC address space
+	brute_create_page(IOAPIC_BASE, IOAPIC_BASE, 1, 0); // IOAPIC address space
 	ioapic_redirect_entry irq1;
 	irq1.vector         = 0x21; // vector 0x21
 	irq1.delmod         =  0x0; // fixed
