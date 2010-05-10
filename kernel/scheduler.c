@@ -15,6 +15,10 @@
 
 #include "scheduler.h"
 
+static volatile task* current_task = 0;
+static volatile task* task_list;
+static uint64_t next_pid = 0;
+
 void scheduler_init()
 {
     cli();

@@ -17,6 +17,23 @@
 
 /*
 
+    Global variables
+
+*/
+
+static uint64_t	_mem_memory_size=0;
+static uint64_t	_mem_used_blocks=0;
+static uint64_t _mem_max_blocks=0;
+static uint64_t* _mem_memory_map = (uint64_t*) 0;
+static uint64_t _kernel_next_block = 0;
+static pml4_entry* _current_pml4 = (pml4_entry*) 0xFFFFFFFFFFFFF000;
+static pdp_entry* _current_pdp = (pdp_entry*) 0xFFFFFFFFFFE00000;
+static pd_entry* _current_pd = (pd_entry*) 0xFFFFFFFFC0000000;
+static page_entry* _current_pt = (page_entry*) 0xFFFFFF8000000000;
+static pml4_entry* _kernel_pml4t = (pml4_entry*) 0;
+
+/*
+
    Private functions used by memory manager
 
 */
@@ -63,7 +80,7 @@ uint64_t mmap_first_free_zone(uint64_t size)
 	if (size == 1)
 		return mmap_first_free();
 
-	uint64_t i, j, l;
+	uint64_t i, j;
 
 	for (i = 0; i < _mem_max_blocks / 64; i++)
 	{
@@ -112,7 +129,7 @@ void memman_init(multiboot_info* bootinfo)
 
 	puts("Initializing memory manager... \n");
 
-    // register_handler(0x0E, page_fault_handler);
+    register_handler(0x0E, page_fault_handler);
 
 	puts("Analyzing memory map:\n");
 
@@ -424,12 +441,12 @@ page_entry* create_page_for_current(address a, int user)
 
 void* temp_map_page(void* physical_address)
 {
-
+    return (void*) 0;
 }
 
 void* map_mem_block()
 {
-
+    return (void*) 0;
 }
 
 void* alloc_page(void* virtual, uint64_t size)
@@ -608,27 +625,27 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
 	return i;
 }
 
-// void page_fault_handler(struct registers_t* regs)
-// {
-//  // A page fault has occurred.
-//  // The faulting address is stored in the CR2 register.
-//  uint64_t faulting_address;
-//  asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
-// 
-//  puts("Page fault (");
-//  if (!(regs->err_code & 0x1)) puts("not present ");  // if page not present
-//  if (regs->err_code & 0x2) puts("read-only ");       // only read
-//  if (regs->err_code & 0x4) puts("user-mode ");       // from user space?
-//  if (regs->err_code & 0x8) puts("reserved ");            // overwritten CPU-reserved bits of page entry?
-// 
-//  puts(")! At ");
-//  puthex(faulting_address);
-//  puts("\n");
-// 
-//  //int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
-// 
-//  for (;;);
-// }
+void page_fault_handler(registers_t* regs)
+{
+ // A page fault has occurred.
+ // The faulting address is stored in the CR2 register.
+ uint64_t faulting_address;
+ asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
+
+ puts("Page fault (");
+ if (!(regs->err_code & 0x1)) puts("not present ");  // if page not present
+ if (regs->err_code & 0x2) puts("read-only ");       // only read
+ if (regs->err_code & 0x4) puts("user-mode ");       // from user space?
+ if (regs->err_code & 0x8) puts("reserved ");            // overwritten CPU-reserved bits of page entry?
+
+ puts(")! At ");
+ puthex(faulting_address);
+ puts("\n");
+
+ //int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
+
+ for (;;);
+}
 
 /*
 

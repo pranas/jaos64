@@ -35,10 +35,6 @@ struct task
 
 typedef struct task task;
 
-static volatile task* current_task = 0;
-static volatile task* task_list;
-static uint64_t next_pid = 0;
-
 extern uint64_t read_rip();
 
 void scheduler_init();

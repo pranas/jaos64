@@ -8,8 +8,6 @@
 #include "kheap.h"
 #include "scheduler.h"
 
-static uint64_t kernel_fork_ret = 0;
-
 uint64_t fork_kernel();
 uint64_t fork();
 

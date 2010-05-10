@@ -1,5 +1,7 @@
 #include "fork.h"
 
+static uint64_t kernel_fork_ret = 0;
+
 uint64_t fork_kernel()
 {
 	// kernel's child will start with brand new stack

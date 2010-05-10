@@ -43,12 +43,6 @@
 #define CURRENT_PD_PREFIX 0xFFFFFFFFC000000
 #define CURRENT_PT_PREFIX 0xFFFFFF8000000000
 
-static uint64_t	_mem_memory_size=0;
-static uint64_t	_mem_used_blocks=0;
-static uint64_t _mem_max_blocks=0;
-static uint64_t* _mem_memory_map = (uint64_t*) 0;
-static uint64_t _kernel_next_block = 0;
-
 extern uint64_t _kernel_start;
 extern uint64_t _kernel_end;
 
@@ -159,12 +153,6 @@ struct page_entry
 
 typedef struct page_entry page_entry;
 
-static pml4_entry* _current_pml4 = (pml4_entry*) 0xFFFFFFFFFFFFF000;
-static pdp_entry* _current_pdp = (pdp_entry*) 0xFFFFFFFFFFE00000;
-static pd_entry* _current_pd = (pd_entry*) 0xFFFFFFFFC0000000;
-static page_entry* _current_pt = (page_entry*) 0xFFFFFF8000000000;
-static pml4_entry* _kernel_pml4t = (pml4_entry*) 0;
-
 // private functions (should not be used outside memory manager)
 inline void mmap_set (uint64_t bit);
 inline void mmap_unset (uint64_t bit);
@@ -198,7 +186,7 @@ pdp_entry* create_pdp(uint64_t address, pml4_entry* pml4, int user);
 void* alloc_kernel_page(int size);
 void* alloc_table(pml4_entry* pml4);
 void copy_page_tables(pml4_entry* from, pml4_entry* to);
-// void page_fault_handler(struct registers_t* regs);
+void page_fault_handler(registers_t* regs);
 void free_kernel_page(void* address, uint64_t size);
 
 // debug procedures

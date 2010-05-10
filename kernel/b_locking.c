@@ -15,6 +15,10 @@
 
 #include "b_locking.h"
 
+static volatile lock_queue locks[LOCKING_MAX];
+static volatile uint64_t master_lock = 0;
+static volatile uint64_t next_lockid = 0;
+
 uint64_t register_lock()
 {
     locks[next_lockid].head = 0;

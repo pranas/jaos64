@@ -1,5 +1,10 @@
 #include "fat32.h"
 
+static fat32_volume_id* _partition = 0;
+static uint64_t _partition_begin_lba = 0;
+static uint64_t _cluster_begin_lba = 0;
+static uint64_t _fat_begin_lba = 0;
+
 void fat32_init()
 {
 	partition_table* table = (partition_table*) kmalloc(512);
