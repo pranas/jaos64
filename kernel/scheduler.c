@@ -27,7 +27,7 @@ void scheduler_init()
 	current_task->rbp = 0;
 	current_task->rsp = 0;
 	current_task->rip = 0;
-	current_task->pml4 = get_current_pml4();
+	current_task->pml4 = (struct pml4_entry*) get_current_pml4();
     current_task->next = 0;
 	
     register_handler(0x20, switch_task);
@@ -37,7 +37,7 @@ void scheduler_init()
 void add_task(task* new_task)
 {
     new_task->pid = next_pid++;
-    task* tmp = task_list;
+    task* tmp = (task*) task_list;
     while(tmp->next)
     {
         tmp = tmp->next;
@@ -68,7 +68,7 @@ void switch_task()
    	current_task->rsp = rsp;
    	current_task->rbp = rbp;
    	
-    debug_task(current_task);
+    debug_task((task*) current_task);
     
     // round robin untill unblocked task will be found
     do
@@ -77,20 +77,20 @@ void switch_task()
         else current_task = current_task->next;
     } while (current_task->status == 1);
     
-    debug_task(current_task);
+    debug_task((task*) current_task);
 
 	rsp = current_task->rsp;
    	rbp = current_task->rbp;
 	rip = current_task->rip;
 	
-	asm volatile("         \ 
-	     cli;                 \ 
-	     mov %0, %%rcx;       \ 
-	     mov %1, %%rsp;       \ 
-	     mov %2, %%rbp;       \ 
-	     mov %3, %%cr3;       \ 
-	     mov $0x12345, %%rax; \ 
-	     sti;                 \ 
+	asm volatile("         \
+	     cli;                 \
+	     mov %0, %%rcx;       \
+	     mov %1, %%rsp;       \
+	     mov %2, %%rbp;       \
+	     mov %3, %%cr3;       \
+	     mov $0x12345, %%rax; \
+	     sti;                 \
 	     jmp *%%rcx           "
 	                : : "r"(rip), "r"(rsp), "r"(rbp), "r"(current_task->pml4));
 	
@@ -104,12 +104,12 @@ uint64_t get_current_pid()
 
 task* get_current_task()
 {
-    return current_task;
+    return (task*) current_task;
 }
 
 void change_task_status(uint64_t pid, uint8_t status)
 {
-    task* tmp = task_list;
+    task* tmp = (task*) task_list;
     while(tmp)
     {
         if (tmp->pid == pid)
@@ -130,8 +130,8 @@ void debug_task(task* tsk)
     puts(" RIP: ");
     puthex(tsk->rip);
     puts(" PML4: ");
-    puthex(tsk->pml4);
+    puthex((uint64_t) tsk->pml4);
     puts(" Next: ");
-    puthex(tsk->next);
+    puthex((uint64_t) tsk->next);
     puts("\n");
 }

@@ -2,21 +2,21 @@
 
 void fat32_init()
 {
-	partition_table* table = kmalloc(512);
-	fat32_volume_id* volume = kmalloc(512);
+	partition_table* table = (partition_table*) kmalloc(512);
+	fat32_volume_id* volume = (fat32_volume_id*) kmalloc(512);
 		
 	puts("Initializing file system...\n");
 	
 	if ((!table) || (!volume))
 	{
 		puts("Not enough memory!\n");
-		return 0;
+		return;
 	}
 	
 	if (!read_sector(0, table))
 	{
 		puts("Can't read disk!\n");
-		return 0;
+		return;
 	}
 	
 	if (table->magic != 0xAA55)
@@ -33,7 +33,7 @@ void fat32_init()
 	if (!read_sector(table->partition[0].lba, volume))
 	{
 		puts("Can't read FAT32 volume id!");
-		return 0;
+		return;
 	}
 	
 	volume->label[10] = 0;
@@ -71,14 +71,14 @@ void read_file(uint64_t cluster, void* address)
 	
 	while ((cluster = find_next_cluster(cluster)) < 0x0ffffff8)
 	{
-		address = (uint64_t) address + (_partition->sectors_per_cluster * _partition->bytes_per_sector);
+		address = address + (_partition->sectors_per_cluster * _partition->bytes_per_sector);
 		read_cluster(cluster, address);
 	}
 }
 
 dir_entry* find_file(char* name)
 {
-	dir_entry* list = kmalloc(_partition->sectors_per_cluster * _partition->bytes_per_sector);
+	dir_entry* list = (dir_entry*) kmalloc(_partition->sectors_per_cluster * _partition->bytes_per_sector);
 	
 	if (!list) return 0;
 	
@@ -95,7 +95,7 @@ dir_entry* find_file(char* name)
 			list[i].filename[10] = 0;
 			if (strncmp(list[i].filename, name, strlen(name)-1))
 			{
-                dir_entry* file = kmalloc(sizeof(dir_entry));
+                dir_entry* file = (dir_entry*) kmalloc(sizeof(dir_entry));
                 *file = list[i];
 				kfree(list);
 				return file;//.cluster_high * 0x100 + list[i].cluster_low;
@@ -122,7 +122,7 @@ uint64_t find_next_cluster(uint64_t cluster)
 {
 	if (cluster >= 0x0ffffff8) return 0x0fffffff;
 	
-    uint32_t* fat = kmalloc(_partition->bytes_per_sector);// ((uint64_t) _partition) + 512;
+    uint32_t* fat = (uint32_t*) kmalloc(_partition->bytes_per_sector);// ((uint64_t) _partition) + 512;
 	
 	if (!read_sector(_fat_begin_lba + (cluster / _partition->bytes_per_sector / 4), fat))
 	{

@@ -106,7 +106,7 @@ void memman_init(multiboot_info* bootinfo)
 {
 	char* strMemoryType[] = { "Unknown", "Available", "Reserved", "ACPI Reclaim", "ACPI NVS Memory", "Bad stuff" };
 
-	memory_region *memory_map = bootinfo->m_mmap_addr;
+	memory_region* memory_map = (memory_region*) bootinfo->m_mmap_addr;
 	uint64_t i;
 	uint64_t total = 0, limit = 0;
 
@@ -147,7 +147,7 @@ void memman_init(multiboot_info* bootinfo)
 	_mem_used_blocks = _mem_max_blocks;
 
 	// we will put our memory map dynamically at next block after kernel
-	_mem_memory_map = (((uint64_t) &_kernel_end / 0x1000) + 1) * 0x1000;
+	_mem_memory_map = (void*) ((((uint64_t)&_kernel_end / 0x1000) + 1) * 0x1000);
 
 	// this loop marks all blocks as used (0xf means all bits = 1)
 	for (i = 0; i <= _mem_max_blocks / MEM_MAP_WORD_SIZE; i++)
@@ -156,7 +156,7 @@ void memman_init(multiboot_info* bootinfo)
 	}
 
 	puts("Memory map put at ");
-	puthex(_mem_memory_map);
+	puthex((uint64_t) _mem_memory_map);
 	puts(" and it's taking ");
 	putint(_mem_max_blocks / MEM_BLOCKS_PER_BYTE);
 	puts(" bytes...\n");
@@ -213,7 +213,7 @@ void memman_init(multiboot_info* bootinfo)
 
 	// this code will initialize paging
 
-	pml4_entry* pml4 = get_current_pml4();
+	pml4_entry* pml4 = (pml4_entry*) get_current_pml4();
 	pml4_entry* pml4_new = mem_alloc_block();
 
 	pml4[511].directory_pointer = (uint64_t) pml4_new / 0x1000;
@@ -244,7 +244,7 @@ void memman_init(multiboot_info* bootinfo)
 	page->rw = 1; 
 
 	// map video memory to kernel space
-	set_video_memory(_kernel_next_block * 0x1000);
+	set_video_memory((void*) (_kernel_next_block * 0x1000));
 	page = create_page_for_current((addr) ((uint64_t) _kernel_next_block * 0x1000), 0);
 	page->frame = 0xB8;
 	page->present = 1;
@@ -254,7 +254,7 @@ void memman_init(multiboot_info* bootinfo)
 	_kernel_next_block++;
 
 	// enable new paging tables
-	switch_paging((uint64_t) pml4_new);
+	switch_paging(pml4_new);
 
 	puts("Current PML4 table: ");
 	puthex(get_current_pml4());
@@ -380,7 +380,7 @@ page_entry get_page_entry(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
 
 void* get_physical_address(void* a)
 {
-	return _current_pt[((addr) a).frame].frame * 0x1000;
+	return (void*) (_current_pt[((addr) a).frame].frame * 0x1000);
 }
 
 
@@ -502,8 +502,8 @@ void mem_copy_block(void* from, void* to)
 // return physical address of new pml4
 pml4_entry* clone_pml4t()
 {
-    pml4_entry* pml4 = kmalloc_a(4096); //alloc_kernel_page(1);
-	pdp_entry* pdp = kmalloc_a(4096); //alloc_kernel_page(1);
+    pml4_entry* pml4 = (pml4_entry*) kmalloc_a(4096); //alloc_kernel_page(1);
+	pdp_entry* pdp = (pdp_entry*) kmalloc_a(4096); //alloc_kernel_page(1);
 	pd_entry* pd;
 	page_entry* pt;
 
@@ -527,7 +527,7 @@ pml4_entry* clone_pml4t()
 	{
 		if (get_pdp_entry(0, i).present == 1)
 		{
-			pd = kmalloc_a(4096);//alloc_kernel_page(1);
+			pd = (pd_entry*) kmalloc_a(4096);//alloc_kernel_page(1);
 			pdp[i].directory = (uint64_t) get_physical_address(pd) / 0x1000;
 			pdp[i].present = 1;
 			pdp[i].rw = 1;
@@ -537,7 +537,7 @@ pml4_entry* clone_pml4t()
 			{
 				if(get_pd_entry(0, i, z).present == 1)
 				{
-					pt = kmalloc_a(4096);//alloc_kernel_page(1);
+					pt = (page_entry*) kmalloc_a(4096);//alloc_kernel_page(1);
 					pd[z].table = (uint64_t) get_physical_address(pt) / 0x1000;
 					pd[z].present = 1;
 					pd[z].rw = 1;
@@ -546,7 +546,7 @@ pml4_entry* clone_pml4t()
 					{
 						if(get_page_entry(0, i, z, y).present == 1)
 						{
-							void* new_page = kmalloc_a(4096);//alloc_kernel_page(1);
+							void* new_page = (void*) kmalloc_a(4096);//alloc_kernel_page(1);
 							address original_page = { 0 };
 							original_page.pml4 = 0; 
 							original_page.pdp = i;

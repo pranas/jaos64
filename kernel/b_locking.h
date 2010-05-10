@@ -24,7 +24,7 @@
 
 #define LOCKING_MAX 0x10
 
-extern spin_lock(uint64_t* var);
+extern void spin_lock(uint64_t* var);
 
 struct lock
 {

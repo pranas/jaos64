@@ -47,5 +47,6 @@ void add_task(task* new_task);
 void change_task_status(uint64_t pid, uint8_t status);
 uint64_t get_current_pid();
 task* get_current_task();
+void debug_task(task* tsk);
 
 #endif

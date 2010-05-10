@@ -28,10 +28,10 @@ void lock(int lockid)
     cli();
     
     // unlocked
-    spin_lock(&master_lock);
+    spin_lock((uint64_t*) &master_lock);
     if (locks[lockid].head == 0)
     {
-        struct lock* lck = kmalloc(sizeof(struct lock));
+        struct lock* lck = (struct lock*) kmalloc(sizeof(struct lock));
         lck->pid = get_current_pid();
         lck->next = 0;
         locks[lockid].head = lck;
@@ -44,7 +44,7 @@ void lock(int lockid)
     // if lock is aquired by this same process
     // this could happen if let's say `puts` would call `putchar` wich is (should be)
     // protected by the same lock
-    if (locks[lockid].head->pid = get_current_pid())
+    if (locks[lockid].head->pid == get_current_pid())
     {
         master_lock = 0;
         sti();
@@ -54,7 +54,7 @@ void lock(int lockid)
     // some one is in locked zone
     // lets take place in queue
     
-    struct lock* lck = kmalloc(sizeof(struct lock));
+    struct lock* lck = (struct lock*) kmalloc(sizeof(struct lock));
     lck->pid = get_current_pid();
     lck->next = 0;
     locks[lockid].tail->next = lck;
@@ -64,7 +64,7 @@ void lock(int lockid)
     // wait in line
     for(;;)
     {
-        spin_lock(&master_lock);
+        spin_lock((uint64_t*) &master_lock);
         if (locks[lockid].head->pid == get_current_pid())
         {
             // it's our time!
@@ -93,7 +93,7 @@ void unlock(int lockid)
     
     cli();
     // only needed for SMP, cause cli(), sti() protects from other processes on same cpu
-    spin_lock(&master_lock);
+    spin_lock((uint64_t*) &master_lock);
     
     struct lock* tmp;
     tmp = locks[lockid].head;

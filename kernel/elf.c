@@ -20,7 +20,7 @@ void* load_executable(char* filename)
 	if (!file) return 0;
 	
 	// calculate size and prepare buffer in kernel
-    void* buffer = kmalloc(file->size);
+    void* buffer = (void*) kmalloc(file->size);
     
 	// read to buffer
 	read_file(file->cluster_high * 0x100 + file->cluster_low, buffer);
@@ -35,8 +35,8 @@ void* load_executable(char* filename)
 	{
 		if (ph[i].p_type == 1)
 		{
-			if (!alloc_page(ph[i].p_vaddr, ph[i].p_memsz / MEM_BLOCK_SIZE)) return 0;
-			memcpy(ph[i].p_vaddr, buffer + ph[i].p_offset, ph[i].p_filesz);
+			if (!alloc_page((void*) ph[i].p_vaddr, ph[i].p_memsz / MEM_BLOCK_SIZE)) return 0;
+			memcpy((void*) ph[i].p_vaddr, buffer + ph[i].p_offset, ph[i].p_filesz);
 		}
 	}
 	
