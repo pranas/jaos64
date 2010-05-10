@@ -67,33 +67,35 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	timer_init(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
+
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
+
 
     // prepare lock on test() function
     lockid = register_lock();
 
 	// testing scheduler
-	/*
+	
 	if (fork_kernel() == 0)
 	{
         // switch_to_user_mode((uint64_t) load_executable("LOOP"));
 		for(;;)
 		{
-            puts("PONG!\n\n");
-            test();
-            // asm volatile("hlt");
+			char* buffer = readline();
+			puts(buffer);
+            //test();
+            //asm volatile("hlt");
 		}
 	}
 	else
 	{
 		for(;;)
 		{
-            puts("PING!\n\n");
-            test();
-            // asm volatile("hlt");
+            //test();
+            //asm volatile("hlt");
 		}
-	}*/
+	}
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 

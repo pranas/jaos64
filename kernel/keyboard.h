@@ -26,7 +26,6 @@ enum SCANCODE {
 char recognize_scancode(char scancode);
 char* readline();
 void keyboard_init();
-char* readline();
 char get_char();
 
 #endif

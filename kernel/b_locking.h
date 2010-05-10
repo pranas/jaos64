@@ -42,4 +42,4 @@ static volatile uint64_t next_lockid = 0;
 uint64_t register_lock();
 void lock(int lockid);
 void unlock(int lockid);
-uint64_t get_lock_owner(int lockid)
+uint64_t get_lock_owner(int lockid);
