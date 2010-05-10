@@ -22,15 +22,6 @@
 #define WHITE 15
 #define ATTR_BYTE(bg,fg) (((bg) << 4) | ((fg) & 0x0F))
 
-/* initial position is top left */
-static int8_t cursor_x = 0;
-static int8_t cursor_y = 0;
-
-/* video memory mapped here */
-static int16_t* video_memory = (int16_t*) 0xB8000; // default
-
-static uint64_t monitor_lock = -1;
-
 void monitor_init();
 
 void set_video_memory(void* address);
