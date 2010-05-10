@@ -17,10 +17,10 @@
 
 */
 
+#include "isr.h"
 #include <stdint.h>
 #include <bootinfo.h>
 #include <ctype.h>
-#include "isr.h"
 #include "kheap.h"
 
 #define MEM_BLOCKS_PER_BYTE 8
@@ -176,7 +176,7 @@ void invalidate();
 void* alloc_page(void* virtual, uint64_t size);
 
 uint64_t get_current_pml4();
-void switch_paging(void* new);
+void switch_paging(void* newpml);
 int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t size, pml4_entry* pml4, int user);
 page_entry* get_page(uint64_t physical_address, pml4_entry* pml4);
 pdp_entry* get_pdp(uint64_t address, pml4_entry* pml4);
@@ -186,8 +186,8 @@ pdp_entry* create_pdp(uint64_t address, pml4_entry* pml4, int user);
 void* alloc_kernel_page(int size);
 void* alloc_table(pml4_entry* pml4);
 void copy_page_tables(pml4_entry* from, pml4_entry* to);
-void page_fault_handler(registers_t* regs);
 void free_kernel_page(void* address, uint64_t size);
+void page_fault_handler(registers_t* regs);
 
 // debug procedures
 void debug_memmap();

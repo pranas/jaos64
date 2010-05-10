@@ -31,7 +31,7 @@ void keyboard_handler(registers_t* regs)
 char recognize_scancode(char scancode)
 {
 	if (scancode && scancode < strlen(key))
-		return (char) key[scancode];
+		return key[(uint8_t)scancode];
 	return 0;
 }
 
