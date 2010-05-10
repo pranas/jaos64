@@ -32,7 +32,7 @@ DECL_SYSCALL1(puts, const char *);
 DECL_SYSCALL1(puthex, int64_t);
 DECL_SYSCALL1(putint, int64_t);
 
-void init_syscalls();
+void syscalls_init();
 void syscall_handler(registers_t * regs);
 
 #endif

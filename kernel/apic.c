@@ -54,7 +54,7 @@ void apic_init()
 	puts_apic_info();
 }
 
-void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic)
+void timer_init(int vector, uint32_t counter, uint32_t divider, int periodic)
 {
 	uint32_t timer_lvt = 0x0;
 	timer_lvt |= vector;

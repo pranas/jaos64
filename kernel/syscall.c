@@ -12,7 +12,7 @@ void * syscalls[SYSCALL_NUM] =
    &putint,
 };
 
-void init_syscalls()
+void syscalls_init()
 {
    register_handler (0x80, &syscall_handler);
 }

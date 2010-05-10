@@ -29,16 +29,25 @@ void lock(int lockid)
     cli();
     
     // unlocked
+	puts("spin lock\n");
     spin_lock(&master_lock);
+	puts("spin locked\n");
     if (locks[lockid].head == 0)
     {
+		puts("1\n");
         // puts("No one in line, going to lock and return :)\n");
         struct lock* lck = kmalloc(sizeof(struct lock));
+		puthex(lck);
         lck->pid = get_current_pid();
+		puts("3\n");
         lck->next = 0;
+		puts("4\n");
         locks[lockid].head = lck;
+		puts("5\n");
         locks[lockid].tail = lck;
+		puts("6\n");
         master_lock = 0;
+		puts("7\n");
         sti();
         return;
     }
@@ -56,6 +65,7 @@ void lock(int lockid)
     // some one is in locked zone
     // lets take place in queue
     
+	puts("kmallocing struct\n");
     struct lock* lck = kmalloc(sizeof(struct lock));
     lck->pid = get_current_pid();
     lck->next = 0;
@@ -63,6 +73,7 @@ void lock(int lockid)
     locks[lockid].tail = lck;
     master_lock = 0;
     
+	puts("waiting in line\n");
     // wait in line
     for(;;)
     {
