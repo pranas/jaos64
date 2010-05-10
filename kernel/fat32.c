@@ -122,7 +122,7 @@ uint64_t find_next_cluster(uint64_t cluster)
 {
 	if (cluster >= 0x0ffffff8) return 0x0fffffff;
 	
-	uint32_t* fat = ((uint64_t) _partition) + 512;
+    uint32_t* fat = kmalloc(_partition->bytes_per_sector);// ((uint64_t) _partition) + 512;
 	
 	if (!read_sector(_fat_begin_lba + (cluster / _partition->bytes_per_sector / 4), fat))
 	{
@@ -130,7 +130,9 @@ uint64_t find_next_cluster(uint64_t cluster)
 		return 0;
 	}
 	
-	return fat[cluster % _partition->bytes_per_sector];
+    uint64_t r = fat[cluster % _partition->bytes_per_sector];
+    kfree(fat);
+    return r; //fat[cluster % _partition->bytes_per_sector];
 }
 
 uint64_t put_dir(dir_entry* dir, int size)

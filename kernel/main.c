@@ -58,8 +58,6 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
 	if (fork_kernel() == 0)
 	{
-        // puthex(load_executable("LOOP"));
-        asm("xchg %bx, %bx");
 		switch_to_user_mode((uint64_t) load_executable("LOOP"));
 		for(;;)
 		{
@@ -76,7 +74,6 @@ void kernel_entry (multiboot_info* bootinfo)
 		}
 	}
 	
-	asm("xchg %bx, %bx");
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 
 	for (;;);
