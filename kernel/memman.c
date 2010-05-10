@@ -477,7 +477,7 @@ void* alloc_kernel_page(int size)
 	return (void*) ((uint64_t) (_kernel_next_block - size) * 0x1000);
 }
 
-void free_kernel_page(void* address)
+void free_kernel_page(void* address, uint64_t size)
 {
 
 }

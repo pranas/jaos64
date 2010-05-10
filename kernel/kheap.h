@@ -50,5 +50,6 @@ uint64_t kmalloc_a(uint64_t sz);
 uint64_t kmalloc_p(uint64_t sz, uint64_t *phys);
 uint64_t kmalloc_ap(uint64_t sz, uint64_t *phys);
 void kfree(void *p);
+void kheap_init();
 
 #endif
