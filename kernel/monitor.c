@@ -2,7 +2,6 @@
 
 void monitor_init()
 {
-    asm volatile("xchg %bx, %bx");
     monitor_lock = register_lock();
 }
 

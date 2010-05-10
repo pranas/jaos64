@@ -51,10 +51,9 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	timer_init(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
-
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
-	monitor_init();
+	//monitor_init();
 	keyboard_init();
 
 	// testing scheduler

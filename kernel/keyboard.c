@@ -24,6 +24,7 @@ void keyboard_handler(registers_t* regs)
 	{
 		puts("waking up the occupant\n");
 		change_task_status(occupant, 0);
+		asm volatile("int $0x20"); 
 	}
 }
 
@@ -39,7 +40,11 @@ char get_char()
 	puts("get_char start\n");
 	if (!new_scancode)
 	{
+        puts("blocking pid:");
+        putint(occupant);
+        puts("\n");
 		change_task_status(occupant, 1);
+		asm volatile("int $0x20");  
 	}
 	new_scancode = 0;
 	puts("get_char returning\n");

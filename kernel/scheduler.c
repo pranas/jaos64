@@ -67,13 +67,17 @@ void switch_task()
 	current_task->rip = rip;
    	current_task->rsp = rsp;
    	current_task->rbp = rbp;
+   	
+    debug_task(current_task);
     
     // round robin untill unblocked task will be found
     do
     {
         if (!current_task->next) current_task = task_list;
         else current_task = current_task->next;
-    } while (current_task->status != 0);
+    } while (current_task->status == 1);
+    
+    debug_task(current_task);
 
 	rsp = current_task->rsp;
    	rbp = current_task->rbp;
@@ -106,9 +110,9 @@ task* get_current_task()
 void change_task_status(uint64_t pid, uint8_t status)
 {
     task* tmp = task_list;
-    while(tmp->next)
+    while(tmp)
     {
-        if (tmp->pid = pid)
+        if (tmp->pid == pid)
         {
             tmp->status = status;
         }
