@@ -38,9 +38,9 @@ void print_index()
 	{
 		header_t* header = (header_t*) arr.array[i];
 		puts("Header "); putint(i);
-		puts(" position: "); puthex(header);
-		puts(" magic: "); puthex(header->magic);
-		puts(" is_hole: "); putint(header->is_hole);
+		puts(" position: "); puthex((uint64_t) header);
+		puts(" magic: "); puthex((uint64_t) header->magic);
+		puts(" is_hole: "); putint((uint64_t) header->is_hole);
 		puts(" size: "); puthex(header->size);
 		puts("\n");
 	}
@@ -140,7 +140,7 @@ static uint64_t contract(uint64_t new_size, heap_t *heap)
 
 	uint64_t old_size = heap->end_address-heap->start_address;
 
-	free_kernel_page(heap->start_address + new_size, (old_size - new_size) / MEM_BLOCK_SIZE);
+	free_kernel_page((void*) heap->start_address + new_size, (old_size - new_size) / MEM_BLOCK_SIZE);
 	heap->end_address = heap->start_address + new_size;
 	return new_size;
 }
@@ -192,7 +192,7 @@ heap_t *create_heap(uint64_t start, uint64_t end_addr, uint64_t max, uint8_t sup
 
 	// Initialise the index.
 	// place it right after the heap structure
-	heap->index = place_ordered_array((void*) start + sizeof(heap_t), HEAP_INDEX_SIZE, &header_t_less_than);
+	heap->index = place_ordered_array((void*) start + sizeof(heap_t), HEAP_INDEX_SIZE, (cmpfunc_t) header_t_less_than);
 
 	// Shift the start address forward to resemble where we can start putting data.
 	// dont forget heap structure size

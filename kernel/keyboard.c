@@ -31,7 +31,7 @@ void keyboard_handler(registers_t* regs)
 char recognize_scancode(char scancode)
 {
 	if (scancode && scancode < strlen(key))
-		return key[scancode];
+		return (char) key[scancode];
 	return 0;
 }
 
@@ -57,8 +57,8 @@ char* readline()
 	occupant = get_lock_owner(keyboard_lock);
 	puts("The occupant's PID is "); putint(occupant); puts("\n");
 
-	char* buffer = kmalloc(81);
-	puthex(buffer); puts("\n");
+	char* buffer = (char*) kmalloc(81);
+	puthex((uint64_t) buffer); puts("\n");
 	int i = 0;
 	char c;
 	puts("looping on get_char\n");
@@ -72,7 +72,7 @@ char* readline()
 	if (buffer[i] != '\n')
 		buffer[i++] = '\n';
 	buffer[i] = '\0';
-	putchar("\n");
+	putchar('\n');
 
 	occupant = 0;
 	unlock(keyboard_lock);

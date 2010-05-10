@@ -38,7 +38,7 @@ void syscall_handler(registers_t* regs)
 		   "pop %%rdx\n\t"
 		   "pop %%rsi\n\t"
 		   "pop %%rdi\n\t"
-		   "call %%r11\n\t"
+		   "call *%%r11\n\t"
 	 : "=a" (ret)
 	 : "m" (regs->rdi), "m" (regs->rsi), "m" (regs->rdx),
 	   "m" (regs->rcx), "m" (regs->r8) , "m" (regs->r9), "m" (location));
