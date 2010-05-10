@@ -28,39 +28,45 @@ void lock(int lockid)
     
     // unlocked
     spin_lock(&master_lock);
-    if (locks[lockid]->head == 0)
+    if (locks[lockid].head == 0)
     {
-        lock* lck = kmalloc(sizeof(lock));
+        // puts("No one in line, going to lock and return :)\n");
+        struct lock* lck = kmalloc(sizeof(struct lock));
         lck->pid = get_current_pid();
         lck->next = 0;
-        locks[lockid]->head = lck;
-        locks[lockid]->tail = lck;
+        locks[lockid].head = lck;
+        locks[lockid].tail = lck;
         master_lock = 0;
         sti();
         return;
     }
     
+    // puts("Need to stand in line.. First PID:");
+    // putint(locks[lockid].head->pid);
+    // puts("\n");
+    
     // some one is in locked zone
     // lets take place in queue
     
-    lock* lck = kmalloc(sizeof(lock));
+    struct lock* lck = kmalloc(sizeof(struct lock));
     lck->pid = get_current_pid();
     lck->next = 0;
-    locks[lockid]->tail->next = lck;
-    locks[lockid]->tail = lck;
+    locks[lockid].tail->next = lck;
+    locks[lockid].tail = lck;
     master_lock = 0;
     
     // wait in line
     for(;;)
     {
         spin_lock(&master_lock);
-        if (locks[lockid]->head->pid = get_current_pid())
+        if (locks[lockid].head->pid == get_current_pid())
         {
             // it's our time!
             master_lock = 0;
             sti();
             return;
         }
+        // puts("Not my turn, voluntarily blocking...\n");
         master_lock = 0;
         sti();
         // block process
@@ -76,24 +82,24 @@ void unlock(int lockid)
     // only needed for SMP, cause cli(), sti() protects from other processes on same cpu
     spin_lock(&master_lock);
     
-    lock* tmp;
-    tmp = locks[lockid]->head;
+    struct lock* tmp;
+    tmp = locks[lockid].head;
     
     // if we have 1 element in queue
-    if (locks[lockid]->head == locks[lockid]->tail)
+    if (locks[lockid].head == locks[lockid].tail)
     {
-        locks[lockid]->head = 0;
-        locks[lockid]->tail = 0;
+        locks[lockid].head = 0;
+        locks[lockid].tail = 0;
         kfree(tmp);
         sti();
         return;
     }
     
     // if there is more than 1
-    locks[lockid]->head = tmp->next;
+    locks[lockid].head = tmp->next;
     kfree(tmp);
     //unblock locks[lockid]->head->pid
-    change_task_status(locks[lockid]->head->pid, 0);
+    change_task_status(locks[lockid].head->pid, 0);
     master_lock = 0; // spin unlock
     sti();
     return;    

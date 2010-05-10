@@ -27,8 +27,6 @@ struct lock
     struct lock* next;
 } __attribute__((packed));
 
-typedef struct lock lock;
-
 struct lock_queue
 {
     struct lock* head;

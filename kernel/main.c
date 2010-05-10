@@ -30,8 +30,22 @@
 #include "elf.h"
 #include "kheap.h"
 #include "fork.h"
+#include "b_locking.h"
 
 extern void switch_to_user_mode(void*);
+
+volatile uint64_t lockid;
+
+void test()
+{
+    lock(lockid);
+    
+    putint(get_current_pid());
+    puts(" is in locked zone...\n");
+    for(;;);
+    
+    unlock(lockid);
+}
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -55,22 +69,27 @@ void kernel_entry (multiboot_info* bootinfo)
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
 
+    // prepare lock on test() function
+    lockid = register_lock();
+
 	// testing scheduler
 	if (fork_kernel() == 0)
 	{
-		switch_to_user_mode((uint64_t) load_executable("LOOP"));
+        // switch_to_user_mode((uint64_t) load_executable("LOOP"));
 		for(;;)
 		{
-			puts("PONG!\n\n");
-			asm volatile("hlt");
+            puts("PONG!\n\n");
+            test();
+            // asm volatile("hlt");
 		}
 	}
 	else
 	{
 		for(;;)
 		{
-			puts("PING!\n\n");
-			asm volatile("hlt");
+            puts("PING!\n\n");
+            test();
+            // asm volatile("hlt");
 		}
 	}
 	
