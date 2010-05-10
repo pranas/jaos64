@@ -117,7 +117,6 @@ void change_task_status(uint64_t pid, uint8_t status)
             tmp = tmp->next;
         }
     }
-    tmp->next = new_task;
 }
 
 void debug_task(task* tsk)
