@@ -15,6 +15,11 @@
 
 #include "b_locking.h"
 
+uint64_t get_lock_owner(int lockid)
+{
+    return locks[lockid].head->pid;
+}
+
 uint64_t register_lock()
 {
     locks[next_lockid].head = 0;
