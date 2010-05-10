@@ -1,8 +1,10 @@
-#ifndef _KHEAP_H
-#define _KHEAP_H
+#pragma once
+#ifndef KHEAP_H
+#define KHEAP_H
 
 #include <stdint.h>
 #include "ordered_array.h"
+#include "memman.h"
 
 // TODO: make this more fool proof
 // if initial_size - index_size * 8 + 1 page < min_size

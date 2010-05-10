@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "idt.h"
 
 void idt_flush(idt_ptr_struct* idt_p)

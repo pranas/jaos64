@@ -1,7 +1,10 @@
-#ifndef _ISR_H
-#define _ISR_H
+#pragma once
+#ifndef ISR_H
+#define ISR_H
 
 #include <stdint.h>
+#include "monitor.h"
+#include "apic.h"
 
 #define MAX_HANDLERS 255
 

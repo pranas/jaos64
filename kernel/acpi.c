@@ -1,10 +1,5 @@
 #include "acpi.h"
 
-#include <string.h>
-
-#include "memman.h"
-#include "monitor.h"
-
 void * madt;
 
 void acpi_init()

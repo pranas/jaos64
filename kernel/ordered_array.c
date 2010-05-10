@@ -1,4 +1,3 @@
-
 #include "ordered_array.h"
 
 int8_t standard_lessthan_predicate(void* a, void* b)

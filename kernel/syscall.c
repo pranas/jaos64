@@ -1,9 +1,5 @@
 #include "syscall.h"
 
-#include "isr.h"
-#include "monitor.h"
-#include "idt.h"
-
 DEFN_SYSCALL1(puts, 0, const char *);
 DEFN_SYSCALL1(puthex, 1, int64_t);
 DEFN_SYSCALL1(putint, 2, int64_t);

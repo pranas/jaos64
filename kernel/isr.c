@@ -1,6 +1,4 @@
 #include "isr.h"
-#include "monitor.h"
-#include "apic.h"
 
 isr_t handlers[MAX_HANDLERS];
 

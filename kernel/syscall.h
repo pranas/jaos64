@@ -1,8 +1,10 @@
-
-#ifndef _SYSCALL_H
-#define _SYSCALL_H
+#pragma once
+#ifndef SYSCALL_H
+#define SYSCALL_H
 
 #include "isr.h"
+#include "monitor.h"
+#include "idt.h"
 
 #define DECL_SYSCALL0(fn) int syscall_##fn();
 #define DECL_SYSCALL1(fn,p1) int syscall_##fn(p1);

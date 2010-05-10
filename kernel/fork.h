@@ -1,3 +1,4 @@
+#pragma once
 #ifndef FORK_H
 #define FORK_H
 

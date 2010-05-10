@@ -1,5 +1,6 @@
-#ifndef _FAT32_H
-#define _FAT32_H
+#pragma once
+#ifndef FAT32_H
+#define FAT32_H
 
 #include <stdint.h>
 #include <string.h>

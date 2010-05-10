@@ -24,6 +24,8 @@ uint64_t register_lock()
 
 void lock(int lockid)
 {
+    if (lockid == -1) return;
+    
     cli();
     
     // unlocked
@@ -41,9 +43,15 @@ void lock(int lockid)
         return;
     }
     
-    // puts("Need to stand in line.. First PID:");
-    // putint(locks[lockid].head->pid);
-    // puts("\n");
+    // if lock is aquired by this same process
+    // this could happen if let's say `puts` would call `putchar` wich is (should be)
+    // protected by the same lock
+    if (locks[lockid].head->pid = get_current_pid())
+    {
+        master_lock = 0;
+        sti();
+        return;
+    }
     
     // some one is in locked zone
     // lets take place in queue
@@ -76,8 +84,15 @@ void lock(int lockid)
     }
 }
 
+uint64_t get_lock_owner(int lockid)
+{
+    return locks[lockid].head->pid;
+}
+
 void unlock(int lockid)
 {
+    if (lockid == -1) return;
+    
     cli();
     // only needed for SMP, cause cli(), sti() protects from other processes on same cpu
     spin_lock(&master_lock);

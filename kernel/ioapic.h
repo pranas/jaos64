@@ -1,7 +1,10 @@
-#ifndef _IOAPIC_H
-#define _IOAPIC_H
+#pragma once
+#ifndef IOAPIC_H
+#define IOAPIC_H
 
 #include <stdint.h>
+#include "memman.h"
+#include "monitor.h"
 
 #define IOAPIC_BASE 0xfec00000
 

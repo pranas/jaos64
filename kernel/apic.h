@@ -1,7 +1,13 @@
-#ifndef _APIC_H
-#define _APIC_H
+#pragma once
+#ifndef APIC_H
+#define APIC_H
 
 #include <stdint.h>
+#include <string.h>
+#include "monitor.h"
+#include "msr.h"
+#include "memman.h"
+#include "io.h"
 
 #define APIC_BASE 0xfee00000
 

@@ -1,6 +1,6 @@
-
-#ifndef _ORDERED_ARRAY_H
-#define _ORDERED_ARRAY_H
+#pragma once
+#ifndef ORDERED_ARRAY_H
+#define ORDERED_ARRAY_H
 
 #include <stdint.h>
 

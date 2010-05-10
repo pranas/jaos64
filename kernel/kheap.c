@@ -1,5 +1,4 @@
 #include "kheap.h"
-#include "memman.h"
 
 heap_t *kheap = 0;
 

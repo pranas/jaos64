@@ -1,12 +1,5 @@
 #include "apic.h"
 
-#include <string.h>
-
-#include "monitor.h"
-#include "msr.h"
-#include "memman.h"
-#include "io.h"
-
 void disable_legacy_pic()
 {
 	outb(0xa1, 0xff);

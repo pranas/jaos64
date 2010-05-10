@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
@@ -21,14 +22,13 @@
 #include "memman.h"
 #include "kheap.h"
 #include "fork.h"
-#include "isr.h"
 
 struct task
 {
    uint64_t pid;           // Process ID.
    uint64_t rsp, rbp;     // Stack and base pointers.
    uint64_t rip;          // Instruction pointer.
-   pml4_entry* pml4; 	  // Page directory.
+   struct pml4_entry* pml4; 	  // Page directory.
    uint8_t status;          // 0 - free, 1 - blocked
    struct task* next;
 }__attribute__((packed));

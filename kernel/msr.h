@@ -1,5 +1,6 @@
-#ifndef _MSR_H
-#define _MSR_H
+#pragma once
+#ifndef MSR_H
+#define MSR_H
 
 #include "stdint.h"
 

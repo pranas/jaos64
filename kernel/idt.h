@@ -1,8 +1,9 @@
-#ifndef _IDT_H
-#define _IDT_H
+#pragma once
+#ifndef IDT_H
+#define IDT_H
 
 #include <stdint.h>
-
+#include <stdlib.h>
 
 struct idt_descriptor
 {

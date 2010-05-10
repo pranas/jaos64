@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include "io.h"
 
 void outb(int16_t port, int8_t value)
 {

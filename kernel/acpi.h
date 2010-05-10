@@ -1,7 +1,11 @@
-#ifndef _ACPI_H
-#define _ACPI_H
+#pragma once
+#ifndef ACPI_H
+#define ACPI_H
 
 #include <stdint.h>
+#include <string.h>
+#include "memman.h"
+#include "monitor.h"
 
 struct acpi_sdt_header {
   char signature[4];

@@ -1,5 +1,6 @@
-#ifndef _MEMMAN_H
-#define _MEMMAN_H
+#pragma once
+#ifndef MEMMAN_H
+#define MEMMAN_H
 
 /*
 
@@ -19,8 +20,8 @@
 #include <stdint.h>
 #include <bootinfo.h>
 #include <ctype.h>
-#include "kheap.h"
 #include "isr.h"
+#include "kheap.h"
 
 #define MEM_BLOCKS_PER_BYTE 8
 #define MEM_BYTES_PER_WORD 8
@@ -196,12 +197,11 @@ page_entry* create_page_for_current(address a, int user);
 pdp_entry* create_pdp(uint64_t address, pml4_entry* pml4, int user);
 void* alloc_kernel_page(int size);
 void* alloc_table(pml4_entry* pml4);
-
 void copy_page_tables(pml4_entry* from, pml4_entry* to);
-
-void page_fault_handler(registers_t* regs);
+// void page_fault_handler(struct registers_t* regs);
 
 // debug procedures
 void debug_memmap();
 void debug_address(address);
+
 #endif

@@ -12,9 +12,6 @@
 */
 
 #include <bootinfo.h>
-
-#include "monitor.h"
-
 #include "gdt.h"
 #include "idt.h"
 #include "isr.h"
@@ -26,6 +23,7 @@
 #include "fat32.h"
 #include "keyboard.h"
 #include "scheduler.h"
+#include "monitor.h"
 #include "syscall.h"
 #include "elf.h"
 #include "kheap.h"
@@ -33,19 +31,6 @@
 #include "b_locking.h"
 
 extern void switch_to_user_mode(void*);
-
-volatile uint64_t lockid;
-
-void test()
-{
-    lock(lockid);
-    
-    putint(get_current_pid());
-    puts(" is in locked zone...\n");
-    for(;;);
-    
-    unlock(lockid);
-}
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -59,7 +44,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	//acpi_init();
 	apic_init();
 	ioapic_init(); // keyboard only for now
-
+	
 	register_handler(0x21, keyboard_handler);
 
 	init_syscalls(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
@@ -68,32 +53,33 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
+	monitor_init();
 
     // prepare lock on test() function
-    lockid = register_lock();
+    // lockid = register_lock();
 
 	// testing scheduler
-	if (fork_kernel() == 0)
-	{
-        // switch_to_user_mode((uint64_t) load_executable("LOOP"));
-		for(;;)
-		{
-            puts("PONG!\n\n");
-            test();
-            // asm volatile("hlt");
-		}
-	}
-	else
-	{
-		for(;;)
-		{
-            puts("PING!\n\n");
-            test();
-            // asm volatile("hlt");
-		}
-	}
+    // if (fork_kernel() == 0)
+    // {
+    //         // switch_to_user_mode((uint64_t) load_executable("LOOP"));
+    //  for(;;)
+    //  {
+    //             puts("PONG!\n\n");
+    //             test();
+    //             // asm volatile("hlt");
+    //  }
+    // }
+    // else
+    // {
+    //  for(;;)
+    //  {
+    //             puts("PING!\n\n");
+    //             test();
+    //             // asm volatile("hlt");
+    //  }
+    // }
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
-
+    puts("aaa");
 	for (;;);
 }

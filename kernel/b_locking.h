@@ -1,3 +1,7 @@
+#pragma once
+#ifndef B_LOCKING_H
+#define B_LOCKING_H
+
 /*
 
 	b_locking.h
@@ -16,6 +20,7 @@
 #include <stdint.h>
 #include "common.h"
 #include "scheduler.h"
+#include "kheap.h"
 
 #define LOCKING_MAX 0x10
 
@@ -42,3 +47,5 @@ static volatile uint64_t next_lockid = 0;
 uint64_t register_lock();
 void lock(int lockid);
 void unlock(int lockid);
+
+#endif

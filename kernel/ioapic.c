@@ -1,8 +1,5 @@
 #include "ioapic.h"
 
-#include "memman.h"
-#include "monitor.h"
-
 void write_ioapicr(const uint8_t offset, const uint32_t val)
 {
 	void * base = (void*) IOAPIC_BASE;

@@ -112,7 +112,7 @@ void memman_init(multiboot_info* bootinfo)
 
 	puts("Initializing memory manager... \n");
 
-	register_handler(0x0E, page_fault_handler);
+    // register_handler(0x0E, page_fault_handler);
 
 	puts("Analyzing memory map:\n");
 
@@ -608,27 +608,27 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
 	return i;
 }
 
-void page_fault_handler(registers_t* regs)
-{
-	// A page fault has occurred.
-	// The faulting address is stored in the CR2 register.
-	uint64_t faulting_address;
-	asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
-
-	puts("Page fault (");
-	if (!(regs->err_code & 0x1)) puts("not present ");	// if page not present
-	if (regs->err_code & 0x2) puts("read-only ");		// only read
-	if (regs->err_code & 0x4) puts("user-mode ");		// from user space?
-	if (regs->err_code & 0x8) puts("reserved ");			// overwritten CPU-reserved bits of page entry?
-
-	puts(")! At ");
-	puthex(faulting_address);
-	puts("\n");
-
-	//int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
-
-	for (;;);
-}
+// void page_fault_handler(struct registers_t* regs)
+// {
+//  // A page fault has occurred.
+//  // The faulting address is stored in the CR2 register.
+//  uint64_t faulting_address;
+//  asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
+// 
+//  puts("Page fault (");
+//  if (!(regs->err_code & 0x1)) puts("not present ");  // if page not present
+//  if (regs->err_code & 0x2) puts("read-only ");       // only read
+//  if (regs->err_code & 0x4) puts("user-mode ");       // from user space?
+//  if (regs->err_code & 0x8) puts("reserved ");            // overwritten CPU-reserved bits of page entry?
+// 
+//  puts(")! At ");
+//  puthex(faulting_address);
+//  puts("\n");
+// 
+//  //int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
+// 
+//  for (;;);
+// }
 
 /*
 
@@ -656,7 +656,7 @@ void debug_memmap()
 void debug_address(addr a)
 {
 	puts("Debug ");
-	puthex(a);
+	puthex(a.hex);
 	puts(":\n");
 	puts("PML4: ");
 	puthex(a.pml4);

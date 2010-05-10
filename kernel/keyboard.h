@@ -1,7 +1,10 @@
-#ifndef _KEYBOARD_H
-#define _KEYBOARD_H
+#pragma once
+#ifndef KEYBOARD_H
+#define KEYBOARD_H
 
 #include "isr.h"
+#include "io.h"
+#include "monitor.h"
 
 void keyboard_handler(registers_t*);
 
