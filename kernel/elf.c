@@ -46,7 +46,7 @@ void* load_executable(char* filename)
 void debug_elf_header(Elf64_Ehdr* h)
 {
 	puts("Identification: ");
-	puts(h->e_ident);
+	puts((char*) h->e_ident);
 	puts("\n");
 	puts("Type: ");
 	puthex(h->e_type);

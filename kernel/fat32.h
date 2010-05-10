@@ -6,6 +6,7 @@
 #include <string.h>
 #include "memman.h"
 #include "kheap.h"
+#include "diskio.h"
 
 struct fat32_volume_id {
 	char jump[3];
@@ -115,6 +116,6 @@ void read_file(uint64_t cluster, void* address);
 dir_entry* find_file(char* name);
 fat32_volume_id* get_current_partition();
 // debug
-uint64_t put_dir(dir_entry* dir, int size);
+void put_dir(dir_entry* dir, int size);
 
 #endif

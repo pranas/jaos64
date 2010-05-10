@@ -3,10 +3,6 @@
 #define ISR_H
 
 #include <stdint.h>
-#include "monitor.h"
-#include "apic.h"
-
-#define MAX_HANDLERS 255
 
 typedef struct registers
 {
@@ -16,6 +12,11 @@ typedef struct registers
 	int64_t rip, cs, rflags, userrsp, ss;
 } registers_t;
 
+
+#include "monitor.h"
+#include "apic.h"
+
+#define MAX_HANDLERS 255
 
 typedef void (*isr_t) (registers_t*);
 void register_handler(int int_no, isr_t custom_handler);

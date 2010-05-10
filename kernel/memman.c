@@ -123,7 +123,8 @@ void memman_init(multiboot_info* bootinfo)
 {
 	char* strMemoryType[] = { "Unknown", "Available", "Reserved", "ACPI Reclaim", "ACPI NVS Memory", "Bad stuff" };
 
-	memory_region* memory_map = (memory_region*) bootinfo->m_mmap_addr;
+    uint64_t map_addr = (uint32_t) bootinfo->m_mmap_addr;
+	memory_region* memory_map = (memory_region*) map_addr;
 	uint64_t i;
 	uint64_t total = 0, limit = 0;
 
@@ -397,7 +398,8 @@ page_entry get_page_entry(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
 
 void* get_physical_address(void* a)
 {
-	return (void*) (_current_pt[((addr) a).frame].frame * 0x1000);
+    uint64_t phys = (_current_pt[((addr) a).frame].frame * 0x1000);
+	return (void*) phys;
 }
 
 
@@ -627,24 +629,24 @@ int brute_create_page(uint64_t physical_addr, uint64_t virtual_addr, uint64_t si
 
 void page_fault_handler(registers_t* regs)
 {
- // A page fault has occurred.
- // The faulting address is stored in the CR2 register.
- uint64_t faulting_address;
- asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
+    // A page fault has occurred.
+    // The faulting address is stored in the CR2 register.
+    uint64_t faulting_address;
+    asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
 
- puts("Page fault (");
- if (!(regs->err_code & 0x1)) puts("not present ");  // if page not present
- if (regs->err_code & 0x2) puts("read-only ");       // only read
- if (regs->err_code & 0x4) puts("user-mode ");       // from user space?
- if (regs->err_code & 0x8) puts("reserved ");            // overwritten CPU-reserved bits of page entry?
+    puts("Page fault (");
+    if (!(regs->err_code & 0x1)) puts("not present ");  // if page not present
+    if (regs->err_code & 0x2) puts("read-only ");       // only read
+    if (regs->err_code & 0x4) puts("user-mode ");       // from user space?
+    if (regs->err_code & 0x8) puts("reserved ");            // overwritten CPU-reserved bits of page entry?
 
- puts(")! At ");
- puthex(faulting_address);
- puts("\n");
+    puts(")! At ");
+    puthex(faulting_address);
+    puts("\n");
 
- //int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
+    //int id = regs.err_code & 0x10;          // Caused by an instruction fetch?
 
- for (;;);
+    for (;;);
 }
 
 /*

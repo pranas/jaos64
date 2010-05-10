@@ -18,7 +18,7 @@ void fat32_init()
 		return;
 	}
 	
-	if (!read_sector(0, table))
+	if (!read_sector(0, (uint64_t) table))
 	{
 		puts("Can't read disk!\n");
 		return;
@@ -35,7 +35,7 @@ void fat32_init()
 	
 	_partition_begin_lba = table->partition[0].lba;
 	
-	if (!read_sector(table->partition[0].lba, volume))
+	if (!read_sector(table->partition[0].lba, (uint64_t) volume))
 	{
 		puts("Can't read FAT32 volume id!");
 		return;
@@ -67,7 +67,7 @@ uint64_t read_cluster(uint64_t cluster, void* address)
 	// puthex((uint64_t) address);
 	// puts("\n");
 	
-	return read_sectors(cluster2lba(cluster), address, _partition->sectors_per_cluster);
+	return read_sectors(cluster2lba(cluster), (uint64_t) address, _partition->sectors_per_cluster);
 }
 
 void read_file(uint64_t cluster, void* address)
@@ -129,7 +129,7 @@ uint64_t find_next_cluster(uint64_t cluster)
 	
     uint32_t* fat = (uint32_t*) kmalloc(_partition->bytes_per_sector);// ((uint64_t) _partition) + 512;
 	
-	if (!read_sector(_fat_begin_lba + (cluster / _partition->bytes_per_sector / 4), fat))
+	if (!read_sector(_fat_begin_lba + (cluster / _partition->bytes_per_sector / 4), (uint64_t) fat))
 	{
 		puts("Error!");
 		return 0;
@@ -140,7 +140,7 @@ uint64_t find_next_cluster(uint64_t cluster)
     return r; //fat[cluster % _partition->bytes_per_sector];
 }
 
-uint64_t put_dir(dir_entry* dir, int size)
+void put_dir(dir_entry* dir, int size)
 {
 	int i;
 	puts("Files in dir:\n");
@@ -152,4 +152,5 @@ uint64_t put_dir(dir_entry* dir, int size)
 			puts("\n");
 		}
 	}
+	
 }

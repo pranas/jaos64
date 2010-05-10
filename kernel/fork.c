@@ -43,5 +43,6 @@ uint64_t fork_kernel()
 		     jmp *%%rcx           "
 		                : : "r"(kernel_fork_ret));
 	}
+    return 0; // never happens
 	
 }
