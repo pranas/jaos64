@@ -56,7 +56,7 @@ void    write_apicr(uint16_t offset, uint32_t val);
 uint32_t read_apicr(uint16_t offset);
 void puts_apic_info();
 void enable_apic();
-void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic);
+void timer_init(int vector, uint32_t counter, uint32_t divider, int periodic);
 void apic_init();
 void start_ap(uint8_t apicid, uint8_t vector);
 

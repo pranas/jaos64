@@ -62,9 +62,9 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	register_handler(0x21, keyboard_handler);
 
-	init_syscalls(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
+	syscalls_init(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
 
-	init_timer(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
+	timer_init(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
@@ -73,6 +73,7 @@ void kernel_entry (multiboot_info* bootinfo)
     lockid = register_lock();
 
 	// testing scheduler
+	/*
 	if (fork_kernel() == 0)
 	{
         // switch_to_user_mode((uint64_t) load_executable("LOOP"));
@@ -91,7 +92,7 @@ void kernel_entry (multiboot_info* bootinfo)
             test();
             // asm volatile("hlt");
 		}
-	}
+	}*/
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 

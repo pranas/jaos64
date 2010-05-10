@@ -9,7 +9,6 @@ LDFLAGS = -L$(LIBRARY_PATH) -nostdlib -nodefaultlibs -m elf_x86_64 -T link.ld -l
 
 KERNELNAME = kernel
 KERNEL = $(addprefix $(BIN)/, $(KERNELNAME))
-OBJS = *.o
 AS = nasm
 ASFLAGS = -f elf64
 
@@ -28,4 +27,4 @@ $(KERNEL): $(OBJECTS) link.ld
 	$(AS) $(ASFLAGS) -o $@ $<
 
 clean:
-	-rm $(KERNEL) $(OBJECTS) defaultlibs
+	-rm $(OBJECTS) defaultlibs
