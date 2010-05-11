@@ -1,15 +1,14 @@
 #include "syscall.h"
 
-DEFN_SYSCALL1(puts, 0, const char *);
-DEFN_SYSCALL1(puthex, 1, int64_t);
-DEFN_SYSCALL1(putint, 2, int64_t);
-
-#define SYSCALL_NUM 3
+#define SYSCALL_NUM 6
 void * syscalls[SYSCALL_NUM] =
 {
    &puts,
    &puthex,
    &putint,
+   &kmalloc,
+   &kfree,
+   &readline
 };
 
 void syscalls_init()
