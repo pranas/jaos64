@@ -1,6 +1,6 @@
 #include "syscall.h"
 
-#define SYSCALL_NUM 6
+#define SYSCALL_NUM 7
 void * syscalls[SYSCALL_NUM] =
 {
    &puts,
@@ -8,7 +8,8 @@ void * syscalls[SYSCALL_NUM] =
    &putint,
    &kmalloc,
    &kfree,
-   &readline
+   &readline,
+   &fork
 };
 
 void syscalls_init()

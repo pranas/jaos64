@@ -33,5 +33,6 @@ DECL_SYSCALL1(putint, uint64_t);
 DECL_SYSCALL1(kmalloc, uint64_t);
 DECL_SYSCALL1(kfree, uint64_t);
 DECL_SYSCALL1(readline, char *);
+DECL_SYSCALL0(fork);
 
 #endif
