@@ -1,6 +1,7 @@
 #include "keyboard.h"
 
 static char* key = "##1234567890-=#\tqwertyuiop[]\n#asdfghjkl;\'`#\\zxcvbnm,./#*# ##############789-456+123#######";
+static int key_len;
 
 static uint64_t occupant;
 static uint64_t keyboard_lock;
@@ -14,6 +15,7 @@ void keyboard_init()
 	occupant = 0;
 	new_press = 0;
 	new_break = 0;
+	key_len = strlen(key);
 	keyboard_lock = register_lock();
 }
 
@@ -33,7 +35,7 @@ void keyboard_handler(registers_t* regs)
 
 char recognize_scancode(char scancode)
 {
-	if (scancode && scancode < strlen(key))
+	if (scancode && scancode < key_len)
 		return key[(uint8_t)scancode];
 	return 0;
 }
@@ -53,8 +55,10 @@ char* readline()
 {
 	lock(keyboard_lock);
 	occupant = get_lock_owner(keyboard_lock);
+	char* buffer = kmalloc(81);
+	new_press = 0;
+	new_break = 0;
 
-	char* buffer = (char*) kmalloc(81);
 	int i = 0;
 	char c;
 	while ((c = get_char()) != '\n' && i < 79)

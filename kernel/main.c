@@ -65,7 +65,7 @@ void kernel_entry (multiboot_info* bootinfo)
         {
                 char* buffer = readline();
                 puts(buffer);
-                asm volatile("hlt");
+    //            asm volatile("hlt");
         }
     }
     else
