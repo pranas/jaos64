@@ -71,8 +71,8 @@ uint64_t fork()
 		// parents should take care of their children
 		// (setting up stuff for child)
 		uint64_t rsp, rbp; 
-		asm volatile("mov %%esp, %0" : "=r"(rsp));
-        asm volatile("mov %%ebp, %0" : "=r"(rbp));
+		asm volatile("mov %%rsp, %0" : "=r"(rsp));
+        asm volatile("mov %%rbp, %0" : "=r"(rbp));
         new_task->rsp = rsp;
         new_task->rbp = rbp;
 		new_task->rip = rip;
