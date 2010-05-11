@@ -21,6 +21,7 @@
 size_t strlen (const char* str);
 int strncmp (const char*, const char*, size_t);
 int strcmp (const char*, const char*);
+char *strncpy(char *dest, const char *src, size_t n);
 
 //extern char *strcpy(char *s1, const char *s2);
 //extern void* memcpy(void *dest, const void *src, size_t count);
