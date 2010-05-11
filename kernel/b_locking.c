@@ -102,19 +102,33 @@ void unlock(int lockid)
     struct lock* tmp;
     tmp = locks[lockid].head;
     
+    if (!tmp)
+    {
+        // means it's not locked, we don't need to unlock anything
+        // this may happen if we unlocked somewhere deeper in stack and now we
+        // are returning
+        master_lock = 0;
+        kfree(tmp);
+        return;
+    }
+    
     // if we have 1 element in queue
     if (locks[lockid].head == locks[lockid].tail)
     {
         locks[lockid].head = 0;
         locks[lockid].tail = 0;
+        master_lock = 0;
         kfree(tmp);
         sti();
         return;
     }
     
     // if there is more than 1
-    locks[lockid].head = tmp->next;
-    kfree(tmp);
+    // only remove lock if it belongs to us
+    if (locks[lockid].head->pid == get_current_pid())
+        locks[lockid].head = tmp->next;
+        kfree(tmp);
+    }
     //unblock locks[lockid]->head->pid
     change_task_status(locks[lockid].head->pid, 0);
     master_lock = 0; // spin unlock
