@@ -53,7 +53,8 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
-	//monitor_init();
+	// registers locking sys
+	monitor_init();
 	keyboard_init();
 
 	// testing scheduler

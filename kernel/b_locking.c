@@ -126,6 +126,7 @@ void unlock(int lockid)
     // if there is more than 1
     // only remove lock if it belongs to us
     if (locks[lockid].head->pid == get_current_pid())
+    {
         locks[lockid].head = tmp->next;
         kfree(tmp);
     }
