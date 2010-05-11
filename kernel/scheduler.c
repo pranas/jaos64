@@ -72,7 +72,8 @@ void switch_task()
    	current_task->rsp = rsp;
    	current_task->rbp = rbp;
    	
-    debug_task((task*) current_task);
+    // puts("Switching: ");
+    // debug_task((task*) current_task);
     
     // round robin untill unblocked task will be found
     do
@@ -81,7 +82,8 @@ void switch_task()
         else current_task = current_task->next;
     } while (current_task->status == 1);
     
-    debug_task((task*) current_task);
+    // puts("To       : ");
+    // debug_task((task*) current_task);
 
 	rsp = current_task->rsp;
    	rbp = current_task->rbp;
@@ -118,12 +120,14 @@ void change_task_status(uint64_t pid, uint8_t status)
     {
         if (tmp->pid == pid)
         {
+            puts("Changing status of PID ");
+            putint(tmp->pid);
+            puts(" to ");
+            putint(status);
+            puts("\n");
             tmp->status = status;
         }
-        else
-        {
-            tmp = tmp->next;
-        }
+        tmp = tmp->next;
     }
 }
 
@@ -133,8 +137,8 @@ void debug_task(task* tsk)
     puthex(tsk->pid);
     puts(" RIP: ");
     puthex(tsk->rip);
-    puts(" PML4: ");
-    puthex((uint64_t) tsk->pml4);
+    puts(" RSP: ");
+    puthex((uint64_t) tsk->rsp);
     puts(" Next: ");
     puthex((uint64_t) tsk->next);
     puts("\n");

@@ -57,22 +57,23 @@ void kernel_entry (multiboot_info* bootinfo)
 	keyboard_init();
 
 	// testing scheduler
-	if (fork_kernel() == 0)
-	{
-        // switch_to_user_mode((uint64_t) load_executable("LOOP"));
-		for(;;)
-		{
-			char* buffer = readline();
-			puts(buffer);
-		}
-	}
-	else
-	{
-		for(;;)
-		{
-            asm volatile("hlt");
-		}
-	}
+    if (fork_kernel() == 0)
+    {
+            // switch_to_user_mode((uint64_t) load_executable("LOOP"));
+        for(;;)
+        {
+                char* buffer = readline();
+                puts(buffer);
+                asm volatile("hlt");
+        }
+    }
+    else
+    {
+        for(;;)
+        {
+                asm volatile("hlt");
+        }
+    }
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
 	for (;;);
