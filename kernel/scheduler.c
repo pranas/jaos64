@@ -120,11 +120,6 @@ void change_task_status(uint64_t pid, uint8_t status)
     {
         if (tmp->pid == pid)
         {
-            puts("Changing status of PID ");
-            putint(tmp->pid);
-            puts(" to ");
-            putint(status);
-            puts("\n");
             tmp->status = status;
         }
         tmp = tmp->next;

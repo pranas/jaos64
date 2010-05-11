@@ -6,23 +6,26 @@ static uint64_t occupant;
 static uint64_t keyboard_lock;
 
 static char scancode;
-static int new_scancode;
+static int new_press;
+static int new_break;
 
 void keyboard_init()
 {
 	occupant = 0;
-	new_scancode = 0;
+	new_press = 0;
+	new_break = 0;
 	keyboard_lock = register_lock();
-	puts("keyboard lock is "); putint(keyboard_lock); puts("\n");
 }
 
 void keyboard_handler(registers_t* regs)
 {
 	scancode = inb(0x60);
-	new_scancode = 1;
-	if (occupant)
+	if (scancode & 0x80)
+		new_break = 1;
+	else
+		new_press = 1;
+	if (occupant && new_press)
 	{
-		puts("waking up the occupant\n");
 		change_task_status(occupant, 0);
 		asm volatile("int $0x20"); 
 	}
@@ -37,17 +40,12 @@ char recognize_scancode(char scancode)
 
 char get_char()
 {
-	puts("get_char start\n");
-	if (!new_scancode)
+	if (!new_press)
 	{
-        puts("blocking pid:");
-        putint(occupant);
-        puts("\n");
 		change_task_status(occupant, 1);
 		asm volatile("int $0x20");  
 	}
-	new_scancode = 0;
-	puts("get_char returning\n");
+	new_press = 0;
 	return recognize_scancode(scancode);
 }
 
@@ -55,20 +53,16 @@ char* readline()
 {
 	lock(keyboard_lock);
 	occupant = get_lock_owner(keyboard_lock);
-	puts("The occupant's PID is "); putint(occupant); puts("\n");
 
 	char* buffer = (char*) kmalloc(81);
-	puthex((uint64_t) buffer); puts("\n");
 	int i = 0;
 	char c;
-	puts("looping on get_char\n");
 	while ((c = get_char()) != '\n' && i < 79)
 	{
 		buffer[i] = c;
 		putchar(c);
 		i++;
 	}
-	puts("out of loop\n");
 	if (buffer[i] != '\n')
 		buffer[i++] = '\n';
 	buffer[i] = '\0';
@@ -76,6 +70,5 @@ char* readline()
 
 	occupant = 0;
 	unlock(keyboard_lock);
-	puts("readline done\n");
 	return buffer;
 }
