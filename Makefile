@@ -5,6 +5,7 @@ all:
 	$(MAKE) -C user/
 	$(MAKE) -C bin/
 	$(MAKE) clean -C lib/
+	$(MAKE) clean -C user/
 	@echo -e '\033[0;32m---- BUILD SUCCESSFUL ----\033[m'
 
 clean:
