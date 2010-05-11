@@ -73,7 +73,7 @@ uint64_t read_cluster(uint64_t cluster, void* address)
 void read_file(uint64_t cluster, void* address)
 {
 	read_cluster(cluster, address);
-	
+
 	while ((cluster = find_next_cluster(cluster)) < 0x0ffffff8)
 	{
 		address = address + (_partition->sectors_per_cluster * _partition->bytes_per_sector);
@@ -127,11 +127,12 @@ uint64_t find_next_cluster(uint64_t cluster)
 {
 	if (cluster >= 0x0ffffff8) return 0x0fffffff;
 	
-    uint32_t* fat = (uint32_t*) kmalloc(_partition->bytes_per_sector);// ((uint64_t) _partition) + 512;
+    uint32_t* fat = (uint32_t*) kmalloc(_partition->bytes_per_sector);
 	
-	if (!read_sector(_fat_begin_lba + (cluster / _partition->bytes_per_sector / 4), (uint64_t) fat))
+	if (!read_sector(_fat_begin_lba + (cluster / _partition->bytes_per_sector / 4), (void*) fat))
 	{
 		puts("Error!");
+		kfree(fat);
 		return 0;
 	}
 	

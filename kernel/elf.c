@@ -20,11 +20,11 @@ void* load_executable(char* filename)
 	if (!file) return 0;
 	
 	// calculate size and prepare buffer in kernel
-    void* buffer = (void*) kmalloc(file->size);
-    
+    void* buffer = (void*) kmalloc(file->size + get_current_partition()->sectors_per_cluster * get_current_partition()->bytes_per_sector);
+
 	// read to buffer
 	read_file(file->cluster_high * 0x100 + file->cluster_low, buffer);
-	
+
 	// is it elf?
 	if (elf_check(buffer)) return 0;
 	
