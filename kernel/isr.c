@@ -7,7 +7,6 @@ void isr_handler(registers_t regs)
 	if (regs.int_no >= 0x20)
 		write_apicr(0xb0, 0); // acknowledge ioapic interrupt
 
-
 	if (handlers[regs.int_no] != 0)
 	{
 		isr_t handler = handlers[regs.int_no];

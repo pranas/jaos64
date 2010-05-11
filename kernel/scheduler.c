@@ -98,7 +98,7 @@ void switch_task()
 	     mov $0x12345, %%rax; \
 	     sti;                 \
 	     jmp *%%rcx           "
-	                : : "r"(rip), "r"(rsp), "r"(rbp), "r"(current_task->pml4));
+	                : : "m"(rip), "m"(rsp), "m"(rbp), "a"(current_task->pml4));
 	
 	
 }

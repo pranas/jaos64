@@ -2,6 +2,7 @@
 #define ISR_H
 
 #include <stdint.h>
+#include "common.h"
 
 #define MAX_HANDLERS 255
 
