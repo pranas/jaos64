@@ -2,10 +2,9 @@
 #ifndef SHELL_H
 #define SHELL_H
 
+#include <stdint.h>
 #include <string.h>
-#include "kheap.h"
-#include "monitor.h"
-#include "keyboard.h"
+#include "syscall.h"
 
 void shell_init();
 

@@ -3,11 +3,11 @@
 
 static int running;
 
-void shell_init()
-{
-	running = 1;
-	main_loop();
-}
+#define puts syscall_puts
+#define puthex syscall_puthex
+#define kmalloc syscall_kmalloc
+#define kfree syscall_kfree
+#define readline syscall_readline
 
 static char* token(char* str, int num)
 {
@@ -53,6 +53,8 @@ static char* token(char* str, int num)
 			break;
 	}
 
+	if (words != num)
+		return (char*) 0;
 	int len = end - start;
 	char* token = (char*) kmalloc(len+1);
 	strncpy(token, str + start, len);
@@ -68,14 +70,31 @@ static void main_loop()
 	while (running)
 	{
 		line = readline();
+		command = argument = 0;
 		command = token(line, 1);
 		argument = token(line, 2);
-		puts("The command is "); puts(command); puts("\n");
-		puts("The first parameter is "); puts(argument); puts("\n");
-		kfree(command);
-		kfree(argument);
-		if (strncmp(command, "exit", strlen(command)))
+		if (command)
+		{
+			puts("The command is "); puts(command); puts("\n");
+			kfree(command);
+		}
+		if (argument)
+		{
+			puts("The first parameter is "); puts(argument); puts("\n");
+			kfree(argument);
+		}
+		if (command && strncmp(command, "exit", strlen(command)))
+		{
+			puts("Exit command\n");
 			running = 0;
+		}
 	}
 	puts("Exiting...\n");
+} 
+
+void shell_init()
+{
+	running = 1;
+	main_loop();
 }
+

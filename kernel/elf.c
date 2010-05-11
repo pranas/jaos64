@@ -33,6 +33,7 @@ void* load_executable(char* filename)
 	uint64_t i;
 	for (i = 0; i < ((Elf64_Ehdr *) buffer)->e_phnum; i++)
 	{
+		// luzta kazkur cia
 		if (ph[i].p_type == 1)
 		{
 			if (!alloc_page((void*) ph[i].p_vaddr, ph[i].p_memsz / MEM_BLOCK_SIZE)) return 0;

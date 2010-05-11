@@ -60,19 +60,17 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
     if (fork_kernel() == 0)
     {
-            // switch_to_user_mode((uint64_t) load_executable("LOOP"));
+		puthex((uint64_t) load_executable("SHELL"));
         for(;;)
         {
-                char* buffer = readline();
-                puts(buffer);
-    //            asm volatile("hlt");
+			asm volatile("hlt");
         }
     }
     else
     {
         for(;;)
         {
-                asm volatile("hlt");
+			asm volatile("hlt");
         }
     }
 	
