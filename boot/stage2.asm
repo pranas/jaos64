@@ -255,9 +255,9 @@ kernelFound:
 ;
 
 	xchg bx, bx                 ; debugger trap
+	add rsp, 22
 	mov r12, rbx
 	mov rdi, bootinfo           ; integer/pointer for first arg of kernel
-	mov rsi, rsp
 
 	call r12                    ; call kernel
 
