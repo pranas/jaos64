@@ -18,5 +18,4 @@ $(BIN)/%: %.o
 	$(LD) $^ $(LDFLAGS) -o $@
 
 clean:
-	-@rm $(OUTPUT)
 	-@rm -f *.o
