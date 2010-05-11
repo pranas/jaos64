@@ -113,6 +113,59 @@ uint64_t mmap_first_free_zone(uint64_t size)
 	return 0;
 }
 
+void* mem_alloc_block()
+{
+	if (mem_free_block_count() == 0)
+		return 0;
+	
+	uint64_t frame = mmap_first_free();
+	
+	if (frame == 0)
+		return 0;
+	
+	mmap_set(frame);
+	_mem_used_blocks++;
+	
+	return (void*) ((uint64_t) frame * MEM_BLOCK_SIZE);
+}
+
+void mem_free_block(void* addr)
+{
+	mmap_unset((uint64_t) addr / MEM_BLOCK_SIZE);
+	_mem_used_blocks--;
+}
+
+void* mem_alloc_blocks(uint64_t size)
+{
+	if (mem_free_block_count() < size)
+		return 0;
+	
+	uint64_t frame = mmap_first_free_zone(size);
+	
+	if (frame == 0)
+		return 0;
+	
+	uint64_t i;    
+	
+	for (i = 0; i < size; i++)
+		mmap_set(frame+i);
+	
+	_mem_used_blocks += size;
+	
+	return (void*) ((uint64_t) frame * MEM_BLOCK_SIZE);
+}
+
+void mem_free_blocks(void* addr, uint64_t size)
+{
+	uint64_t i;
+	uint64_t frame = (uint64_t) addr / MEM_BLOCK_SIZE;
+	for (i = frame; i < frame+size; i++)
+		mmap_unset(i);
+	
+	_mem_used_blocks -= size;
+}
+
+
 /*
 
    Public interface for memory manager
@@ -299,59 +352,6 @@ void mem_init_region(uint64_t base, uint64_t size)
 	}
 }
 
-
-void* mem_alloc_block()
-{
-	if (mem_free_block_count() == 0)
-		return 0;
-
-	uint64_t frame = mmap_first_free();
-
-	if (frame == 0)
-		return 0;
-
-	mmap_set(frame);
-	_mem_used_blocks++;
-
-	return (void*) ((uint64_t) frame * MEM_BLOCK_SIZE);
-}
-
-void mem_free_block(void* addr)
-{
-	mmap_unset((uint64_t) addr / MEM_BLOCK_SIZE);
-	_mem_used_blocks--;
-}
-
-void* mem_alloc_blocks(uint64_t size)
-{
-	if (mem_free_block_count() < size)
-		return 0;
-
-	uint64_t frame = mmap_first_free_zone(size);
-
-	if (frame == 0)
-		return 0;
-
-	uint64_t i;    
-
-	for (i = 0; i < size; i++)
-		mmap_set(frame+i);
-
-	_mem_used_blocks += size;
-
-	return (void*) ((uint64_t) frame * MEM_BLOCK_SIZE);
-}
-
-void mem_free_blocks(void* addr, uint64_t size)
-{
-	uint64_t i;
-	uint64_t frame = (uint64_t) addr / MEM_BLOCK_SIZE;
-	for (i = frame; i < frame+size; i++)
-		mmap_unset(i);
-
-	_mem_used_blocks -= size;
-}
-
 uint64_t mem_free_block_count()
 {
 	return _mem_max_blocks - _mem_used_blocks;
@@ -376,24 +376,24 @@ void invalidate()
 	asm volatile("mov %0, %%cr3" : : "r" (addr));
 }
 
-pml4_entry get_pml4_entry(uint64_t i)
+pml4_entry* get_pml4_entry(uint16_t i)
 {
-	return _current_pml4[i];
+	return &_current_pml4[i];
 }
 
-pdp_entry get_pdp_entry(uint64_t a, uint64_t b)
+pdp_entry* get_pdp_entry(uint16_t a, uint16_t b)
 {
-	return _current_pdp[a * 512 + b];
+	return &_current_pdp[a * 512 + b];
 }
 
-pd_entry get_pd_entry(uint64_t a, uint64_t b, uint64_t c)
+pd_entry* get_pd_entry(uint16_t a, uint16_t b, uint16_t c)
 {
-	return _current_pd[(a * 512 + b) * 512 + c];
+	return &_current_pd[(a * 512 + b) * 512 + c];
 }
 
-page_entry get_page_entry(uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+page_entry* get_page_entry(uint16_t a, uint16_t b, uint16_t c, uint16_t d)
 {
-	return _current_pt[((a * 512 + b) * 512 + c) * 512 + d];
+	return &_current_pt[((uint64_t)(a * 512 + b) * 512 + c) * 512 + d];
 }
 
 void* get_physical_address(void* a)
@@ -402,15 +402,9 @@ void* get_physical_address(void* a)
 	return (void*) phys;
 }
 
-
 // works only when current paging table is self referenced at end of memory (pml4[511])
 page_entry* create_page_for_current(address a, int user)
 {
-	// uint32_t pml4 = ((addr >> 39) & 0x1FF);
-	// uint32_t pdpe = ((addr >> 30) & 0x1FF);
-	// uint32_t pde = ((addr >> 21) & 0x1FF);
-	// uint32_t pte = ((addr >> 12) & 0x1FF);
-
 	if (_current_pml4[a.pml4].present == 0)
 	{
 		_current_pml4[a.pml4].directory_pointer = (uint64_t) mem_alloc_block() / 0x1000;
@@ -439,16 +433,6 @@ page_entry* create_page_for_current(address a, int user)
 	}
 
 	return &_current_pt[a.frame];
-}
-
-void* temp_map_page(void* physical_address)
-{
-    return physical_address;
-}
-
-void* map_mem_block()
-{
-    return (void*) 0;
 }
 
 void* alloc_page(void* virtual, uint64_t size)
@@ -502,6 +486,39 @@ void free_kernel_page(void* address, uint64_t size)
     address++;
 }
 
+void free_pml4()
+{
+	uint16_t i, z, y;
+	pdp_entry* pdp;
+	pd_entry* pd;
+	page_entry* page;
+	
+    for (i = 0; i < 3; i++)
+	{
+		pdp = get_pdp_entry(0, i);
+		if (pdp->present == 1)
+		{
+			for (z = 0; z < 512; z++)
+			{
+				pd = get_pd_entry(0, i, z);
+				if(pd->present == 1)
+				{
+					for (y = 0; y < 512; y++)
+					{
+						page = get_page_entry(0, i, z, y);
+						if(page->present == 1)
+						{
+                            mem_free_block((void*) page->frame);
+						}
+					}
+				}
+				mem_free_block((void*) pd->table);
+			}
+		}
+		mem_free_block((void*) pdp->directory);
+	}
+}
+
 void mem_copy_block(void* from, void* to)
 {
 	uint16_t i;
@@ -518,22 +535,31 @@ void mem_copy_block(void* from, void* to)
 	}
 }
 
+
+void mem_clear_block(void* address)
+{
+	uint16_t i;
+	for (i = 0; i < 512; i++)
+	{
+		((uint64_t *) address)[i] = 0;
+	}
+	return;
+}
+
+
 // clones current paging scheme
 // return physical address of new pml4
 pml4_entry* clone_pml4t()
 {
-    pml4_entry* pml4 = (pml4_entry*) kmalloc_a(4096); //alloc_kernel_page(1);
-	pdp_entry* pdp = (pdp_entry*) kmalloc_a(4096); //alloc_kernel_page(1);
+    pml4_entry* pml4 = (pml4_entry*) kmalloc_a(MEM_BLOCK_SIZE);
+	pdp_entry* pdp = (pdp_entry*) kmalloc_a(MEM_BLOCK_SIZE);
 	pd_entry* pd;
 	page_entry* pt;
 
 	uint64_t i, z, y;
 
-	for (i = 0; i < 512; i++)
-	{
-		((uint64_t *)pml4)[i] = 0;
-		((uint64_t *)pdp)[i] = 0;
-	}
+	mem_clear_block(pml4);
+	mem_clear_block(pdp);
 
 	// only pml4[0]
 	pml4[0].directory_pointer = (uint64_t) get_physical_address(pdp) / 0x1000;
@@ -545,9 +571,10 @@ pml4_entry* clone_pml4t()
 
 	for (i = 0; i < 3; i++)
 	{
-		if (get_pdp_entry(0, i).present == 1)
+		if (get_pdp_entry(0, i)->present == 1)
 		{
-			pd = (pd_entry*) kmalloc_a(4096);//alloc_kernel_page(1);
+			pd = (pd_entry*) kmalloc_a(MEM_BLOCK_SIZE);
+			mem_clear_block(pd);
 			pdp[i].directory = (uint64_t) get_physical_address(pd) / 0x1000;
 			pdp[i].present = 1;
 			pdp[i].rw = 1;
@@ -555,25 +582,26 @@ pml4_entry* clone_pml4t()
 
 			for (z = 0; z < 512; z++)
 			{
-				if(get_pd_entry(0, i, z).present == 1)
+				if(get_pd_entry(0, i, z)->present == 1)
 				{
-					pt = (page_entry*) kmalloc_a(4096);//alloc_kernel_page(1);
+					pt = (page_entry*) kmalloc_a(MEM_BLOCK_SIZE);
+					mem_clear_block(pt);
 					pd[z].table = (uint64_t) get_physical_address(pt) / 0x1000;
 					pd[z].present = 1;
 					pd[z].rw = 1;
 					pd[z].user = 1;
 					for (y = 0; y < 512; y++)
 					{
-						if(get_page_entry(0, i, z, y).present == 1)
+						if(get_page_entry(0, i, z, y)->present == 1)
 						{
-							void* new_page = (void*) kmalloc_a(4096);//alloc_kernel_page(1);
+							void* new_page = (void*) kmalloc_a(MEM_BLOCK_SIZE);
 							address original_page = { 0 };
 							original_page.pml4 = 0; 
 							original_page.pdp = i;
 							original_page.pd = z;
 							original_page.pt = y;
 							mem_copy_block(original_page.ptr, new_page);
-							pt[y].frame = (uint64_t) get_physical_address(new_page) / 0x1000; //get_page_entry(0, i, z, y);
+							pt[y].frame = (uint64_t) get_physical_address(new_page) / 0x1000;
 							pt[y].user = 1;
 							pt[y].present = 1;
 							pt[y].rw = 1;
@@ -584,7 +612,7 @@ pml4_entry* clone_pml4t()
 		}
 	}
 
-	pdp[3] = get_pdp_entry(0, 3);
+	pdp[3] = *get_pdp_entry(0, 3);
 
 	// set pml4[511] to itself
 	// this makes "self reference"

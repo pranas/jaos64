@@ -109,6 +109,7 @@ void unlock(int lockid)
         // are returning
         master_lock = 0;
         kfree(tmp);
+        sti();
         return;
     }
     

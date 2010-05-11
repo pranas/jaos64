@@ -60,7 +60,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
     if (fork_kernel() == 0)
     {
-            // switch_to_user_mode((uint64_t) load_executable("LOOP"));
+        // switch_to_user_mode((uint64_t) load_executable("LOOP"));
         for(;;)
         {
                 char* buffer = readline();
