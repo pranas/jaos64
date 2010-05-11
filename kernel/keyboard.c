@@ -7,6 +7,8 @@ static uint64_t occupant;
 static uint64_t keyboard_lock;
 
 static char scancode;
+static char press_code;
+static char break_code;
 static int new_press;
 static int new_break;
 
@@ -23,9 +25,15 @@ void keyboard_handler(registers_t* regs)
 {
 	scancode = inb(0x60);
 	if (scancode & 0x80)
+	{
 		new_break = 1;
+		break_code = scancode;
+	}
 	else
+	{
 		new_press = 1;
+		press_code = scancode;
+	}
 	if (occupant && new_press)
 	{
 		change_task_status(occupant, 0);
@@ -48,7 +56,7 @@ char get_char()
 		asm volatile("int $0x20");  
 	}
 	new_press = 0;
-	return recognize_scancode(scancode);
+	return recognize_scancode(press_code);
 }
 
 char* readline()
