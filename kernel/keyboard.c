@@ -59,11 +59,11 @@ char get_char()
 	return recognize_scancode(press_code);
 }
 
-char* readline()
+char* readline(char* buffer)
 {
 	lock(keyboard_lock);
 	occupant = get_lock_owner(keyboard_lock);
-	char* buffer = kmalloc(81);
+//	char* buffer = kmalloc(81);
 	new_press = 0;
 	new_break = 0;
 

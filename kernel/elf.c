@@ -36,7 +36,7 @@ void* load_executable(char* filename)
 		// luzta kazkur cia
 		if (ph[i].p_type == 1)
 		{
-			if (!alloc_page((void*) ph[i].p_vaddr, ph[i].p_memsz / MEM_BLOCK_SIZE)) return 0;
+			if (!alloc_page((void*) ph[i].p_vaddr, ph[i].p_memsz / MEM_BLOCK_SIZE + 1)) return 0;
 			memcpy((void*) ph[i].p_vaddr, buffer + ph[i].p_offset, ph[i].p_filesz);
 		}
 	}

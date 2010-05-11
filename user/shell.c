@@ -9,6 +9,17 @@ static int running;
 #define kfree syscall_kfree
 #define readline syscall_readline
 
+
+static char* token(char* str, int num);
+static void main_loop();
+
+int main()
+{
+	asm("xchg %bx, %bx");
+	running = 1;
+	main_loop();
+}
+
 static char* token(char* str, int num)
 {
 	int start, end, words, i;
@@ -66,22 +77,21 @@ static void main_loop()
 {
 	char* line;
 	char* command, argument;
+	char buffer[81];
 
 	while (running)
 	{
-		line = readline();
+		line = readline(buffer);
 		command = argument = 0;
 		command = token(line, 1);
 		argument = token(line, 2);
 		if (command)
 		{
 			puts("The command is "); puts(command); puts("\n");
-			kfree(command);
 		}
 		if (argument)
 		{
 			puts("The first parameter is "); puts(argument); puts("\n");
-			kfree(argument);
 		}
 		if (command && strncmp(command, "exit", strlen(command)))
 		{
@@ -91,10 +101,4 @@ static void main_loop()
 	}
 	puts("Exiting...\n");
 } 
-
-void shell_init()
-{
-	running = 1;
-	main_loop();
-}
 

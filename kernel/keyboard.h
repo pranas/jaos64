@@ -29,7 +29,7 @@ enum SCANCODE {
 };
 
 char recognize_scancode(char scancode);
-char* readline();
+char* readline(char* buffer);
 void keyboard_init();
 char get_char();
 

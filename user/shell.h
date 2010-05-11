@@ -6,6 +6,6 @@
 #include <string.h>
 #include "syscall.h"
 
-void shell_init();
+int main();
 
 #endif

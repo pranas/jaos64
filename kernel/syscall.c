@@ -21,8 +21,8 @@ void syscall_handler(registers_t* regs)
    if (regs->rax >= SYSCALL_NUM)
        return;
    void *location = syscalls[regs->rax];
-   int ret;
-   asm volatile ("xchg %%bx, %%bx\n\t"
+   uint64_t ret;
+   asm volatile (
 		   "pushq %1\n\t"
 		   "pushq %2\n\t"
 		   "pushq %3\n\t"
