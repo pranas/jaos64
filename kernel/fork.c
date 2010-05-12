@@ -57,9 +57,7 @@ uint64_t fork()
 	
     new_task->rbp = new_task->rsp = 0;
 	new_task->rip = 0;
-	puts("calling clone_pml4t\n");
 	new_task->pml4 = clone_pml4t();
-	puts("left clone_pml4t\n");
     new_task->next = 0;
     
     // adds to list and sets pid

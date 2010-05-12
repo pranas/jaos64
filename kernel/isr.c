@@ -20,6 +20,14 @@ void isr_handler(registers_t regs)
 	}
 }
 
+void gpf_handler(registers_t* regs)
+{
+	puts("GPF: error code ");
+	puthex(regs->err_code);
+	puts("\n");
+	for (;;);
+}
+
 void register_handler(int int_no, isr_t handler)
 {
 	handlers[int_no] = handler;
