@@ -14,7 +14,7 @@ ASFLAGS = -f elf64
 
 all: $(KERNEL)
 
-OBJECTS = main.o monitor.o io.o gdt.o idt.o isr.o \
+OBJECTS = main.o monitor.o io.o gdt.o idt.o isr.o exec.o exit.o \
 			ioapic.o apic.o acpi.o msr.o diskio.o fat32.o keyboard.o memman.o  \
 			syscall.o scheduler.o elf.o kheap.o ordered_array.o fork.o  b_locking.o \
 			read_sectors.o read_rip.o spin_lock.o switch_to_user_mode.o gdt_flush.o \

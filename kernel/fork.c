@@ -15,6 +15,9 @@ uint64_t fork_kernel()
 	
 	// allocate stack in user space
 	new_task->rbp = new_task->rsp = (uint64_t) alloc_page((void *) 0xbffff000, 1) + 0x1000;
+	// allocate additional stack for syscalls (look in gdt.c for explanation)
+	// following forks will clone it cause it's in user space
+	alloc_page((void *) 0xbfffe000, 0) + 0x1000;
 	new_task->rip = 0;
 	new_task->pml4 = clone_pml4t();
     new_task->next = 0;

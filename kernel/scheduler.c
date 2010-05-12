@@ -31,6 +31,7 @@ void scheduler_init()
 	current_task->rbp = 0;
 	current_task->rsp = 0;
 	current_task->rip = 0;
+    current_task->status = 0;
 	current_task->pml4 = (struct pml4_entry*) get_current_pml4();
     current_task->next = 0;
 	
@@ -41,6 +42,7 @@ void scheduler_init()
 void add_task(task* new_task)
 {
     new_task->pid = next_pid++;
+    new_task->status = 0;
     task* tmp = (task*) task_list;
     while(tmp->next)
     {
@@ -80,7 +82,7 @@ void switch_task()
     {
         if (!current_task->next) current_task = task_list;
         else current_task = current_task->next;
-    } while (current_task->status == 1);
+    } while (current_task->status != 0);
     
     // puts("To       : ");
     // debug_task((task*) current_task);

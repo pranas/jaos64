@@ -11,7 +11,7 @@ switch_to_user_mode:
 	mov fs, ax
 	mov gs, ax
 	
-	mov rax, rsp
+	mov rax, 0xc0000000
 	push 0x23 ; data segment
 	push rax  ; stack pointer
 	pushf     ; flags

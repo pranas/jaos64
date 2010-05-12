@@ -116,7 +116,7 @@ uint64_t kmalloc(uint64_t sz)
 static void expand(uint64_t new_size, heap_t *heap)
 {
 	// Sanity check.
-	puts("expanding\n");
+    // puts("expanding\n");
 	if (new_size < heap->end_address - heap->start_address)
 		puts("expand: new_size smaller than current size\n");
 

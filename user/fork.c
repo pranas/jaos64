@@ -1,24 +1,27 @@
 #define puts syscall_puts
+#define putint syscall_putint
 #define fork syscall_fork
+#define exec syscall_exec
+#define exit syscall_exit
+
+#include <stdint.h>
 
 int main()
 {
-//    asm volatile("xchg %bx, %bx");
-	if (fork() == 0)
-	{
-        for(;;)
+    for(;;)
+    {
+        uint64_t pid = fork();
+        if (pid == 0)
         {
-            puts("Child\n");
-            asm volatile("hlt");
+            puts("Child returned...\n");
         }
-	}
-	else
-	{
-        for(;;)
+        else
         {
-            puts("Father\n");
-            asm volatile("hlt");
+            puts("Forked pid: ");
+            putint(pid);
+            puts("\n");
         }
-	}
-    return 0;
+    }
+    asm("int $0x20");
+    exit();
 }

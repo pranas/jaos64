@@ -29,7 +29,7 @@ uint64_t register_lock()
 void lock(int lockid)
 {
     if (lockid == -1) return;
-    cli();
+    // cli();
     
     // unlocked
     spin_lock((uint64_t*) &master_lock);
@@ -41,7 +41,7 @@ void lock(int lockid)
         locks[lockid].head = lck;
         locks[lockid].tail = lck;
         master_lock = 0;
-        sti();
+        // sti();
         return;
     }
     
@@ -51,7 +51,7 @@ void lock(int lockid)
     if (locks[lockid].head->pid == get_current_pid())
     {
         master_lock = 0;
-        sti();
+        // sti();
         return;
     }
     
@@ -73,12 +73,12 @@ void lock(int lockid)
         {
             // it's our time!
             master_lock = 0;
-            sti();
+            // sti();
             return;
         }
         // puts("Not my turn, voluntarily blocking...\n");
         master_lock = 0;
-        sti();
+        // sti();
         // block process
         change_task_status(get_current_pid(), 1);
         // voluntarily switch
@@ -95,7 +95,7 @@ void unlock(int lockid)
 {
     if (lockid == -1) return;
     
-    cli();
+    // cli();
     // only needed for SMP, cause cli(), sti() protects from other processes on same cpu
     spin_lock((uint64_t*) &master_lock);
     
@@ -109,7 +109,7 @@ void unlock(int lockid)
         // are returning
         master_lock = 0;
         kfree(tmp);
-        sti();
+        // sti();
         return;
     }
     
@@ -120,7 +120,7 @@ void unlock(int lockid)
         locks[lockid].tail = 0;
         master_lock = 0;
         kfree(tmp);
-        sti();
+        // sti();
         return;
     }
     
@@ -134,6 +134,6 @@ void unlock(int lockid)
     //unblock locks[lockid]->head->pid
     change_task_status(locks[lockid].head->pid, 0);
     master_lock = 0; // spin unlock
-    sti();
+    // sti();
     return;    
 }
