@@ -5,3 +5,4 @@ lib/corelib.o
 lib/libcorelib.a
 *.swp
 *~
+tags

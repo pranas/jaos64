@@ -73,7 +73,7 @@ static void main_loop()
 
 	while (running)
 	{
-		line = readline(buffer);
+		line = (char*) readline(buffer);
 		memset(command, 0, sizeof(command));
 		memset(args[0], 0, sizeof(args[0]));
 		token(line, 1, command);
