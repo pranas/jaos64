@@ -1,21 +1,27 @@
 #define puts syscall_puts
+#define putint syscall_putint
 #define fork syscall_fork
+#define exec syscall_exec
+#define exit syscall_exit
+
+#include <stdint.h>
 
 int main()
 {
-	if (fork() == 0)
-	{
-        for(;;)
+    for(;;)
+    {
+        uint64_t pid = fork();
+        if (pid == 0)
         {
-            puts("Ping! (child)\n");
+            puts("Child returned...\n");
         }
-	}
-	else
-	{
-        for(;;)
+        else
         {
-            puts("Pong! (father)\n");
+            puts("Forked pid: ");
+            putint(pid);
+            puts("\n");
         }
-	}
-    return 0;
+    }
+    asm("int $0x20");
+    exit();
 }
