@@ -7,14 +7,14 @@ int main()
 	{
         for(;;)
         {
-            puts("Child\n");
+            puts("Ping! (child)\n");
         }
 	}
 	else
 	{
         for(;;)
         {
-            puts("Father\n");
+            puts("Pong! (father)\n");
         }
 	}
     return 0;

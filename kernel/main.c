@@ -50,7 +50,7 @@ void kernel_entry (multiboot_info* bootinfo)
 
 	syscalls_init(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
 
-	timer_init(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
+	timer_init(0x20, 0x002fffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
