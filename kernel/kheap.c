@@ -293,7 +293,6 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 			footer->magic = HEAP_MAGIC;
 		}
 		// We now have enough space. Recurse, and call the function again.
-		magicbp();
 		return alloc(size, page_align, heap);
 	}
 
