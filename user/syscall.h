@@ -10,11 +10,11 @@
 #define DEFN_SYSCALL0(fn, num) \
 uint64_t syscall_##fn() \
 { \
- asm ("xchg %bx, %bx"); \
  uint64_t a; \
  asm volatile("int $0x80" : "=a" (a) : "0" (num)); \
  return a; \
 }
+// asm ("xchg %bx, %bx"); \
 
 #define DEFN_SYSCALL1(fn, num, P1) \
 uint64_t syscall_##fn(P1 p1) \

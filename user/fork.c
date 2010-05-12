@@ -3,7 +3,7 @@
 
 int main()
 {
-    asm volatile("xchg %bx, %bx");
+//    asm volatile("xchg %bx, %bx");
 	if (fork() == 0)
 	{
         for(;;)

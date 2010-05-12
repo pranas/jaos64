@@ -48,10 +48,18 @@ void print_index()
 
 uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys)
 {
+//	if (align)
+//	{
+//		puts("aligned kmalloc");
+//		puts("size: "); puthex(sz); puts("\n");
+//		magicbp();
+//		print_index();
+//	}
 	if (sz == 0)
 		return 0;
 	if (kheap != 0)
 	{
+//		puts("calling alloc\n");
 		void *addr = alloc(sz, (uint8_t)align, kheap);
 		/* TODO: figure out what to do with frame physical addresses
 		if (phys != 0)
@@ -60,6 +68,13 @@ uint64_t kmalloc_int(uint64_t sz, int align, uint64_t *phys)
 			*phys = page->frame*0x1000 + (uint32_t)addr&0xFFF;
 		}
 		*/
+//		if (align)
+//		{
+//			print_index();
+//			puts("address: "); puthex(addr); puts("\n");
+//			puts("aligned kmalloc end\n");
+//			magicbp();
+//		}
 		return (uint64_t) addr;
 	}
 	else
@@ -101,6 +116,7 @@ uint64_t kmalloc(uint64_t sz)
 static void expand(uint64_t new_size, heap_t *heap)
 {
 	// Sanity check.
+	puts("expanding\n");
 	if (new_size < heap->end_address - heap->start_address)
 		puts("expand: new_size smaller than current size\n");
 
@@ -124,6 +140,7 @@ static void expand(uint64_t new_size, heap_t *heap)
 static uint64_t contract(uint64_t new_size, heap_t *heap)
 {
 	// Sanity check.
+	puts("contracting\n");
 	if (new_size >= heap->end_address - heap->start_address)
 		puts("contract: contracting, but new_size is larger than old_size\n");
 
@@ -160,9 +177,9 @@ static uint64_t find_smallest_hole(uint64_t size, uint8_t page_align, heap_t *he
 			uint64_t offset = 0;
 			if ((location+sizeof(header_t)) & 0x00000FFF)
 				offset = MEM_BLOCK_SIZE - (location+sizeof(header_t)) % MEM_BLOCK_SIZE;
-			uint64_t hole_size = (int64_t)header->size - offset;
+			uint64_t hole_size = (uint64_t) header->size - offset;
 			// Can we fit now?
-			if (hole_size >= (uint64_t)size)
+			if (header->size > offset && hole_size >= size)
 				break;
 		}
 		else if (header->size >= size)
@@ -228,7 +245,6 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	uint64_t new_size = size + sizeof(header_t) + sizeof(footer_t);
 	// Find the smallest hole that will fit.
 	uint64_t iterator = find_smallest_hole(new_size, page_align, heap);
-
 	if ((int64_t)iterator == -1) // If we didn't find a suitable hole
 	{
 		// Save some previous data.
@@ -277,9 +293,11 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 			footer->magic = HEAP_MAGIC;
 		}
 		// We now have enough space. Recurse, and call the function again.
+		magicbp();
 		return alloc(size, page_align, heap);
 	}
 
+//	puts("orig hole header\n");
 	header_t *orig_hole_header = (header_t *)lookup_ordered_array(iterator, &heap->index);
 	uint64_t orig_hole_pos = (uint64_t)orig_hole_header;
 	uint64_t orig_hole_size = orig_hole_header->size;
@@ -288,6 +306,7 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	if (orig_hole_size-new_size < sizeof(header_t)+sizeof(footer_t))
 	{
 		// Then just increase the requested size to the size of the hole we found.
+//		puts("weird if\n");
 		size += orig_hole_size-new_size;
 		new_size = orig_hole_size;
 	}
@@ -295,7 +314,7 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	// If we need to page-align the data, do it now and make a new hole in front of our block.
 	if (page_align && (orig_hole_pos + sizeof(header_t)) & 0x00000FFF)
 	{
-		puts("aligning\n");
+//		puts("aligning\n");
 		uint64_t new_location   = orig_hole_pos + MEM_BLOCK_SIZE - (orig_hole_pos&0xFFF) - sizeof(header_t);
 		header_t *hole_header = (header_t *)orig_hole_pos;
 		hole_header->size     = MEM_BLOCK_SIZE - (orig_hole_pos&0xFFF) - sizeof(header_t);
@@ -313,6 +332,7 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 		remove_ordered_array(iterator, &heap->index);
 	}
 
+//	puts("original header:\n");
 	// Overwrite the original header...
 	header_t *block_header  = (header_t *)orig_hole_pos;
 	block_header->magic     = HEAP_MAGIC;
@@ -322,11 +342,14 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 	footer_t *block_footer  = (footer_t *) (orig_hole_pos + sizeof(header_t) + size);
 	block_footer->magic     = HEAP_MAGIC;
 	block_footer->header    = block_header;
+//	puthex(block_header);
+//	puts("\n");
 
 	// We may need to write a new hole after the allocated block.
 	// We do this only if the new hole would have positive size...
 	if (orig_hole_size - new_size > 0)
 	{
+//		puts("new hole\n");
 		header_t *hole_header = (header_t *) (orig_hole_pos + sizeof(header_t) + size + sizeof(footer_t));
 		hole_header->magic    = HEAP_MAGIC;
 		hole_header->is_hole  = 1;
@@ -340,6 +363,8 @@ void *alloc(uint64_t size, uint8_t page_align, heap_t *heap)
 		// Put the new hole in the index;
 		insert_ordered_array((void*)hole_header, &heap->index);
 	}
+//	puts("done\n");
+//	magicbp();
 
 	// ...And we're done!
 	return (void *) ( (uint64_t)block_header+sizeof(header_t) );

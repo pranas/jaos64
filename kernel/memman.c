@@ -552,8 +552,8 @@ void mem_clear_block(void* address)
 pml4_entry* clone_pml4t()
 {
     pml4_entry* pml4 = (pml4_entry*) kmalloc_a(MEM_BLOCK_SIZE);
-    magicbp();
 	pdp_entry* pdp = (pdp_entry*) kmalloc_a(MEM_BLOCK_SIZE);
+
 	pd_entry* pd;
 	page_entry* pt;
 
