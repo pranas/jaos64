@@ -134,24 +134,28 @@ struct pd_entry
 
 typedef struct pd_entry pd_entry;
 
-struct page_entry
+union page_entry
 {
-    uint64_t present : 1;		// Present (P) bit, when 0 all other ignored (can be user by software)
-    uint64_t rw : 1;			// Read/Write (R/W) bit, RO if 0, RW if 1
-    uint64_t user : 1;   		// User/Supervisor (U/S) bit, S if 0, U if 1
-    uint64_t pwt : 1;			// Page-Level Writethrough (PWT) bit
-    uint64_t pcd : 1;			// Page-Level Cache Disable (PCD) bit
-    uint64_t accessed : 1;		// Accessed (A) bit, set by CPU when read or written, never cleared by CPU
-    uint64_t dirty : 1;			// Dirty (D) bit, set by CPU when written, never cleared by CPU
-    uint64_t size : 1;			// Page Size (PS) bit, if set it's lowest in page hierarchy
-    uint64_t global : 1;		// Global Page (G) bit, indicates global pages which are not invalidated when switching, to use needs CR4.PGE=1
-    uint64_t avl : 3;			// Available for software
-    uint64_t frame : 40;  		// Physical frame address (shifted right 12 bits)
-    uint64_t reserved : 11;		// Reserved bit should always be cleared or #PF will occur if LM or PAE enabled
-	uint64_t nx : 1;			// No execution bit
+    uint64_t hex;
+    struct
+    {
+        uint64_t present : 1;		// Present (P) bit, when 0 all other ignored (can be user by software)
+        uint64_t rw : 1;			// Read/Write (R/W) bit, RO if 0, RW if 1
+        uint64_t user : 1;   		// User/Supervisor (U/S) bit, S if 0, U if 1
+        uint64_t pwt : 1;			// Page-Level Writethrough (PWT) bit
+        uint64_t pcd : 1;			// Page-Level Cache Disable (PCD) bit
+        uint64_t accessed : 1;		// Accessed (A) bit, set by CPU when read or written, never cleared by CPU
+        uint64_t dirty : 1;			// Dirty (D) bit, set by CPU when written, never cleared by CPU
+        uint64_t size : 1;			// Page Size (PS) bit, if set it's lowest in page hierarchy
+        uint64_t global : 1;		// Global Page (G) bit, indicates global pages which are not invalidated when switching, to use needs CR4.PGE=1
+        uint64_t avl : 3;			// Available for software
+        uint64_t frame : 40;  		// Physical frame address (shifted right 12 bits)
+        uint64_t reserved : 11;		// Reserved bit should always be cleared or #PF will occur if LM or PAE enabled
+    	uint64_t nx : 1;			// No execution bit
+    };
 } __attribute__((packed));
 
-typedef struct page_entry page_entry;
+typedef union page_entry page_entry;
 
 // private functions (should not be used outside memory manager)
 inline void mmap_set (uint64_t bit);

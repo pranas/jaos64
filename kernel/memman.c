@@ -58,7 +58,7 @@ uint64_t mmap_first_free()
 	uint64_t i, j;
 	for (i = 0; i < _mem_max_blocks / 64; i++)
 	{
-		if (_mem_memory_map[i] != (uint64_t) 0-1)
+		if (_mem_memory_map[i] != 0xFFFFFFFFFFFFFFFF)
 		{
 			for (j = 0; j < 64; j++)
 			{
@@ -115,8 +115,8 @@ uint64_t mmap_first_free_zone(uint64_t size)
 
 void* mem_alloc_block()
 {
-	if (mem_free_block_count() == 0)
-		return 0;
+    if (mem_free_block_count() == 0)
+     return 0;
 	
 	uint64_t frame = mmap_first_free();
 	
@@ -444,7 +444,11 @@ void* alloc_page(void* virtual, uint64_t size)
 	for (i = 0; i < size; i++)
 	{
 		void* phys_frame = mem_alloc_block();
-		if (!phys_frame) return 0;
+		if (!phys_frame) 
+		{
+            puthex(_mem_memory_map);
+		    return 0;
+		}
 		
 		page_entry* page = create_page_for_current( (addr) (virtual + i * 0x1000), 1);
 		if (!page) return 0;
@@ -486,7 +490,7 @@ void free_kernel_page(void* address, uint64_t size)
     address++;
 }
 
-void free_pml4()
+void clean_user_space()
 {
 	uint16_t i, z, y;
 	pdp_entry* pdp;
@@ -506,16 +510,16 @@ void free_pml4()
 					for (y = 0; y < 512; y++)
 					{
 						page = get_page_entry(0, i, z, y);
-						if(page->present == 1)
+					    // preserves last 2 blocks for stacks
+						if((page->present == 1) && (y < 510) && (z != 511) && (i != 2))
 						{
-                            mem_free_block((void*) page->frame);
+                            mem_free_block((void*) (page->frame * 0x1000));
+                            page->hex = 0;                         
 						}
 					}
 				}
-				mem_free_block((void*) pd->table);
 			}
 		}
-		mem_free_block((void*) pdp->directory);
 	}
 }
 
@@ -664,7 +668,11 @@ void page_fault_handler(registers_t* regs)
     uint64_t faulting_address;
     asm volatile ("mov %%cr2, %0" : "=r" (faulting_address));
 
-    puts("Page fault (");
+    puts("Task: ");
+    putint(get_current_pid());
+    puts(" @ RIP: ");
+    puthex(regs->rip);
+    puts("\nPage fault (");
     if (!(regs->err_code & 0x1)) puts("not present ");  // if page not present
     if (regs->err_code & 0x2) puts("read-only ");       // only read
     if (regs->err_code & 0x4) puts("user-mode ");       // from user space?
