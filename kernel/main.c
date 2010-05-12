@@ -29,8 +29,7 @@
 #include "kheap.h"
 #include "fork.h"
 #include "b_locking.h"
-
-extern void switch_to_user_mode(void*);
+#include "exec.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -61,12 +60,12 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
     if (fork_kernel() == 0)
     {
-        // switch_to_user_mode((uint64_t) load_executable("LOOP"));
-		switch_to_user_mode((uint64_t) load_executable("FORK"));
-        for(;;)
+        if (!exec("FORK"))
         {
-			asm volatile("hlt");
+            // something horrible happend
+            // exit()
         }
+        exit();
     }
     else
     {
@@ -77,5 +76,5 @@ void kernel_entry (multiboot_info* bootinfo)
     }
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
-	for (;;);
+    for(;;);
 }
