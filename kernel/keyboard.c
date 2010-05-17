@@ -1,6 +1,6 @@
 #include "keyboard.h"
 
-static char* key = "##1234567890-=#\tqwertyuiop[]\n#asdfghjkl;\'`#\\zxcvbnm,./#*# ##############789-456+123#######";
+static char* key = "##1234567890-=#\tQWERTYUIOP[]\n#ASDFGHJKL;\'`#\\ZXCVBNM,./#*# ##############789-456+123#######";
 static int key_len;
 
 static uint64_t occupant;
@@ -63,7 +63,6 @@ char* readline(char* buffer)
 {
 	lock(keyboard_lock);
 	occupant = get_lock_owner(keyboard_lock);
-//	char* buffer = kmalloc(81);
 	new_press = 0;
 	new_break = 0;
 

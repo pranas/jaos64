@@ -60,7 +60,7 @@ void kernel_entry (multiboot_info* bootinfo)
 	// testing scheduler
     if (fork_kernel() == 0)
     {
-        if (!exec("FORK"))
+        if (!exec("SHELL"))
         {
             // something horrible happend
             // exit()

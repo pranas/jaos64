@@ -8,20 +8,20 @@
 
 int main()
 {
-    for(;;)
-    {
-        uint64_t pid = fork();
-        if (pid == 0)
-        {
-            puts("Child returned...\n");
-        }
-        else
-        {
-            puts("Forked pid: ");
-            putint(pid);
-            puts("\n");
-        }
-    }
-    asm("int $0x20");
+    /*for(;;)*/
+    /*{*/
+        /*uint64_t pid = fork();*/
+        /*if (pid == 0)*/
+        /*{*/
+            /*puts("Child returned...\n");*/
+        /*}*/
+        /*else*/
+        /*{*/
+            /*puts("Forked pid: ");*/
+            /*putint(pid);*/
+            /*puts("\n");*/
+        /*}*/
+    /*}*/
+	puts("Im a user, hai there!\n");
     exit();
 }

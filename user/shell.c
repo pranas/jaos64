@@ -9,6 +9,7 @@ static int running;
 #define kmalloc syscall_kmalloc
 #define kfree syscall_kfree
 #define readline syscall_readline
+#define exec syscall_exec
 
 
 static char* token(char* str, int num, char* token);
@@ -86,12 +87,26 @@ static void main_loop()
 		{
 			puts("The first parameter is "); puts(args[0]); puts("\n");
 		}
-		if (command && strncmp(command, "exit", strlen(command)))
+		if (command && strncmp(command, "EXIT", strlen(command)))
 		{
 			puts("Exit command\n");
 			running = 0;
 		}
+		if (command &&
+				args[0] &&
+				strncmp(command, "EXEC", strlen(command)))
+		{
+			if (!syscall_fork())
+			{
+				if (!exec(&args[0]))
+				{
+					puts("Error.\n");
+					syscall_exit();
+				}
+			}
+		}
 	}
 	puts("Exiting...\n");
+	syscall_exit();
 } 
 
