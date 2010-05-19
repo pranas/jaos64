@@ -36,5 +36,6 @@ DECL_SYSCALL1(readline, char *);
 DECL_SYSCALL0(fork);
 DECL_SYSCALL1(exec, char *);
 DECL_SYSCALL0(exit);
+DECL_SYSCALL0(sleep);
 
 #endif

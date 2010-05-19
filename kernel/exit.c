@@ -10,3 +10,10 @@ void exit()
     asm volatile("sti");
     asm volatile("int $0x20");
 }
+
+void sleep()
+{
+    asm volatile("sti");
+    asm volatile("hlt");
+    asm volatile("cli");
+}

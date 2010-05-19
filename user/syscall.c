@@ -10,3 +10,4 @@ DEFN_SYSCALL1(readline, 5, char *);
 DEFN_SYSCALL0(fork, 6);
 DEFN_SYSCALL1(exec, 7, char *);
 DEFN_SYSCALL0(exit, 8);
+DEFN_SYSCALL0(sleep, 9);

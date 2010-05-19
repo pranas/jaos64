@@ -6,5 +6,6 @@
 #include "scheduler.h"
 
 void exit();
+void sleep();
 
 #endif

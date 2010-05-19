@@ -1,8 +1,9 @@
 #include "syscall.h"
 
 void exit();
+void sleep();
 
-#define SYSCALL_NUM 9
+#define SYSCALL_NUM 10
 void * syscalls[SYSCALL_NUM] =
 {
    &puts,
@@ -13,7 +14,8 @@ void * syscalls[SYSCALL_NUM] =
    &readline,
    &fork,
    &exec,
-   &exit
+   &exit,
+   &sleep
 };
 
 void syscalls_init()
