@@ -6,10 +6,16 @@ CFLAGS = -ffreestanding -mno-red-zone -mcmodel=large -nostdlib -m64 \
 		 -I$(INCLUDE_PATH) 
 LD = ld
 LDFLAGS = -L$(LIBRARY_PATH) -nostdlib -nodefaultlibs -m elf_x86_64 --traditional-format -lcorelib
-SRCS = loop shell fork
+SRCS = loop shell fork ping hello
 OUTPUT = $(addprefix $(BIN)/, $(SRCS:%=%))
 
 all: $(OUTPUT)
+
+$(BIN)/hello: hello.o syscall.o
+	$(LD) $^ $(LDFLAGS) -o $@
+
+$(BIN)/ping: ping.o syscall.o
+	$(LD) $^ $(LDFLAGS) -o $@
 
 $(BIN)/fork: fork.o syscall.o
 	$(LD) $^ $(LDFLAGS) -o $@
