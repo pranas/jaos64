@@ -1,16 +1,11 @@
 #include "acpi.h"
 
-#include <string.h>
-
-#include "memman.h"
-#include "monitor.h"
-
 void * madt;
 
 void acpi_init()
 {
-	brute_create_page( 0x1FF0000, 0x1FF0000, 16, (void*) get_current_pml4(), 0);
-	brute_create_page( 0x3FF0000, 0x3FF0000, 15, (void*) get_current_pml4(), 0);
+	brute_create_page( 0x1FF0000, 0x1FF0000, 16, 0);
+	brute_create_page( 0x3FF0000, 0x3FF0000, 15, 0);
 	madt = find_sdt(get_rsdt(), "APIC");
 	puts("[ACPI] MADT found at "); puthex((uint64_t) madt); puts("\n");
 }

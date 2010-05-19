@@ -1,7 +1,10 @@
-#ifndef _IOAPIC_H
-#define _IOAPIC_H
+#pragma once
+#ifndef IOAPIC_H
+#define IOAPIC_H
 
 #include <stdint.h>
+#include "memman.h"
+#include "monitor.h"
 
 #define IOAPIC_BASE 0xfec00000
 
@@ -44,9 +47,9 @@ struct ioapic_redirect_entry
 };
 typedef struct ioapic_redirect_entry ioapic_redirect_entry;
 
-void     write_ioapicr    (const uint8_t offset, const uint32_t val);
-uint32_t read_ioapicr     (const uint8_t offset);
-void     puts_ioapic_info ();
-void     ioapic_init();
+void write_ioapicr(const uint8_t offset, const uint32_t val);
+uint32_t read_ioapicr(const uint8_t offset);
+void puts_ioapic_info ();
+void ioapic_init();
 
 #endif

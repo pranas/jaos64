@@ -1,7 +1,13 @@
-#ifndef _APIC_H
-#define _APIC_H
+#pragma once
+#ifndef APIC_H
+#define APIC_H
 
 #include <stdint.h>
+#include <string.h>
+#include "monitor.h"
+#include "msr.h"
+#include "memman.h"
+#include "io.h"
 
 #define APIC_BASE 0xfee00000
 
@@ -56,7 +62,7 @@ void    write_apicr(uint16_t offset, uint32_t val);
 uint32_t read_apicr(uint16_t offset);
 void puts_apic_info();
 void enable_apic();
-void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic);
+void timer_init(int vector, uint32_t counter, uint32_t divider, int periodic);
 void apic_init();
 void start_ap(uint8_t apicid, uint8_t vector);
 

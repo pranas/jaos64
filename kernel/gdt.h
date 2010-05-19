@@ -1,7 +1,11 @@
-#ifndef _GDT_H
-#define _GDT_H
+#pragma once
+#ifndef GDT_H
+#define GDT_H
 
 #include <stdint.h>
+#include "monitor.h"
+#include "stdlib.h"
+
 /* GDT entry */
 struct gdt_entry_struct
 {

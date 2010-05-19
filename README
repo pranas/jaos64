@@ -1,20 +1,14 @@
-ProjectOS
-2010-02-19
+JAOS64 by Pranas Kiziela and Tomas Varneckas
 
 Compilation:
-    make
+    sudo make
+    (needs sudo for loopback device mounting)
 
 Cleanup:
     make clean
 
 Run:
     make run
-
-
-0x7c00 - stage1
-0x7e00 - partition volume ID
-0x9000 - stage2
-
-0x1000-0x7000 - paging tables
-0x8000-0x9000 - stack space
-0x10000-0x20000 - buffer
+    
+Prerequisites:
+    GCC, LD, NASM, BOCHS, UTIL-LINUX

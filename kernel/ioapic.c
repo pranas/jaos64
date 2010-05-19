@@ -1,8 +1,5 @@
 #include "ioapic.h"
 
-#include "memman.h"
-#include "monitor.h"
-
 void write_ioapicr(const uint8_t offset, const uint32_t val)
 {
 	void * base = (void*) IOAPIC_BASE;
@@ -41,7 +38,7 @@ void puts_ioapic_info()
 
 void ioapic_init()
 {
-	brute_create_page(IOAPIC_BASE, IOAPIC_BASE, 1, (void*)get_current_pml4(), 0); // IOAPIC address space
+	brute_create_page(IOAPIC_BASE, IOAPIC_BASE, 1, 0); // IOAPIC address space
 	ioapic_redirect_entry irq1;
 	irq1.vector         = 0x21; // vector 0x21
 	irq1.delmod         =  0x0; // fixed
@@ -52,8 +49,6 @@ void ioapic_init()
 	irq1.reserved       =  0x0; // zero out reserved
 	irq1.reserved2      =  0x0; // zero out reserved
 	irq1.destination    =  0x0; // apic id, 0th apic
-	puthex(irq1.low);
-	puthex(irq1.high);
 	write_ioapicr(0x12, irq1.low); // irq1 low
 	write_ioapicr(0x13, irq1.high); // irq1 high
 

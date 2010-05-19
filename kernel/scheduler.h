@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SCHEDULER_H
 #define SCHEDULER_H
 
@@ -17,30 +18,31 @@
 */
 
 #include <stdint.h>
+#include "common.h"
 #include "memman.h"
-#include "isr.h"
+#include "kheap.h"
+#include "fork.h"
 
 struct task
 {
    uint64_t pid;           // Process ID.
    uint64_t rsp, rbp;     // Stack and base pointers.
    uint64_t rip;          // Instruction pointer.
-   pml4_entry* pml4; 	  // Page directory.
-};
+   struct pml4_entry* pml4; 	  // Page directory.
+   uint8_t status;          // 0 - free, 1 - blocked
+   struct task* next;
+}__attribute__((packed));
 
 typedef struct task task;
-
-static task* current_task = 0;
-static task task_list[32];
-static uint64_t next_pid = 0;
-static uint64_t ret = 0;
 
 extern uint64_t read_rip();
 
 void scheduler_init();
-uint64_t fork_kernel();
-uint64_t fork();
-uint64_t getpid();
 void switch_task();
+void add_task(task* new_task);
+void change_task_status(uint64_t pid, uint8_t status);
+uint64_t get_current_pid();
+task* get_current_task();
+void debug_task(task* tsk);
 
 #endif

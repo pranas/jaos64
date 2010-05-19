@@ -1,7 +1,12 @@
-#ifndef _FAT32_H
-#define _FAT32_H
+#pragma once
+#ifndef FAT32_H
+#define FAT32_H
 
 #include <stdint.h>
+#include <string.h>
+#include "memman.h"
+#include "kheap.h"
+#include "diskio.h"
 
 struct fat32_volume_id {
 	char jump[3];
@@ -101,11 +106,6 @@ struct dir_entry
 
 typedef struct dir_entry dir_entry;
 
-static fat32_volume_id* _partition = 0;
-static uint64_t _partition_begin_lba = 0;
-static uint64_t _cluster_begin_lba = 0;
-static uint64_t _fat_begin_lba = 0;
-
 // private
 void fat32_init();
 uint64_t cluster2lba(uint64_t cluster);
@@ -113,8 +113,9 @@ uint64_t read_cluster(uint64_t cluster, void* address);
 uint64_t find_next_cluster(uint64_t cluster);
 // public
 void read_file(uint64_t cluster, void* address);
-uint64_t find_file(char* name);
+dir_entry* find_file(char* name);
+fat32_volume_id* get_current_partition();
 // debug
-uint64_t put_dir(dir_entry* dir, int size);
+void put_dir(dir_entry* dir, int size);
 
 #endif

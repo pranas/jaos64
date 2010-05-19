@@ -1,6 +1,4 @@
 #include "isr.h"
-#include "monitor.h"
-#include "apic.h"
 
 isr_t handlers[MAX_HANDLERS];
 
@@ -8,7 +6,6 @@ void isr_handler(registers_t regs)
 {
 	if (regs.int_no >= 0x20)
 		write_apicr(0xb0, 0); // acknowledge ioapic interrupt
-
 
 	if (handlers[regs.int_no] != 0)
 	{
@@ -21,6 +18,14 @@ void isr_handler(registers_t regs)
 		puts(", error code "); puthex(regs.err_code);
 		puts("\n");
 	}
+}
+
+void gpf_handler(registers_t* regs)
+{
+	puts("GPF: error code ");
+	puthex(regs->err_code);
+	puts("\n");
+	for (;;);
 }
 
 void register_handler(int int_no, isr_t handler)

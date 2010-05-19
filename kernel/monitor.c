@@ -1,29 +1,19 @@
-
-#include <stdint.h>
-#include "io.h"
-
-/* We use the index port to specify what we want to do.
- * We do the actual read/writes with the data port. */
-
-#define VGA_INDEX_PORT 0x3D4
-#define VGA_DATA_PORT 0x3D5
-
-/* Since 80x25=2000, position cant fit into 8 bytes,
- * so there are 2 registers for position information */
-#define CURSOR_POSITION_HIGH 0xE
-#define CURSOR_POSITION_LOW 0xF
-
-/* Color helpe macros */
-#define BLACK 0
-#define WHITE 15
-#define ATTR_BYTE(bg,fg) (((bg) << 4) | ((fg) & 0x0F))
+#include "monitor.h"
 
 /* initial position is top left */
-int8_t cursor_x = 0;
-int8_t cursor_y = 0;
+static int8_t cursor_x = 0;
+static int8_t cursor_y = 0;
 
 /* video memory mapped here */
-int16_t* video_memory = (int16_t*) 0xB8000; // default
+static int16_t* video_memory = (int16_t*) 0xB8000; // default
+
+static uint64_t monitor_lock = -1;
+
+
+void monitor_init()
+{
+    monitor_lock = register_lock();
+}
 
 void set_video_memory(void* address)
 {
@@ -66,6 +56,7 @@ static void scroll()
 // write single char to screen
 void putchar(char c)
 {
+    lock(monitor_lock);
 	int8_t attribute_byte = ATTR_BYTE(BLACK, WHITE);
 	int16_t* location;
 
@@ -102,6 +93,7 @@ void putchar(char c)
 
 	scroll();
 	move_cursor();
+    unlock(monitor_lock);
 }
 
 void clear_screen()
@@ -121,12 +113,14 @@ void clear_screen()
 void puts(char* str)
 {
     if (!str) return;
+    lock(monitor_lock);
     
 	int i = 0;
 	while (str[i])
 	{
 		putchar(str[i++]);
 	}
+    unlock(monitor_lock);
 }
 
 char tbuf[32];
@@ -171,16 +165,20 @@ void uitoa_s(uint64_t i, unsigned base, char* buf) {
 
 void putint(int64_t i)
 {
+    lock(monitor_lock);
 	char str[32]={0};
 	itoa_s (i, 10, str);
 	puts (str);
+    unlock(monitor_lock);
 }
 
 void puthex(uint64_t i)
 {
+    lock(monitor_lock);
     char str[32]={0};
     str[0] = '0';
     str[1] = 'x';
 	uitoa_s (i, 16, str+2);
 	puts (str);
+    unlock(monitor_lock);
 }

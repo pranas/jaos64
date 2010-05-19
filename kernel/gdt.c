@@ -1,8 +1,5 @@
 #include "gdt.h"
 
-#include "monitor.h"
-#include "stdlib.h"
-
 void gdt_set_gate(int num, int32_t base, int32_t limit, int8_t access, int8_t granularity)
 {
 	/* base address */
@@ -44,7 +41,6 @@ void gdt_set_ss_gate(int num, int64_t base, int32_t limit, int8_t access, int8_t
 void gdt_install()
 {
 	gdt_ptr.limit = (sizeof(gdt_entry_struct) * GDT_ENTRY_NR) - 1;
-	putint(gdt_ptr.limit);
 	gdt_ptr.base  = (int64_t) &gdt;
 
 	// NULL gate
@@ -58,8 +54,20 @@ void gdt_install()
 	gdt_set_gate(3, 0, 0, 0xF8, 0x20); // code
 	gdt_set_gate(4, 0, 0, 0xF2, 0x00); // data
 
-	// try to add a tss gate
-	tss_set_gate(5, 0x90000, 0x90000, 0x90000);
+    // There are some subtle things with user mode
+    // Whenever a syscall int happens the first thing cpu does
+    // is changes to RSP0 stack (wich is in TSS)
+    // so all int handlers are working on that stack
+    // that could cause us problems so we will declare a stack in user space for
+    // working when switching to ring 0
+    // this stack will be different in each user space
+    // so it won't mess with other stacks
+    // http://wiki.osdev.org/Getting_to_Ring_3 Multitasking considerations
+    // TODO: Rethink this design if implementing threads
+    // threads use same address space so if several threads make a syscall
+    // all of them will use same stack
+	
+	tss_set_gate(5, 0xbffff000, 0xbffff000, 0xbffff000);
 
 	// apply changes
 	gdt_flush();

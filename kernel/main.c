@@ -12,9 +12,6 @@
 */
 
 #include <bootinfo.h>
-
-#include "monitor.h"
-
 #include "gdt.h"
 #include "idt.h"
 #include "isr.h"
@@ -26,7 +23,13 @@
 #include "fat32.h"
 #include "keyboard.h"
 #include "scheduler.h"
+#include "monitor.h"
 #include "syscall.h"
+#include "elf.h"
+#include "kheap.h"
+#include "fork.h"
+#include "b_locking.h"
+#include "exec.h"
 
 void kernel_entry (multiboot_info* bootinfo) 
 {
@@ -34,40 +37,44 @@ void kernel_entry (multiboot_info* bootinfo)
 	gdt_install();  puts("GDT initialised.\n");
 	idt_install();	puts("IDT initialised.\n");
     memman_init(bootinfo);
+	kheap_init();
 	fat32_init();
-
-	// acpi_init();
+	// TODO: figure out how to do it safely
+	//acpi_init();
 	apic_init();
 	ioapic_init(); // keyboard only for now
 
 	register_handler(0x21, keyboard_handler);
+	register_handler(0xD, gpf_handler);
 
-	init_syscalls(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
+	syscalls_init(); // maybe syscalls_init() like acpi_init, apic_init, etc... there should be common naming
 
-	init_timer(0x20, 0x02ffffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
+	timer_init(0x20, 0x002fffff, 0xB, 1); // vector, counter, divider, periodic -- check manual before using
 
 	// sets up kernel task and registers handler for timer
 	scheduler_init();
+	// registers locking sys
+	monitor_init();
+	keyboard_init();
 
 	// testing scheduler
-	if (fork_kernel() == 0)
-	{
-		for(;;)
-		{
-			puts("PONG!\n\n");
+    if (fork_kernel() == 0)
+    {
+        if (!exec("SHELL"))
+        {
+            // something horrible happend
+            // exit()
+        }
+        exit();
+    }
+    else
+    {
+        for(;;)
+        {
 			asm volatile("hlt");
-		}
-	}
-	else
-	{
-		for(;;)
-		{
-			puts("PING!\n\n");
-			asm volatile("hlt");
-		}
-	}
+        }
+    }
 	
 	asm ("sti"); // release monsters, it can be set earlier, but fails horribly if set before acpi_init
-
-	for (;;);
+    for(;;);
 }

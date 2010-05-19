@@ -1,12 +1,5 @@
 #include "apic.h"
 
-#include <string.h>
-
-#include "monitor.h"
-#include "msr.h"
-#include "memman.h"
-#include "io.h"
-
 void disable_legacy_pic()
 {
 	outb(0xa1, 0xff);
@@ -55,13 +48,13 @@ void enable_apic()
 void apic_init()
 {
 	disable_legacy_pic();
-	brute_create_page(APIC_BASE, APIC_BASE, 1, (void*) get_current_pml4(), 0); // APIC address space
+	brute_create_page(APIC_BASE, APIC_BASE, 1, 0); // APIC address space
 	enable_apic(); // even though its already enabled :S
 	write_apicr(0xf0, 0x00000100); // spurious int register
 	puts_apic_info();
 }
 
-void init_timer(int vector, uint32_t counter, uint32_t divider, int periodic)
+void timer_init(int vector, uint32_t counter, uint32_t divider, int periodic)
 {
 	uint32_t timer_lvt = 0x0;
 	timer_lvt |= vector;

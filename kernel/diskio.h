@@ -1,5 +1,6 @@
-#ifndef _DISKIO_H
-#define _DISKIO_H
+#pragma once
+#ifndef DISKIO_H
+#define DISKIO_H
 
 #include <stdint.h>
 

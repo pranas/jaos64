@@ -1,22 +1,24 @@
 #include "syscall.h"
 
-#include "isr.h"
-#include "monitor.h"
-#include "idt.h"
+void exit();
+void sleep();
 
-DEFN_SYSCALL1(puts, 0, const char *);
-DEFN_SYSCALL1(puthex, 1, int64_t);
-DEFN_SYSCALL1(putint, 2, int64_t);
-
-#define SYSCALL_NUM 3
+#define SYSCALL_NUM 10
 void * syscalls[SYSCALL_NUM] =
 {
    &puts,
    &puthex,
    &putint,
+   &kmalloc,
+   &kfree,
+   &readline,
+   &fork,
+   &exec,
+   &exit,
+   &sleep
 };
 
-void init_syscalls()
+void syscalls_init()
 {
    register_handler (0x80, &syscall_handler);
 }
@@ -26,8 +28,8 @@ void syscall_handler(registers_t* regs)
    if (regs->rax >= SYSCALL_NUM)
        return;
    void *location = syscalls[regs->rax];
-   int ret;
-   asm volatile ("xchg %%bx, %%bx\n\t"
+   uint64_t ret;
+   asm volatile (
 		   "pushq %1\n\t"
 		   "pushq %2\n\t"
 		   "pushq %3\n\t"
@@ -42,7 +44,7 @@ void syscall_handler(registers_t* regs)
 		   "pop %%rdx\n\t"
 		   "pop %%rsi\n\t"
 		   "pop %%rdi\n\t"
-		   "call %%r11\n\t"
+		   "call *%%r11\n\t"
 	 : "=a" (ret)
 	 : "m" (regs->rdi), "m" (regs->rsi), "m" (regs->rdx),
 	   "m" (regs->rcx), "m" (regs->r8) , "m" (regs->r9), "m" (location));
